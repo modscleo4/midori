@@ -1,5 +1,5 @@
 import IndexHandler from '../handler/IndexHandler.js';
-import {RouterWrapper } from '../lib/Route.js'
+import { Router as RouterWrapper } from '../../lib/Router.js'
 import TestMiddleware from '../middleware/TestMiddleware.js';
 
 const Router = new RouterWrapper();

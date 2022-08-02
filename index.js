@@ -1,4 +1,4 @@
-import routes from './routes/index.js';
+import routes from './app/routes/index.js';
 import Server from "./lib/Server.js";
 
 const server = new Server({
