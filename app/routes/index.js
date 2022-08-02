@@ -8,4 +8,6 @@ Router.group('/api/v1', () => {
     Router.get('/', IndexHandler, [ TestMiddleware ]);
 });
 
-export default Router.compile();
+Router.usePublicPath('./public');
+
+export default Router;

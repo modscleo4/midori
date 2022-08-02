@@ -7,11 +7,17 @@ export default class TestMiddleware extends Middleware {
      *
      * @param {Request} req
      * @param {Function} next
-     * @return {Promise<Response|void>}
+     * @return {Promise<Response>}
      */
     async process(req, next) {
-        console.log('TestMiddleware');
-        // return Response.json({message: 'TestMiddleware'});
-        await next();
+        if (req.headers['x-test-middleware'] === 'true') {
+            return Response.json({message: 'TestMiddleware'});
+        }
+
+        const response = await next(req);
+
+        console.log('TestMiddleware::status', response.status);
+
+        return response;
     }
 }

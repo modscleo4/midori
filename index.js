@@ -1,8 +1,8 @@
-import routes from './app/routes/index.js';
+import router from './app/routes/index.js';
 import Server from "./lib/Server.js";
 
 const server = new Server({
-    routes
+    router
 });
 
 const port = 3000;

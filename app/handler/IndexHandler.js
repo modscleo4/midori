@@ -9,6 +9,13 @@ export default class IndexHandler extends Handler {
      * @return {Promise<Response>}
      */
     async handle(req) {
-        return Response.json({message: "Hello World!", query: req.query});
+        return Response.json({
+            message: "Hello World!",
+            headers: req.headers,
+            query: [...req.query.keys()].reduce((acc, key) => {
+                acc[key] = req.query.get(key);
+                return acc;
+            }, {})
+        });
     }
 }
