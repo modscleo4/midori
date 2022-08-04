@@ -2,6 +2,7 @@ import Handler from "../../lib/Handler.js";
 import Request from "../../lib/Request.js";
 import Response from "../../lib/Response.js";
 import bin from "../lib/bin.js";
+import HTTPError from "../lib/HTTPError.js";
 
 export default class BinByIdHandler extends Handler {
     /**
@@ -12,15 +13,11 @@ export default class BinByIdHandler extends Handler {
     async get(req) {
         const id = req.params.get('id');
         if (!id) {
-            return Response.json({
-                message: "Invalid ID."
-            }).withStatus(400);
+            throw new HTTPError("Invalid ID.", 400);
         }
 
         if (!bin.has(id)) {
-            return Response.json({
-                message: "Bin not found."
-            }).withStatus(404);
+            throw new HTTPError('Bin not found.', 404);
         }
 
         const data = {
@@ -39,21 +36,15 @@ export default class BinByIdHandler extends Handler {
     async put(req) {
         const id = req.params.get('id');
         if (!id) {
-            return Response.json({
-                message: "Invalid ID."
-            }).withStatus(400);
+            throw new HTTPError("Invalid ID.", 400);
         }
 
         if (!bin.has(id)) {
-            return Response.json({
-                message: "Bin not found."
-            }).withStatus(404);
+            throw new HTTPError('Bin not found.', 404);
         }
 
         if (bin.get(id)?.user !== req.jwt.sub) {
-            return Response.json({
-                message: "You are not the owner of this bin."
-            }).withStatus(403);
+            throw new HTTPError('You are not the owner of this bin.', 403);
         }
 
         bin.set(id, {
@@ -77,21 +68,15 @@ export default class BinByIdHandler extends Handler {
     async patch(req) {
         const id = req.params.get('id');
         if (!id) {
-            return Response.json({
-                message: "Invalid ID."
-            }).withStatus(400);
+            throw new HTTPError("Invalid ID.", 400);
         }
 
         if (!bin.has(id)) {
-            return Response.json({
-                message: "Bin not found."
-            }).withStatus(404);
+            throw new HTTPError('Bin not found.', 404);
         }
 
         if (bin.get(id)?.user !== req.jwt.sub) {
-            return Response.json({
-                message: "You are not the owner of this bin."
-            }).withStatus(403);
+            throw new HTTPError('You are not the owner of this bin.', 403);
         }
 
         bin.set(id, {
@@ -115,21 +100,15 @@ export default class BinByIdHandler extends Handler {
     async delete(req) {
         const id = req.params.get('id');
         if (!id) {
-            return Response.json({
-                message: "Invalid ID."
-            }).withStatus(400);
+            throw new HTTPError("Invalid ID.", 400);
         }
 
         if (!bin.has(id)) {
-            return Response.json({
-                message: "Bin not found."
-            }).withStatus(404);
+            throw new HTTPError('Bin not found.', 404);
         }
 
         if (bin.get(id)?.user !== req.jwt.sub) {
-            return Response.json({
-                message: "You are not the owner of this bin."
-            }).withStatus(403);
+            throw new HTTPError('You are not the owner of this bin.', 403);
         }
 
         bin.delete(id);

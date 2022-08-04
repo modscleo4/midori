@@ -5,22 +5,25 @@ import BinHandler from '../handler/BinHandler.js';
 import BinByIdHandler from '../handler/BinByIdHandler.js';
 
 import AuthBearerMiddleware from '../middleware/AuthBearerMiddleware.js';
+import HTTPErrorMiddleware from '../middleware/HTTPErrorMiddleware.js';
 
 const Router = new RouterWrapper();
 
-Router.post('/oauth/token', Oauth2Handler);
+Router.group('', () => {
+    Router.post('/oauth/token', Oauth2Handler);
 
-Router.group('/bin', () => {
-    Router.get('/', BinHandler);
-    Router.post('/', BinHandler, [AuthBearerMiddleware]);
+    Router.group('/bin', () => {
+        Router.get('/', BinHandler);
+        Router.post('/', BinHandler, [AuthBearerMiddleware]);
 
-    Router.group('/{id}', () => {
-        Router.get('/', BinByIdHandler);
-        Router.put('/', BinByIdHandler, [AuthBearerMiddleware]);
-        Router.patch('/', BinByIdHandler, [AuthBearerMiddleware]);
-        Router.delete('/', BinByIdHandler, [AuthBearerMiddleware]);
+        Router.group('/{id}', () => {
+            Router.get('/', BinByIdHandler);
+            Router.put('/', BinByIdHandler, [AuthBearerMiddleware]);
+            Router.patch('/', BinByIdHandler, [AuthBearerMiddleware]);
+            Router.delete('/', BinByIdHandler, [AuthBearerMiddleware]);
+        });
     });
-});
+}, [HTTPErrorMiddleware]);
 
 Router.usePublicPath('./public');
 
