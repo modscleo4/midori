@@ -1,0 +1,24 @@
+{
+  "name": "apiframework",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "keywords": [],
+  "author": {
+    "name": "Dhiego Cassiano Fogaça Barbosa",
+    "email": "modscleo4@modscleo4.dev.br"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "connection-string": "^4.3.5",
+    "mime-types": "^2.1.35",
+    "pg": "^8.7.3"
+  },
+  "exports": {
+    ".": "./",
+    "./errors": "./errors",
+    "./middlewares": "./middlewares",
+    "./router": "./router",
+    "./util/*": "./util/*"
+  }
+}

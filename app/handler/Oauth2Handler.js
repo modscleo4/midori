@@ -1,7 +1,6 @@
-import Handler from "../../lib/Handler.js";
-import Request from "../../lib/Request.js";
-import Response from "../../lib/Response.js";
-import { generateJWT } from "../../lib/jwt.js";
+import { Handler, Request, Response } from "apiframework";
+import { HTTPError } from "apiframework/errors";
+import { generateJWT } from "apiframework/util/jwt.js";
 
 export default class Oauth2Handler extends Handler {
     /**
@@ -9,30 +8,9 @@ export default class Oauth2Handler extends Handler {
      * @param {Request} req
      * @return {Promise<Response>}
      */
-    async handle(req) {
-        if (!req.parsedBody || !req.parsedBody.grant_type) {
-            return Response.json({
-                message: "Invalid request."
-            }).withStatus(400);
-        }
-
-        switch (req.parsedBody.grant_type) {
-            case 'password':
-                return await this.handlePasswordGrant(req);
-            case 'refresh_token':
-                // return await this.handleRefreshTokenGrant(req);
-        }
-
-        return Response.json({
-            message: "Invalid request."
-        }).withStatus(400);
-    }
-
     async handlePasswordGrant(req) {
         if (!req.parsedBody.username || !req.parsedBody.password) {
-            return Response.json({
-                message: "Invalid request."
-            }).withStatus(400);
+            throw new HTTPError("Invalid request.", 400);
         }
 
         const scope = req.parsedBody.scope || "";
@@ -54,5 +32,34 @@ export default class Oauth2Handler extends Handler {
             token_type: 'Bearer',
             scope,
         }).withStatus(201);
+    }
+
+    /**
+     *
+     * @param {Request} req
+     * @return {Promise<Response>}
+     */
+    async handleRefreshTokenGrant(req) {
+        throw new HTTPError("Invalid request.", 400);
+    }
+
+    /**
+     *
+     * @param {Request} req
+     * @return {Promise<Response>}
+     */
+    async handle(req) {
+        if (!req.parsedBody || !req.parsedBody.grant_type) {
+            throw new HTTPError("Invalid request.", 400);
+        }
+
+        switch (req.parsedBody.grant_type) {
+            case 'password':
+                return await this.handlePasswordGrant(req);
+            case 'refresh_token':
+                return await this.handleRefreshTokenGrant(req);
+        }
+
+        throw new HTTPError("Invalid request.", 400);
     }
 }

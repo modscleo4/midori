@@ -1,8 +1,7 @@
-import Handler from "../../lib/Handler.js";
-import Request from "../../lib/Request.js";
-import Response from "../../lib/Response.js";
-import bin from "../lib/bin.js";
-import HTTPError from "../lib/HTTPError.js";
+import { Handler, Request, Response } from "apiframework";
+import { HTTPError } from "apiframework/errors";
+
+import Bin from "../model/Bin.js";
 
 export default class BinByIdHandler extends Handler {
     /**
@@ -16,16 +15,12 @@ export default class BinByIdHandler extends Handler {
             throw new HTTPError("Invalid ID.", 400);
         }
 
-        if (!bin.has(id)) {
+        const bin = await Bin.get(id);
+        if (!bin) {
             throw new HTTPError('Bin not found.', 404);
         }
 
-        const data = {
-            id,
-            ...bin.get(id)
-        };
-
-        return Response.json(data);
+        return Response.json(bin);
     }
 
     /**
@@ -39,25 +34,25 @@ export default class BinByIdHandler extends Handler {
             throw new HTTPError("Invalid ID.", 400);
         }
 
-        if (!bin.has(id)) {
+        const bin = await Bin.get(id);
+
+        if (!bin) {
             throw new HTTPError('Bin not found.', 404);
         }
 
-        if (bin.get(id)?.user !== req.jwt.sub) {
+        if (bin.username !== req.jwt.sub) {
             throw new HTTPError('You are not the owner of this bin.', 403);
         }
 
-        bin.set(id, {
-            user: req.jwt.sub,
-            content: req.parsedBody
-        });
+        if (!req.parsedBody) {
+            throw new HTTPError("Invalid body.", 400);
+        }
 
-        const data = {
-            id,
-            ...bin.get(id)
-        };
+        bin.content = req.parsedBody;
 
-        return Response.json(data);
+        await Bin.save(bin);
+
+        return Response.json(bin);
     }
 
     /**
@@ -71,25 +66,25 @@ export default class BinByIdHandler extends Handler {
             throw new HTTPError("Invalid ID.", 400);
         }
 
-        if (!bin.has(id)) {
+        const bin = await Bin.get(id);
+
+        if (!bin) {
             throw new HTTPError('Bin not found.', 404);
         }
 
-        if (bin.get(id)?.user !== req.jwt.sub) {
+        if (bin.username !== req.jwt.sub) {
             throw new HTTPError('You are not the owner of this bin.', 403);
         }
 
-        bin.set(id, {
-            user: req.jwt.sub,
-            content: req.parsedBody
-        });
+        if (!req.parsedBody) {
+            throw new HTTPError("Invalid body.", 400);
+        }
 
-        const data = {
-            id,
-            ...bin.get(id)
-        };
+        bin.content = req.parsedBody;
 
-        return Response.json(data);
+        await Bin.save(bin);
+
+        return Response.json(bin);
     }
 
     /**
@@ -103,17 +98,19 @@ export default class BinByIdHandler extends Handler {
             throw new HTTPError("Invalid ID.", 400);
         }
 
-        if (!bin.has(id)) {
+        const bin = await Bin.get(id);
+
+        if (!bin) {
             throw new HTTPError('Bin not found.', 404);
         }
 
-        if (bin.get(id)?.user !== req.jwt.sub) {
+        if (bin.username !== req.jwt.sub) {
             throw new HTTPError('You are not the owner of this bin.', 403);
         }
 
-        bin.delete(id);
+        await Bin.delete(bin);
 
-        return Response.status(204);
+        return Response.empty();
     }
 
     /**
@@ -123,7 +120,6 @@ export default class BinByIdHandler extends Handler {
      */
     async handle(req) {
         switch (req.method) {
-            case 'HEAD':
             case 'GET':
                 return await this.get(req);
 

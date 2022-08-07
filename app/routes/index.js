@@ -1,29 +1,38 @@
-import { Router as RouterWrapper } from '../../lib/Router.js';
+import { Router as RouterWrapper } from 'apiframework/router';
 
 import Oauth2Handler from '../handler/Oauth2Handler.js';
 import BinHandler from '../handler/BinHandler.js';
 import BinByIdHandler from '../handler/BinByIdHandler.js';
 
 import AuthBearerMiddleware from '../middleware/AuthBearerMiddleware.js';
-import HTTPErrorMiddleware from '../middleware/HTTPErrorMiddleware.js';
+import { HTTPErrorMiddleware, ParseBodyMiddleware } from 'apiframework/middlewares';
 
 const Router = new RouterWrapper();
 
-Router.group('', () => {
-    Router.post('/oauth/token', Oauth2Handler);
+/**
+ * Routing
+ *
+ * Define your routes here
+ * Use the Router.get(), Router.post(), Router.put(), Router.patch, Router.delete() methods to define your routes
+ * Use the Router.group() method to group routes under a common prefix
+ * Use the Router.usePublicPath() method to define a public path to serve static files from
+ */
 
-    Router.group('/bin', () => {
-        Router.get('/', BinHandler);
-        Router.post('/', BinHandler, [AuthBearerMiddleware]);
+Router.pipeline([ParseBodyMiddleware, HTTPErrorMiddleware]);
 
-        Router.group('/{id}', () => {
-            Router.get('/', BinByIdHandler);
-            Router.put('/', BinByIdHandler, [AuthBearerMiddleware]);
-            Router.patch('/', BinByIdHandler, [AuthBearerMiddleware]);
-            Router.delete('/', BinByIdHandler, [AuthBearerMiddleware]);
-        });
+Router.post('/oauth/token', Oauth2Handler).withName('oauth.token');
+
+Router.group('/bin', () => {
+    Router.get('/', BinHandler).withName('bin.list');
+    Router.post('/', BinHandler, [AuthBearerMiddleware]).withName('bin.create');
+
+    Router.group('/{id}', () => {
+        Router.get('/', BinByIdHandler).withName('bin.get');
+        Router.put('/', BinByIdHandler, [AuthBearerMiddleware]).withName('bin.update');
+        Router.patch('/', BinByIdHandler, [AuthBearerMiddleware]).withName('bin.patch');
+        Router.delete('/', BinByIdHandler, [AuthBearerMiddleware]).withName('bin.delete');
     });
-}, [HTTPErrorMiddleware]);
+});
 
 Router.usePublicPath('./public');
 

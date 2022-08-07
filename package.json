@@ -1,11 +1,11 @@
 {
-  "name": "apiframework",
+  "name": "bin-app",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --inspect index.js",
+    "dev": "nodemon --inspect --experimental-specifier-resolution=node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,6 +15,8 @@
     "nodemon": "^2.0.19"
   },
   "dependencies": {
-    "dotenv": "^16.0.1"
+    "@prisma/client": "^4.1.1",
+    "dotenv": "^16.0.1",
+    "prisma": "^4.1.1"
   }
 }
