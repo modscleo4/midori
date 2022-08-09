@@ -1,25 +1,22 @@
-import { createServer, IncomingMessage, ServerResponse } from 'http';
+import { createServer, IncomingMessage, ServerResponse, Server as HTTPServer } from 'http';
 
 import Request from "./Request.js";
-import Router from './router/Router.js';
+import Router from '../router/Router.js';
+import Logger from '../log/logger.js';
 
 export default class Server {
-    /** @type {Router} */
-    #router;
+    #router: Router;
+    #logger: Logger;
+    #server: HTTPServer;
 
-    constructor(options) {
+    constructor(options: { router: Router, logger: Logger }) {
         this.#router = options.router;
+        this.#logger = options.logger;
 
-        this.server = createServer(async (req, res) => await this.process(req, res));
+        this.#server = createServer(async (req, res) => await this.process(req, res));
     }
 
-    /**
-     *
-     * @param {IncomingMessage} req
-     * @param {ServerResponse} res
-     * @returns
-     */
-    async process(req, res) {
+    async process(req: IncomingMessage, res: ServerResponse): Promise<void> {
         const request = new Request(req);
 
         try {
@@ -39,16 +36,16 @@ export default class Server {
 
             response.body.pipe(res, { end: true });
         } catch (e) {
-            console.error(e);
+            this.#logger.error('Unhandled Error', e);
 
             res.statusCode = 500;
             res.end();
         } finally {
-            console.log(`${request.method} ${request.path} ${res.statusCode}`);
+            this.#logger.debug(`${request.method} ${request.path} ${res.statusCode}`);
         }
     }
 
-    listen(port = 80) {
-        return this.server.listen(port);
+    listen(port: number = 80): HTTPServer {
+        return this.#server.listen(port);
     }
 }

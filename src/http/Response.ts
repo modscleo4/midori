@@ -3,37 +3,21 @@ import { Readable } from "stream";
 let allowBody = true;
 
 export default class Response {
-    /** @type {Map<string, string>} */
-    #headers = new Map();
-
-    /** @type {number} */
-    #status = 200;
-
-    /** @type {Buffer[]} */
-    #body = [];
+    #headers = new Map<string, string>();
+    #status: number = 200;
+    #body: Buffer[] = [];
 
     constructor() {
 
     }
 
-    /**
-     *
-     * @param {string} key
-     * @param {string} value
-     * @return {Response}
-     */
-    withHeader(key, value) {
+    withHeader(key: string, value: string): Response {
         this.#headers.set(key, value);
 
         return this;
     }
 
-    /**
-     *
-     * @param {Buffer} data
-     * @return {Response}
-     */
-    send(data) {
+    send(data: Buffer): Response {
         if (allowBody) {
             this.#body.push(data);
         }
@@ -41,24 +25,14 @@ export default class Response {
         return this;
     }
 
-    /**
-     *
-     * @param {*} data
-     * @return {Response}
-     */
-    json(data) {
+    json(data: any): Response {
         this.withHeader('Content-Type', 'application/json')
             .send(Buffer.from(JSON.stringify(data)));
 
         return this;
     }
 
-    /**
-     *
-     * @param {number} code
-     * @return {Response}
-     */
-    withStatus(code) {
+    withStatus(code: number): Response {
         this.#status = code;
 
         return this;
@@ -94,40 +68,22 @@ export default class Response {
         return this.#body.reduce((acc, chunk) => acc + chunk.length, 0);
     }
 
-    /**
-     *
-     * @param {Buffer} data
-     * @return {Response}
-     */
-    static send(data) {
+    static send(data: Buffer): Response {
         return new Response()
             .send(data);
     }
 
-    /**
-     *
-     * @param {*} data
-     * @return {Response}
-     */
-    static json(data) {
-        return new Response().json(data);
+    static json(data: any): Response {
+        return new Response()
+            .json(data);
     }
 
-    /**
-     *
-     * @param {number} code
-     * @return {Response}
-     */
-    static status(code) {
+    static status(code: number): Response {
         return new Response()
             .withStatus(code);
     }
 
-    /**
-     *
-     * @return {Response}
-     */
-    static empty() {
+    static empty(): Response {
         return new Response()
             .withStatus(204);
     }
@@ -135,9 +91,8 @@ export default class Response {
     /**
      *
      * @package
-     * @param {boolean} allow
      */
-    static allowBody(allow) {
+    static allowBody(allow: boolean): void {
         allowBody = allow;
     }
 }

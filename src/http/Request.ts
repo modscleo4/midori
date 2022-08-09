@@ -1,42 +1,22 @@
-import { IncomingMessage } from "http";
+import { IncomingMessage, IncomingHttpHeaders } from "http";
+import { Payload } from "../util/jwt.js";
 
 let hideHeadMethod = false;
 
 export default class Request {
-    /** @type {IncomingMessage} */
-    #req;
-
-    /** @type {import('http').IncomingHttpHeaders} */
-    #headers;
-
-    /** @type {URLSearchParams} */
-    #query;
-
-    /** @type {Map<string, string>} */
-    #params = new Map();
-
-    /** @type {string} */
-    #method;
-
-    /** @type {string} */
-    #path;
-
-    /** @type {string} */
-    #body = '';
-
-    /** @type {*} */
+    #req: IncomingMessage;
+    #headers: IncomingHttpHeaders;
+    #query: URLSearchParams;
+    #params = new Map<string, string>();
+    #method: string;
+    #path: string;
+    #body: string = '';
     #parsedBody = undefined;
+    #jwt: Payload;
 
-    /** @type {import('./util/jwt.js').Payload} */
-    #jwt;
+    static maxBodySize: number = 1024 * 1024;
 
-    static maxBodySize = 1024 * 1024;
-
-    /**
-     *
-     * @param {IncomingMessage} req
-     */
-    constructor(req) {
+    constructor(req: IncomingMessage) {
         this.#req = req;
 
         const url = new URL(req.url ?? '', `http://${req.headers.host}`);
@@ -48,16 +28,15 @@ export default class Request {
     }
 
     /**
+     *
      * @package
-     * @return {Promise<void>}
      */
-    async readBody() {
+    async readBody(): Promise<void> {
         // Wait for the body to be fully read before processing the request
         await new Promise((resolve, reject) => {
             let len = 0;
             this.#req.on('readable', () => {
-                /** @type {Buffer} */
-                let chunk;
+                let chunk: Buffer;
                 while ((chunk = this.#req.read(1024)) !== null) {
                     len += chunk.length;
                     if (len > Request.maxBodySize) {
@@ -76,9 +55,8 @@ export default class Request {
     /**
      *
      * @package
-     * @return {void}
      */
-    parseBody() {
+    parseBody(): void {
         if (!this.#body) {
             return;
         }
@@ -94,14 +72,14 @@ export default class Request {
             }
 
             this.#parsedBody = obj;
-        } else if (this.#headers['content-type']?.startsWith('text/xml')) {
+        } /* else if (this.#headers['content-type']?.startsWith('text/xml')) {
             const parser = new DOMParser();
             this.#parsedBody = parser.parseFromString(this.#body, 'text/xml');
 
             if (this.#parsedBody.documentElement.nodeName === 'parsererror') {
                 throw new Error('Invalid XML');
             }
-        } else if (this.#headers['content-type']?.startsWith('text/plain')) {
+        }*/ else if (this.#headers['content-type']?.startsWith('text/plain')) {
             this.#parsedBody = this.#body;
         } else {
             throw new Error('Unsupported content type');
@@ -155,9 +133,8 @@ export default class Request {
     /**
      *
      * @package
-     * @param {boolean} hide
      */
-    static hideHeadMethod(hide) {
+    static hideHeadMethod(hide: boolean): void {
         hideHeadMethod = hide;
     }
 }

@@ -1,44 +1,24 @@
-/**
- * @callback RouterGroupCallback
- * @param {Router} Router
- * @return {void}
- */
-
 import { existsSync, statSync } from 'fs';
 import { readFile } from 'fs/promises';
 import { lookup } from 'mime-types';
 
-import Handler from "../Handler.js";
-import Middleware from "../Middleware.js";
-import Request from "../Request.js";
-import Response from '../Response.js';
+import Handler from "../http/Handler.js";
+import Middleware from "../http/Middleware.js";
+import Request from "../http/Request.js";
+import Response from '../http/Response.js';
 import Route from "./Route.js";
 
 export default class Router {
-    /** @type {string} */
-    #prefix = '';
+    #prefix: string = '';
+    #middlewares: typeof Middleware[] = [];
+    #routes: Route[] = [];
+    #publicPath: string | null = null;
 
-    /** @type {typeof Middleware[]} */
-    #middlewares = [];
-
-    /** @type {Route[]} */
-    #routes = [];
-
-    /** @type {string?} */
-    #publicPath = null;
-
-    /**
-     *
-     * @param {string} method
-     * @param {string} path
-     * @param {typeof Handler} handler
-     * @param {typeof Middleware[]} middlewares
-     */
-    #addRoute(method, path, handler, middlewares = []) {
+    #addRoute(method: string, path: string, handler: new () => Handler, middlewares: (new () => Middleware)[] = []) {
         Router.validatePath(path);
 
         const handlerInstance = new handler();
-        const middlewaresInstances = this.#middlewares.concat(middlewares).map(m => new m());
+        const middlewaresInstances = this.#middlewares.concat(middlewares).map((m: new () => Middleware) => new m());
 
         const route = new Route(method, this.#prefix + path, handlerInstance, middlewaresInstances);
         this.#routes.push(route);
@@ -46,69 +26,27 @@ export default class Router {
         return route;
     }
 
-    /**
-     *
-     * @param {string} path
-     * @param {typeof Handler} handler
-     * @param {typeof Middleware[]} middlewares
-     * @return {Route}
-     */
-    get(path, handler, middlewares = []) {
+    get(path: string, handler: new () => Handler, middlewares: (new () => Middleware)[] = []): Route {
         return this.#addRoute('GET', path, handler, middlewares);
     }
 
-    /**
-     *
-     * @param {string} path
-     * @param {typeof Handler} handler
-     * @param {typeof Middleware[]} middlewares
-     * @return {Route}
-     */
-    post(path, handler, middlewares = []) {
+    post(path: string, handler: new () => Handler, middlewares: (new () => Middleware)[] = []): Route {
         return this.#addRoute('POST', path, handler, middlewares);
     }
 
-    /**
-     *
-     * @param {string} path
-     * @param {typeof Handler} handler
-     * @param {typeof Middleware[]} middlewares
-     * @return {Route}
-     */
-    put(path, handler, middlewares = []) {
+    put(path: string, handler: new () => Handler, middlewares: (new () => Middleware)[] = []): Route {
         return this.#addRoute('PUT', path, handler, middlewares);
     }
 
-    /**
-     *
-     * @param {string} path
-     * @param {typeof Handler} handler
-     * @param {typeof Middleware[]} middlewares
-     * @return {Route}
-     */
-    patch(path, handler, middlewares = []) {
+    patch(path: string, handler: new () => Handler, middlewares: (new () => Middleware)[] = []): Route {
         return this.#addRoute('PATCH', path, handler, middlewares);
     }
 
-    /**
-     *
-     * @param {string} path
-     * @param {typeof Handler} handler
-     * @param {typeof Middleware[]} middlewares
-     * @return {Route}
-     */
-    delete(path, handler, middlewares = []) {
+    delete(path: string, handler: new () => Handler, middlewares: (new () => Middleware)[] = []): Route {
         return this.#addRoute('DELETE', path, handler, middlewares);
     }
 
-    /**
-     *
-     * @param {string} prefix
-     * @param {RouterGroupCallback} groupCallback
-     * @param {typeof Middleware[]} middlewares
-     * @return {void}
-     */
-    group(prefix, groupCallback, middlewares = []) {
+    group(prefix: string, groupCallback: (Router: Router) => void, middlewares: (new () => Middleware)[] = []): void {
         Router.validatePath(prefix);
 
         const _prefix = this.#prefix;
@@ -124,19 +62,12 @@ export default class Router {
 
     /**
      * Applies middlewares to all routes in the group.
-     *
-     * @param {typeof Middleware[]} middlewares
-     * @return {void}
      */
-    pipeline(middlewares) {
+    pipeline(middlewares: (new () => Middleware)[]): void {
         this.#middlewares = this.#middlewares.concat(middlewares);
     }
 
-    /**
-     *
-     * @param {string} path
-     */
-    usePublicPath(path) {
+    usePublicPath(path: string): void {
         if (!existsSync(path) || !statSync(path).isDirectory()) {
             throw new Error('Path does not exist or is not a directory.');
         }
@@ -147,10 +78,8 @@ export default class Router {
     /**
      *
      * @package
-     * @param {string} path
-     * @return {Route[]}
      */
-    find(path) {
+    find(path: string): Route[] {
         const routes = this.#routes.filter(r => {
             const parts = path.split('/');
             const routeParts = r.path.split('/');
@@ -178,10 +107,8 @@ export default class Router {
     /**
      *
      * @package
-     * @param {Request} request
-     * @return {Promise<Response>}
      */
-    async process(request) {
+    async process(request: Request): Promise<Response> {
         const routes = this.find(request.path);
 
         // Check if a matching route was found
@@ -237,20 +164,14 @@ export default class Router {
             // The status code for a server error is 500
             const response = Response.status(500);
             if (!!process.env.EXPOSE_ERRORS) {
-                response.json({message: e.message, stack: e.stack.split('\n')});
+                response.json({ message: e.message, stack: e.stack.split('\n') });
             }
 
             return response;
         }
     }
 
-    /**
-     *
-     * @private
-     * @param {string} path
-     * @return {boolean}
-     */
-    static validatePath(path) {
+    private static validatePath(path: string): boolean {
         if (!path.startsWith('/')) {
             // throw new Error('Path must start with "/".');
         }

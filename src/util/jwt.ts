@@ -1,26 +1,18 @@
-import crypto from 'crypto';
+import { createHmac } from 'crypto';
 
-/**
- * @typedef {Object} Header
- * @property {string} alg
- * @property {string} typ
- */
+export type Header = {
+    alg: string,
+    typ: string,
+}
 
-/**
- * @typedef {Object} Payload
- * @property {string} sub
- * @property {number} exp
- * @property {number} iat
- */
+export type Payload = {
+    sub: string,
+    exp: number,
+    iat: number,
+}
 
-/**
- *
- * @param {Payload} payload
- * @return {string}
- */
-export function generateJWT(payload) {
-    /** @type {Header} */
-    const header = {
+export function generateJWT(payload: Payload): string {
+    const header: Header = {
         "alg": "HS256",
         "typ": "JWT"
     };
@@ -30,23 +22,17 @@ export function generateJWT(payload) {
 
     const secret = process.env.JWT_SECRET ?? 'secret';
 
-    const hmac = crypto.createHmac("sha256", secret);
+    const hmac = createHmac("sha256", secret);
 
     const signature = hmac.update(headerBase64 + '.' + payloadBase64).digest('base64url');
 
     return headerBase64 + '.' + payloadBase64 + '.' + signature;
 }
 
-/**
- *
- * @param {string} token
- * @return {boolean}
- */
-export function validateJWT(token) {
+export function validateJWT(token: string): boolean {
     const [headerBase64, payloadBase64, signature] = token.split('.');
 
-    /** @type {Header} */
-    const header = JSON.parse(Buffer.from(headerBase64, 'base64url').toString('utf8'));
+    const header: Header = JSON.parse(Buffer.from(headerBase64, 'base64url').toString('utf8'));
 
     if (!(typeof header === 'object' && header.hasOwnProperty('alg') && header.hasOwnProperty('typ'))) {
         return false;
@@ -58,7 +44,7 @@ export function validateJWT(token) {
 
     const secret = process.env.JWT_SECRET ?? 'secret';
 
-    const hmac = crypto.createHmac("sha256", secret);
+    const hmac = createHmac("sha256", secret);
 
     const computedSignature = hmac.update(headerBase64 + '.' + payloadBase64).digest('base64url');
 

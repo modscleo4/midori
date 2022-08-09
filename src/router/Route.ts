@@ -1,32 +1,16 @@
-import Handler from "../Handler.js";
-import Middleware from "../Middleware.js";
-import Request from "../Request.js";
-import Response from "../Response.js";
+import Handler from "../http/Handler.js";
+import Middleware from "../http/Middleware.js";
+import Request from "../http/Request.js";
+import Response from "../http/Response.js";
 
 export default class Route {
-    /** @type {string} */
-    #method;
+    #method: string;
+    #path: string;
+    #handler: Handler;
+    #middlewares: Middleware[];
+    #name: string;
 
-    /** @type {string} */
-    #path;
-
-    /** @type {Handler} */
-    #handler;
-
-    /** @type {Middleware[]} */
-    #middlewares;
-
-    /** @type {string} */
-    #name;
-
-    /**
-     *
-     * @param {string} method
-     * @param {string} path
-     * @param {Handler} handler
-     * @param {Middleware[]} middlewares
-     */
-    constructor(method, path, handler, middlewares) {
+    constructor(method: string, path: string, handler: Handler, middlewares: Middleware[]) {
         this.#method = method;
         this.#path = path + (path.endsWith('/') ? '' : '/');
         this.#handler = handler;
@@ -52,18 +36,12 @@ export default class Route {
     /**
      *
      * @package
-     * @param {Request} req
-     * @return {Promise<Response>}
      */
-    async handle(req) {
+    async handle(req: Request): Promise<Response> {
         const middlewares = this.#middlewares;
         let index = 0;
 
-        /**
-         * @param {Request} req
-         * @return {Promise<Response>}
-         */
-        const next = async req => {
+        const next = async (req: Request): Promise<Response> => {
             if (index == middlewares.length) {
                 // No more middlewares to process
                 return await this.#handler.handle(req);
@@ -78,10 +56,8 @@ export default class Route {
     /**
      *
      * @package
-     * @param {string} path
-     * @return {Map<string, string>}
      */
-    getParams(path) {
+    getParams(path: string): Map<string, string> {
         const parts = path.split('/');
         const routeParts = this.path.split('/');
 
@@ -96,12 +72,7 @@ export default class Route {
         return params;
     }
 
-    /**
-     *
-     * @param {string} name
-     * @return {Route}
-     */
-    withName(name) {
+    withName(name: string): Route {
         this.#name = name;
 
         return this;
