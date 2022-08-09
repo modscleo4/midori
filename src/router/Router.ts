@@ -75,10 +75,7 @@ export default class Router {
         this.#publicPath = path;
     }
 
-    /**
-     *
-     * @package
-     */
+    /** @internal */
     find(path: string): Route[] {
         const routes = this.#routes.filter(r => {
             const parts = path.split('/');
@@ -104,10 +101,7 @@ export default class Router {
         return routes;
     }
 
-    /**
-     *
-     * @package
-     */
+    /** @internal */
     async process(request: Request): Promise<Response> {
         const routes = this.find(request.path);
 

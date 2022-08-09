@@ -27,10 +27,7 @@ export default class Request {
         this.#path = url.pathname + (url.pathname.endsWith('/') ? '' : '/');
     }
 
-    /**
-     *
-     * @package
-     */
+    /** @internal */
     async readBody(): Promise<void> {
         // Wait for the body to be fully read before processing the request
         await new Promise((resolve, reject) => {
@@ -52,10 +49,7 @@ export default class Request {
         });
     }
 
-    /**
-     *
-     * @package
-     */
+    /** @internal */
     parseBody(): void {
         if (!this.#body) {
             return;
@@ -130,10 +124,7 @@ export default class Request {
         this.#jwt = jwt;
     }
 
-    /**
-     *
-     * @package
-     */
+    /** @internal */
     static hideHeadMethod(hide: boolean): void {
         hideHeadMethod = hide;
     }

@@ -88,10 +88,7 @@ export default class Response {
             .withStatus(204);
     }
 
-    /**
-     *
-     * @package
-     */
+    /** @internal */
     static allowBody(allow: boolean): void {
         allowBody = allow;
     }

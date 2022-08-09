@@ -18,6 +18,10 @@
     "dist/",
     "package.json"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/modscleo4/apiframework.git"
+  },
   "exports": {
     "./errors": {
       "import": {

@@ -2,7 +2,7 @@ import { createServer, IncomingMessage, ServerResponse, Server as HTTPServer } f
 
 import Request from "./Request.js";
 import Router from '../router/Router.js';
-import Logger from '../log/logger.js';
+import Logger from '../log/Logger.js';
 
 export default class Server {
     #router: Router;

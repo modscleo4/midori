@@ -33,10 +33,7 @@ export default class Route {
         return this.#middlewares;
     }
 
-    /**
-     *
-     * @package
-     */
+    /** @internal */
     async handle(req: Request): Promise<Response> {
         const middlewares = this.#middlewares;
         let index = 0;
@@ -53,10 +50,7 @@ export default class Route {
         return await next(req);
     }
 
-    /**
-     *
-     * @package
-     */
+    /** @internal */
     getParams(path: string): Map<string, string> {
         const parts = path.split('/');
         const routeParts = this.path.split('/');
