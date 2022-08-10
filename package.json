@@ -11,6 +11,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "remove-private": "",
+    "clean": "tsc -b --clean",
     "build": "tsc && npm run remove-private",
     "postinstall": "npm run build"
   },

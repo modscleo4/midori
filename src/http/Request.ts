@@ -11,8 +11,8 @@ export default class Request {
     #method: string;
     #path: string;
     #body: string = '';
-    #parsedBody = undefined;
-    #jwt: Payload;
+    #parsedBody: any = undefined;
+    #jwt?: Payload;
 
     static maxBodySize: number = 1024 * 1024;
 
@@ -60,7 +60,7 @@ export default class Request {
         } else if (this.#headers['content-type']?.startsWith('application/x-www-form-urlencoded')) {
             const parsed = new URLSearchParams(this.#body);
 
-            const obj = {};
+            const obj: Record<string, string> = {};
             for (const [key, value] of parsed) {
                 obj[key] = value;
             }

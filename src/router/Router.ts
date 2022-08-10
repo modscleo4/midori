@@ -7,18 +7,19 @@ import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from '../http/Response.js';
 import Route from "./Route.js";
+import { Constructor } from "../util/types.js";
 
 export default class Router {
     #prefix: string = '';
-    #middlewares: typeof Middleware[] = [];
+    #middlewares: Constructor<Middleware>[] = [];
     #routes: Route[] = [];
     #publicPath: string | null = null;
 
-    #addRoute(method: string, path: string, handler: new () => Handler, middlewares: (new () => Middleware)[] = []) {
+    #addRoute(method: string, path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []) {
         Router.validatePath(path);
 
         const handlerInstance = new handler();
-        const middlewaresInstances = this.#middlewares.concat(middlewares).map((m: new () => Middleware) => new m());
+        const middlewaresInstances = this.#middlewares.concat(middlewares).map(m => new m());
 
         const route = new Route(method, this.#prefix + path, handlerInstance, middlewaresInstances);
         this.#routes.push(route);
@@ -26,27 +27,27 @@ export default class Router {
         return route;
     }
 
-    get(path: string, handler: new () => Handler, middlewares: (new () => Middleware)[] = []): Route {
+    get(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
         return this.#addRoute('GET', path, handler, middlewares);
     }
 
-    post(path: string, handler: new () => Handler, middlewares: (new () => Middleware)[] = []): Route {
+    post(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
         return this.#addRoute('POST', path, handler, middlewares);
     }
 
-    put(path: string, handler: new () => Handler, middlewares: (new () => Middleware)[] = []): Route {
+    put(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
         return this.#addRoute('PUT', path, handler, middlewares);
     }
 
-    patch(path: string, handler: new () => Handler, middlewares: (new () => Middleware)[] = []): Route {
+    patch(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
         return this.#addRoute('PATCH', path, handler, middlewares);
     }
 
-    delete(path: string, handler: new () => Handler, middlewares: (new () => Middleware)[] = []): Route {
+    delete(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
         return this.#addRoute('DELETE', path, handler, middlewares);
     }
 
-    group(prefix: string, groupCallback: (Router: Router) => void, middlewares: (new () => Middleware)[] = []): void {
+    group(prefix: string, groupCallback: (Router: Router) => void, middlewares: Constructor<Middleware>[] = []): void {
         Router.validatePath(prefix);
 
         const _prefix = this.#prefix;
@@ -63,7 +64,7 @@ export default class Router {
     /**
      * Applies middlewares to all routes in the group.
      */
-    pipeline(middlewares: (new () => Middleware)[]): void {
+    pipeline(middlewares: Constructor<Middleware>[]): void {
         this.#middlewares = this.#middlewares.concat(middlewares);
     }
 
@@ -157,8 +158,8 @@ export default class Router {
         } catch (e) {
             // The status code for a server error is 500
             const response = Response.status(500);
-            if (!!process.env.EXPOSE_ERRORS) {
-                response.json({ message: e.message, stack: e.stack.split('\n') });
+            if (!!process.env.EXPOSE_ERRORS && e instanceof Error) {
+                response.json({ message: e.message, stack: e.stack?.split('\n') });
             }
 
             return response;

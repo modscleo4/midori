@@ -1,9 +1,10 @@
+import { OutgoingHttpHeader } from "http";
 import { Readable } from "stream";
 
 let allowBody = true;
 
 export default class Response {
-    #headers = new Map<string, string>();
+    #headers = new Map<string, OutgoingHttpHeader>();
     #status: number = 200;
     #body: Buffer[] = [];
 
@@ -11,7 +12,7 @@ export default class Response {
 
     }
 
-    withHeader(key: string, value: string): Response {
+    withHeader(key: string, value: OutgoingHttpHeader): Response {
         this.#headers.set(key, value);
 
         return this;
@@ -52,7 +53,7 @@ export default class Response {
         let offset = 0;
         return new Readable({
             read(size) {
-                const chunk = buffer.slice(offset, offset + size);
+                const chunk = buffer.subarray(offset, offset + size);
                 offset += chunk.length;
 
                 if (chunk.length === 0) {

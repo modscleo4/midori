@@ -8,7 +8,7 @@ export default class Route {
     #path: string;
     #handler: Handler;
     #middlewares: Middleware[];
-    #name: string;
+    #name?: string;
 
     constructor(method: string, path: string, handler: Handler, middlewares: Middleware[]) {
         this.#method = method;
@@ -31,6 +31,10 @@ export default class Route {
 
     get middlewares() {
         return this.#middlewares;
+    }
+
+    get name() {
+        return this.#name;
     }
 
     /** @internal */

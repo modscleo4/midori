@@ -9,6 +9,9 @@
         "sourceMap": true,
         "declaration": true,
         "stripInternal": true,
+        "strict": true,
+        "pretty": true,
+        "experimentalDecorators": true,
         "outDir": "./dist"
     },
     "include": [

@@ -1,67 +1,18 @@
-import Logger from "./Logger.js";
+import Logger, { LogLevel } from "./Logger.js";
 
 export default class ConsoleLogger extends Logger {
-    emergency(message: string, context?: any): void {
-        if (context !== undefined) {
-            console.error(message, context);
-        } else {
-            console.error(message);
+    log(level: LogLevel, message: string, context?: any): void {
+        if (level < this.minLevel) {
+            return;
         }
-    }
 
-    alert(message: string, context?: any): void {
-        if (context !== undefined) {
-            console.error(message, context);
-        } else {
-            console.error(message);
-        }
-    }
+        const logMessage = `${LogLevel[level]}: ${message}`;
+        const fn = level < LogLevel.WARNING ? console.log : console.error;
 
-    critical(message: string, context?: any): void {
         if (context !== undefined) {
-            console.error(message, context);
+            fn(logMessage, context);
         } else {
-            console.error(message);
-        }
-    }
-
-    error(message: string, context?: any): void {
-        if (context !== undefined) {
-            console.error(message, context);
-        } else {
-            console.error(message);
-        }
-    }
-
-    warning(message: string, context?: any): void {
-        if (context !== undefined) {
-            console.log(message, context);
-        } else {
-            console.log(message);
-        }
-    }
-
-    notice(message: string, context?: any): void {
-        if (context !== undefined) {
-            console.log(message, context);
-        } else {
-            console.log(message);
-        }
-    }
-
-    info(message: string, context?: any): void {
-        if (context !== undefined) {
-            console.log(message, context);
-        } else {
-            console.log(message);
-        }
-    }
-
-    debug(message: string, context?: any): void {
-        if (context !== undefined) {
-            console.log(message, context);
-        } else {
-            console.log(message);
+            fn(logMessage);
         }
     }
 }
