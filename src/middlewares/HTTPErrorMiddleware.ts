@@ -1,10 +1,10 @@
-import Middleware, { NextFunction } from "../http/Middleware.js";
+import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import HTTPError from "../errors/HTTPError.js";
 
 export default class HTTPErrorMiddleware extends Middleware {
-    async process(req: Request, next: NextFunction): Promise<Response> {
+    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         try {
             return await next(req);
         } catch (e) {

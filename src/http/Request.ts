@@ -1,5 +1,5 @@
 import { IncomingMessage, IncomingHttpHeaders } from "http";
-import { Payload } from "../util/jwt.js";
+import Container from "../app/Container.js";
 
 let hideHeadMethod = false;
 
@@ -12,12 +12,13 @@ export default class Request {
     #path: string;
     #body: string = '';
     #parsedBody: any = undefined;
-    #jwt?: Payload;
+    #container: Container;
 
     static maxBodySize: number = 1024 * 1024;
 
-    constructor(req: IncomingMessage) {
+    constructor(req: IncomingMessage, container: Container) {
         this.#req = req;
+        this.#container = container;
 
         const url = new URL(req.url ?? '', `http://${req.headers.host}`);
 
@@ -116,12 +117,8 @@ export default class Request {
         return this.#parsedBody;
     }
 
-    get jwt() {
-        return this.#jwt;
-    }
-
-    set jwt(jwt) {
-        this.#jwt = jwt;
+    get container() {
+        return this.#container;
     }
 
     /** @internal */

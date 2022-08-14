@@ -12,8 +12,8 @@ export enum LogLevel {
 export default abstract class Logger {
     #minLevel: LogLevel = LogLevel.INFO;
 
-    constructor(minLevel: LogLevel = LogLevel.INFO) {
-        this.#minLevel = minLevel;
+    constructor(options: { minLevel: LogLevel; } = { minLevel: LogLevel.INFO }) {
+        this.#minLevel = options.minLevel;
     }
 
     emergency(message: string, context?: any): void {

@@ -8,6 +8,7 @@ import Request from "../http/Request.js";
 import Response from '../http/Response.js';
 import Route from "./Route.js";
 import { Constructor } from "../util/types.js";
+import Server from '../app/Server.js';
 
 export default class Router {
     #prefix: string = '';
@@ -103,7 +104,7 @@ export default class Router {
     }
 
     /** @internal */
-    async process(request: Request): Promise<Response> {
+    async process(request: Request, server: Server): Promise<Response> {
         const routes = this.find(request.path);
 
         // Check if a matching route was found
@@ -154,7 +155,7 @@ export default class Router {
             Request.hideHeadMethod(true);
 
             // Handle the request and get the response
-            return await route.handle(request);
+            return await route.handle(request, server);
         } catch (e) {
             // The status code for a server error is 500
             const response = Response.status(500);

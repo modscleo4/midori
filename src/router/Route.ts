@@ -1,3 +1,4 @@
+import Server from "../app/Server.js";
 import Handler from "../http/Handler.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
@@ -38,17 +39,17 @@ export default class Route {
     }
 
     /** @internal */
-    async handle(req: Request): Promise<Response> {
+    async handle(req: Request, server: Server): Promise<Response> {
         const middlewares = this.#middlewares;
         let index = 0;
 
         const next = async (req: Request): Promise<Response> => {
             if (index == middlewares.length) {
                 // No more middlewares to process
-                return await this.#handler.handle(req);
+                return await this.#handler.handle(req, server);
             }
 
-            return await middlewares[index++].process(req, next);
+            return await middlewares[index++].process(req, next, server);
         };
 
         return await next(req);
