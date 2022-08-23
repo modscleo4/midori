@@ -28,26 +28,44 @@ export default class Router {
         return route;
     }
 
+    /**
+     * Handle a GET (List) request.
+     */
     get(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
         return this.#addRoute('GET', path, handler, middlewares);
     }
 
+    /**
+     * Handles a POST (Create) request.
+     */
     post(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
         return this.#addRoute('POST', path, handler, middlewares);
     }
 
+    /**
+     * Handles a PUT (Full Update) request.
+     */
     put(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
         return this.#addRoute('PUT', path, handler, middlewares);
     }
 
+    /**
+     * Handles a PATCH (Partial Update) request.
+     */
     patch(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
         return this.#addRoute('PATCH', path, handler, middlewares);
     }
 
+    /**
+     * Handles a DELETE request.
+     */
     delete(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
         return this.#addRoute('DELETE', path, handler, middlewares);
     }
 
+    /**
+     * Groups routes together. Use this to apply middlewares to a group of routes, or when there are routes with a common path prefix.
+     */
     group(prefix: string, groupCallback: (Router: Router) => void, middlewares: Constructor<Middleware>[] = []): void {
         Router.validatePath(prefix);
 
@@ -63,12 +81,16 @@ export default class Router {
     }
 
     /**
-     * Applies middlewares to all routes in the group.
+     * Applies middlewares to all routes in the group. Use BEFORE defining routes.
      */
     pipeline(middlewares: Constructor<Middleware>[]): void {
         this.#middlewares = this.#middlewares.concat(middlewares);
     }
 
+    /**
+     * When no route matches the request, the router will try to find a matching file in the public directory.
+     * The public directory is relative to the project root.
+     */
     usePublicPath(path: string): void {
         if (!existsSync(path) || !statSync(path).isDirectory()) {
             throw new Error('Path does not exist or is not a directory.');

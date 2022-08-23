@@ -3,6 +3,9 @@ import Container from "../app/Container.js";
 
 let hideHeadMethod = false;
 
+/**
+ * Basic class representing an HTTP Request.
+ */
 export default class Request {
     #req: IncomingMessage;
     #headers: IncomingHttpHeaders;

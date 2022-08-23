@@ -3,21 +3,26 @@ import { Readable } from "stream";
 
 let allowBody = true;
 
+/**
+ * Representation of an HTTP Response.
+ */
 export default class Response {
     #headers = new Map<string, OutgoingHttpHeader>();
     #status: number = 200;
     #body: Buffer[] = [];
 
-    constructor() {
-
-    }
-
+    /**
+     * Add a header to the response.
+     */
     withHeader(key: string, value: OutgoingHttpHeader): Response {
         this.#headers.set(key, value);
 
         return this;
     }
 
+    /**
+     * Send pure data.
+     */
     send(data: Buffer): Response {
         if (allowBody) {
             this.#body.push(data);
@@ -26,6 +31,9 @@ export default class Response {
         return this;
     }
 
+    /**
+     * Send JSON data. The Content-Type header will be set to application/json and the data will automatically be converted to JSON string.
+     */
     json(data: any): Response {
         this.withHeader('Content-Type', 'application/json')
             .send(Buffer.from(JSON.stringify(data)));
@@ -33,6 +41,9 @@ export default class Response {
         return this;
     }
 
+    /**
+     * Set the status code of the response.
+     */
     withStatus(code: number): Response {
         this.#status = code;
 
@@ -69,21 +80,33 @@ export default class Response {
         return this.#body.reduce((acc, chunk) => acc + chunk.length, 0);
     }
 
+    /**
+     * Send pure data.
+     */
     static send(data: Buffer): Response {
         return new Response()
             .send(data);
     }
 
+    /**
+     * Send JSON data. The Content-Type header will be set to application/json and the data will automatically be converted to JSON string.
+     */
     static json(data: any): Response {
         return new Response()
             .json(data);
     }
 
+    /**
+     * Set the status code of the response.
+     */
     static status(code: number): Response {
         return new Response()
             .withStatus(code);
     }
 
+    /**
+     * Send a empty (204) response.
+     */
     static empty(): Response {
         return new Response()
             .withStatus(204);

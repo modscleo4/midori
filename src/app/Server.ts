@@ -2,9 +2,10 @@ import { createServer, IncomingMessage, ServerResponse, Server as HTTPServer } f
 
 import Request from "../http/Request.js";
 import RouterProvider from '../router/Router.js';
-import LoggerProvider from '../log/Logger.js';
+import LoggerProvider, { LogColor } from '../log/Logger.js';
 import AuthProvider from '../auth/Auth.js';
 import Container from './Container.js';
+import { performance } from 'perf_hooks';
 
 export default class Server {
     #providers: {
@@ -25,6 +26,7 @@ export default class Server {
 
     /** @internal */
     async process(req: IncomingMessage, res: ServerResponse): Promise<void> {
+        const startTime = performance.now();
         const request = new Request(req, this.#containerBuilder());
 
         try {
@@ -44,19 +46,25 @@ export default class Server {
 
             response.body.pipe(res, { end: true });
         } catch (e) {
-            this.logger.error('Unhandled Error', e);
+            this.logger.error('Unhandled Error', { context: e, fgColor: LogColor.LIGHT_RED });
 
             res.statusCode = 500;
             res.end();
         } finally {
-            this.logger.info(`${request.method} ${request.path} ${res.statusCode}`);
+            this.logger.info(`${request.method} ${request.path} ${res.statusCode} (${(performance.now() - startTime).toFixed(2)}ms)`, { fgColor: res.statusCode < 400 ? LogColor.GREEN : res.statusCode < 500 ? LogColor.YELLOW : LogColor.RED });
         }
     }
 
+    /**
+     * Starts the HTTP server on the specified port.
+     */
     listen(port: number = 80): HTTPServer {
         return this.#server.listen(port);
     }
 
+    /**
+     * Stops the HTTP server.
+     */
     stop() {
         return this.#server.close();
     }

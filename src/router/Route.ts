@@ -71,6 +71,9 @@ export default class Route {
         return params;
     }
 
+    /**
+     * Sets the name of the route.
+     */
     withName(name: string): Route {
         this.#name = name;
 

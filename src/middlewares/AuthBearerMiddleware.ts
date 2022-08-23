@@ -20,7 +20,7 @@ export default class AuthBearerMiddleware extends Middleware {
                 .withStatus(401);
         }
 
-        if (!credentials || !validateJWT(credentials, req.container.get('jwt:secret'))) {
+        if (!credentials || !validateJWT(credentials)) {
             return Response.json({ message: 'Invalid Authorization credentials.' })
                 .withHeader('WWW-Authenticate', 'Bearer')
                 .withStatus(401);

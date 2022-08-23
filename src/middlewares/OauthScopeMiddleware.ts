@@ -2,8 +2,9 @@ import HTTPError from "../errors/HTTPError.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
+import { Constructor } from "../util/types.js";
 
-export default function OauthScopeMiddleware(scopes: string[]) {
+export default function OauthScopeMiddleware(scopes: string[]): Constructor<Middleware> {
     return class extends Middleware {
         async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
             if (req.container.get('jwt')) {

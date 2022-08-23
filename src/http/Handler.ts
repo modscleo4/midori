@@ -3,5 +3,15 @@ import Request from "./Request.js";
 import Response from "./Response.js";
 
 export default abstract class Handler {
-    abstract handle(req: Request, server: Server): Promise<Response>;
+    /**
+     * Handle a request.
+     */
+    abstract handle(
+        req: Request,
+
+        /**
+         * The Server instance
+         */
+        server: Server
+    ): Promise<Response>;
 }

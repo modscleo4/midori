@@ -9,6 +9,31 @@ export enum LogLevel {
     EMERGENCY
 };
 
+export enum LogColor {
+    BLACK = 0,
+    RED,
+    GREEN,
+    YELLOW,
+    BLUE,
+    MAGENTA,
+    CYAN,
+    WHITE,
+    GRAY = 100,
+    LIGHT_RED,
+    LIGHT_GREEN,
+    LIGHT_YELLOW,
+    LIGHT_BLUE,
+    LIGHT_MAGENTA,
+    LIGHT_CYAN,
+    LIGHT_WHITE
+};
+
+export type LogOptions = {
+    context?: any;
+    bgColor?: LogColor;
+    fgColor?: LogColor;
+};
+
 export default abstract class Logger {
     #minLevel: LogLevel = LogLevel.INFO;
 
@@ -16,39 +41,42 @@ export default abstract class Logger {
         this.#minLevel = options.minLevel;
     }
 
-    emergency(message: string, context?: any): void {
-        this.log(LogLevel.EMERGENCY, message, context);
+    emergency(message: string, options?: LogOptions): void {
+        this.log(LogLevel.EMERGENCY, message, options);
     }
 
-    alert(message: string, context?: any): void {
-        this.log(LogLevel.ALERT, message, context);
+    alert(message: string, options?: LogOptions): void {
+        this.log(LogLevel.ALERT, message, options);
     }
 
-    critical(message: string, context?: any): void {
-        this.log(LogLevel.CRITICAL, message, context);
+    critical(message: string, options?: LogOptions): void {
+        this.log(LogLevel.CRITICAL, message, options);
     }
 
-    error(message: string, context?: any): void {
-        this.log(LogLevel.ERROR, message, context);
+    error(message: string, options?: LogOptions): void {
+        this.log(LogLevel.ERROR, message, options);
     }
 
-    warning(message: string, context?: any): void {
-        this.log(LogLevel.WARNING, message, context);
+    warning(message: string, options?: LogOptions): void {
+        this.log(LogLevel.WARNING, message, options);
     }
 
-    notice(message: string, context?: any): void {
-        this.log(LogLevel.NOTICE, message, context);
+    notice(message: string, options?: LogOptions): void {
+        this.log(LogLevel.NOTICE, message, options);
     }
 
-    info(message: string, context?: any): void {
-        this.log(LogLevel.INFO, message, context);
+    info(message: string, options?: LogOptions): void {
+        this.log(LogLevel.INFO, message, options);
     }
 
-    debug(message: string, context?: any): void {
-        this.log(LogLevel.DEBUG, message, context);
+    debug(message: string, options?: LogOptions): void {
+        this.log(LogLevel.DEBUG, message, options);
     }
 
-    abstract log(level: LogLevel, message: string, context?: any): void;
+    /**
+     * Base log method. All other log methods call this method.
+     */
+    abstract log(level: LogLevel, message: string, options?: LogOptions): void;
 
     get minLevel(): LogLevel {
         return this.#minLevel;
