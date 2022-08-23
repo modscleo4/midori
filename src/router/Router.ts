@@ -9,6 +9,7 @@ import Response from '../http/Response.js';
 import Route from "./Route.js";
 import { Constructor } from "../util/types.js";
 import Server from '../app/Server.js';
+import { LogColor } from '../log/Logger.js';
 
 export default class Router {
     #prefix: string = '';
@@ -179,6 +180,8 @@ export default class Router {
             // Handle the request and get the response
             return await route.handle(request, server);
         } catch (e) {
+            server.logger.error('An error occurred while handling a request.', { context: e, fgColor: LogColor.RED });
+
             // The status code for a server error is 500
             const response = Response.status(500);
             if (!!process.env.EXPOSE_ERRORS && e instanceof Error) {
