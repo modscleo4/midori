@@ -13,7 +13,7 @@
     "clean": "tsc -b --clean",
     "build": "tsc && npm run postbuild",
     "postbuild": "node bin/postbuild.js",
-    "postinstall": "npm run build"
+    "prepare": "npm run build"
   },
   "files": [
     "bin/",
@@ -44,6 +44,13 @@
         "types": "./dist/errors/index.d.ts",
 
         "default": "./dist/errors/index.js"
+      }
+    },
+    "./hash": {
+      "import": {
+        "types": "./dist/hash/index.d.ts",
+
+        "default": "./dist/hash/index.js"
       }
     },
     "./http": {

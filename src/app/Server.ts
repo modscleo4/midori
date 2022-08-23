@@ -6,18 +6,22 @@ import LoggerProvider, { LogColor } from '../log/Logger.js';
 import AuthProvider from '../auth/Auth.js';
 import Container from './Container.js';
 import { performance } from 'perf_hooks';
+import HashProvider from '../hash/Hash.js';
+
+export type Providers = {
+    router: RouterProvider,
+    logger: LoggerProvider,
+    hash: HashProvider,
+    auth?: AuthProvider;
+};
 
 export default class Server {
-    #providers: {
-        router: RouterProvider,
-        logger: LoggerProvider,
-        auth?: AuthProvider;
-    };
+    #providers: Providers;
     #containerBuilder: () => Container;
 
     #server: HTTPServer;
 
-    constructor(options: { providers: { router: RouterProvider, logger: LoggerProvider, auth?: AuthProvider; }, containerBuilder?: () => Container }) {
+    constructor(options: { providers: Providers, containerBuilder?: () => Container }) {
         this.#providers = options.providers;
         this.#containerBuilder = options.containerBuilder ?? (() => new Container());
 
@@ -75,6 +79,10 @@ export default class Server {
 
     get logger() {
         return this.#providers.logger;
+    }
+
+    get hash() {
+        return this.#providers.hash;
     }
 
     get auth() {
