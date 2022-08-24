@@ -10,6 +10,6 @@ export default class HMAC {
     static verify(shaVersion: 256 | 384 | 512, secret: string, data: Buffer, signature: Buffer): boolean {
         const hmac = createHmac('sha' + shaVersion, secret);
         hmac.update(data);
-        return hmac.digest() === signature;
+        return Buffer.compare(hmac.digest(), signature) === 0;
     }
 }

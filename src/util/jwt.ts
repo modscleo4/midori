@@ -118,7 +118,7 @@ function signJWT(
             return HMAC.sign(
                 256,
                 secretOrPrivateKey,
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8')
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWTAlgorithm.HS384:
@@ -129,7 +129,7 @@ function signJWT(
             return HMAC.sign(
                 384,
                 secretOrPrivateKey,
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8')
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWTAlgorithm.HS512:
@@ -140,7 +140,7 @@ function signJWT(
             return HMAC.sign(
                 512,
                 secretOrPrivateKey,
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8')
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWTAlgorithm.RS256:
@@ -151,7 +151,7 @@ function signJWT(
             return RSA.sign(
                 256,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8')
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWTAlgorithm.RS384:
@@ -162,7 +162,7 @@ function signJWT(
             return RSA.sign(
                 384,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8')
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWTAlgorithm.RS512:
@@ -173,7 +173,7 @@ function signJWT(
             return RSA.sign(
                 512,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8')
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWTAlgorithm.ES256:
@@ -184,7 +184,7 @@ function signJWT(
             return ECDSA.sign(
                 256,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8')
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWTAlgorithm.ES384:
@@ -195,7 +195,7 @@ function signJWT(
             return ECDSA.sign(
                 384,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8')
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWTAlgorithm.ES512:
@@ -206,7 +206,7 @@ function signJWT(
             return ECDSA.sign(
                 512,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8')
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWTAlgorithm.PS256:
@@ -217,7 +217,7 @@ function signJWT(
             return RSAPSS.sign(
                 256,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8')
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWTAlgorithm.PS384:
@@ -228,7 +228,7 @@ function signJWT(
             return RSAPSS.sign(
                 384,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8')
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWTAlgorithm.PS512:
@@ -239,7 +239,7 @@ function signJWT(
             return RSAPSS.sign(
                 512,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8')
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
     }
 
@@ -263,7 +263,7 @@ function verifyJWT(
             return HMAC.verify(
                 256,
                 secretOrPrivateKey,
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8'),
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
@@ -275,7 +275,7 @@ function verifyJWT(
             return HMAC.verify(
                 384,
                 secretOrPrivateKey,
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8'),
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
@@ -287,7 +287,7 @@ function verifyJWT(
             return HMAC.verify(
                 512,
                 secretOrPrivateKey,
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8'),
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
@@ -299,7 +299,7 @@ function verifyJWT(
             return RSA.verify(
                 256,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8'),
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
@@ -311,7 +311,7 @@ function verifyJWT(
             return RSA.verify(
                 384,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8'),
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
@@ -323,7 +323,7 @@ function verifyJWT(
             return RSA.verify(
                 512,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8'),
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
@@ -335,7 +335,7 @@ function verifyJWT(
             return ECDSA.verify(
                 256,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8'),
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
@@ -347,7 +347,7 @@ function verifyJWT(
             return ECDSA.verify(
                 384,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8'),
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
@@ -359,7 +359,7 @@ function verifyJWT(
             return ECDSA.verify(
                 512,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8'),
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
@@ -371,7 +371,7 @@ function verifyJWT(
             return RSAPSS.verify(
                 256,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8'),
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
@@ -383,7 +383,7 @@ function verifyJWT(
             return RSAPSS.verify(
                 384,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8'),
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
@@ -395,7 +395,7 @@ function verifyJWT(
             return RSAPSS.verify(
                 512,
                 createPrivateKey(secretOrPrivateKey),
-                Buffer.from(`${headerBase64}.${payloadBase64}`, 'utf8'),
+                Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
     }
