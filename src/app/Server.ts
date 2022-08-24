@@ -1,29 +1,29 @@
 import { createServer, IncomingMessage, ServerResponse, Server as HTTPServer } from 'http';
 
 import Request from "../http/Request.js";
-import RouterProvider from '../router/Router.js';
-import LoggerProvider, { LogColor } from '../log/Logger.js';
-import AuthProvider from '../auth/Auth.js';
+import { LogColor } from '../log/Logger.js';
 import Container from './Container.js';
 import { performance } from 'perf_hooks';
-import HashProvider from '../hash/Hash.js';
-
-export type Providers = {
-    router: RouterProvider,
-    logger: LoggerProvider,
-    hash: HashProvider,
-    auth?: AuthProvider;
-};
+import { Constructor } from '../util/types.js';
+import Middleware from '../http/Middleware.js';
+import Response from '../http/Response.js';
 
 export default class Server {
-    #providers: Providers;
+    static #instances: number = 0;
+
+    #providers = new Container();
+    #pipeline: Constructor<Middleware>[] = [];
     #containerBuilder: () => Container;
 
     #server: HTTPServer;
 
-    constructor(options: { providers: Providers, containerBuilder?: () => Container }) {
-        this.#providers = options.providers;
-        this.#containerBuilder = options.containerBuilder ?? (() => new Container());
+    constructor(options?: { containerBuilder?: () => Container }) {
+        if (Server.#instances > 0) {
+            throw new Error('Only one instance of Server should be created.');
+        }
+
+        Server.#instances++;
+        this.#containerBuilder = options?.containerBuilder ?? (() => new Container());
 
         this.#server = createServer(async (req, res) => await this.process(req, res));
     }
@@ -34,7 +34,7 @@ export default class Server {
         const request = new Request(req, this.#containerBuilder());
 
         try {
-            const response = await this.router.process(request, this);
+            const response = await this.processRequest(request);
 
             // Send the returning response status code, headers and body to the response
             res.statusCode = response.status;
@@ -50,12 +50,12 @@ export default class Server {
 
             response.body.pipe(res, { end: true });
         } catch (e) {
-            this.logger.error('Unhandled Error', { context: e, fgColor: LogColor.LIGHT_RED });
+            this.providers.get('Logger').error('Unhandled Error', { context: e, fgColor: LogColor.LIGHT_RED });
 
             res.statusCode = 500;
             res.end();
         } finally {
-            this.logger.info(`${request.method} ${request.path} ${res.statusCode} (${(performance.now() - startTime).toFixed(2)}ms)`, { fgColor: res.statusCode < 400 ? LogColor.GREEN : res.statusCode < 500 ? LogColor.YELLOW : LogColor.RED });
+            this.providers.get('Logger').info(`${request.method} ${request.path} ${res.statusCode} (${(performance.now() - startTime).toFixed(2)}ms)`, { fgColor: res.statusCode < 400 ? LogColor.GREEN : res.statusCode < 500 ? LogColor.YELLOW : LogColor.RED });
         }
     }
 
@@ -73,19 +73,31 @@ export default class Server {
         return this.#server.close();
     }
 
-    get router() {
-        return this.#providers.router;
+    /**
+     * Applies a middleware before every Request.
+     */
+    pipe(middleware: Constructor<Middleware>): void {
+        this.#pipeline.push(middleware);
     }
 
-    get logger() {
-        return this.#providers.logger;
+    /** @internal */
+    async processRequest(request: Request): Promise<Response> {
+        let index = 0;
+
+        const next = async (req: Request): Promise<Response> => {
+            const middleware = new this.#pipeline[index++](this);
+
+            return await middleware.process(req, next);
+        };
+
+        return await next(request);
     }
 
-    get hash() {
-        return this.#providers.hash;
+    install(name: string, provider: any): void {
+        this.#providers.set(name, provider);
     }
 
-    get auth() {
-        return this.#providers.auth;
+    get providers() {
+        return this.#providers;
     }
 }

@@ -3,15 +3,16 @@ import Handler from "../http/Handler.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
+import { Constructor } from "../util/types.js";
 
 export default class Route {
     #method: string;
     #path: string;
-    #handler: Handler;
-    #middlewares: Middleware[];
+    #handler: Constructor<Handler>;
+    #middlewares: Constructor<Middleware>[];
     #name?: string;
 
-    constructor(method: string, path: string, handler: Handler, middlewares: Middleware[]) {
+    constructor(method: string, path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[]) {
         this.#method = method;
         this.#path = path + (path.endsWith('/') ? '' : '/');
         this.#handler = handler;
@@ -40,16 +41,19 @@ export default class Route {
 
     /** @internal */
     async handle(req: Request, server: Server): Promise<Response> {
-        const middlewares = this.#middlewares;
         let index = 0;
 
         const next = async (req: Request): Promise<Response> => {
-            if (index == middlewares.length) {
+            if (index == this.#middlewares.length) {
                 // No more middlewares to process
-                return await this.#handler.handle(req, server);
+                const handler = new this.#handler(server);
+
+                return await handler.handle(req);
             }
 
-            return await middlewares[index++].process(req, next, server);
+            const middleware = new this.#middlewares[index++](server);
+
+            return await middleware.process(req, next);
         };
 
         return await next(req);

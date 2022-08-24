@@ -13,11 +13,6 @@ export default abstract class Middleware {
         /**
          * Process the next Middleware (or the Handler) in the chain.
          */
-        next: (req: Request) => Promise<Response>,
-
-        /**
-         * The Server instance
-         */
-        server: Server
+        next: (req: Request) => Promise<Response>
     ): Promise<Response>;
 }

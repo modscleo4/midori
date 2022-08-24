@@ -6,12 +6,5 @@ export default abstract class Handler {
     /**
      * Handle a request.
      */
-    abstract handle(
-        req: Request,
-
-        /**
-         * The Server instance
-         */
-        server: Server
-    ): Promise<Response>;
+    abstract handle(req: Request): Promise<Response>;
 }

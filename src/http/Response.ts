@@ -1,8 +1,6 @@
 import { OutgoingHttpHeader } from "http";
 import { Readable } from "stream";
 
-let allowBody = true;
-
 /**
  * Representation of an HTTP Response.
  */
@@ -21,12 +19,21 @@ export default class Response {
     }
 
     /**
+     * Add multiple headers to the response.
+     */
+    withHeaders(headers: Map<string, OutgoingHttpHeader>): Response {
+        for (const [key, value] of headers) {
+            this.withHeader(key, value);
+        }
+
+        return this;
+    }
+
+    /**
      * Send pure data.
      */
     send(data: Buffer): Response {
-        if (allowBody) {
-            this.#body.push(data);
-        }
+        this.#body.push(data);
 
         return this;
     }
@@ -46,6 +53,12 @@ export default class Response {
      */
     withStatus(code: number): Response {
         this.#status = code;
+
+        return this;
+    }
+
+    empty(): Response {
+        this.#body = [];
 
         return this;
     }
@@ -110,10 +123,5 @@ export default class Response {
     static empty(): Response {
         return new Response()
             .withStatus(204);
-    }
-
-    /** @internal */
-    static allowBody(allow: boolean): void {
-        allowBody = allow;
     }
 }

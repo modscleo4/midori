@@ -104,6 +104,11 @@ export default class Request {
         return this.#method;
     }
 
+    /** @internal */
+    set method(method: string) {
+        this.#method = method;
+    }
+
     get path() {
         return this.#path;
     }
@@ -122,10 +127,5 @@ export default class Request {
 
     get container() {
         return this.#container;
-    }
-
-    /** @internal */
-    static hideHeadMethod(hide: boolean): void {
-        hideHeadMethod = hide;
     }
 }
