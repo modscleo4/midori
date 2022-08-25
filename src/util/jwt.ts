@@ -1,9 +1,28 @@
+/**
+ * Copyright 2022 Dhiego Cassiano Fogaça Barbosa
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { createPrivateKey } from 'crypto';
 import ECDSA from './crypt/ecdsa.js';
 import HMAC from './crypt/hmac.js';
 import RSA from './crypt/rsa.js';
 import RSAPSS from './crypt/rsapss.js';
 
+/**
+ * JWT Algorithms
+ */
 export enum JWTAlgorithm {
     HS256 = 'HS256',
     HS384 = 'HS384',
@@ -24,6 +43,9 @@ export enum JWTAlgorithm {
     none = 'none',
 };
 
+/**
+ * JWT Header
+ */
 export type Header = {
     /** Algorithm */
     alg: keyof typeof JWTAlgorithm,
@@ -32,6 +54,9 @@ export type Header = {
     typ: 'JWT' | 'JWE',
 };
 
+/**
+ * JWT Payload
+ */
 export type Payload = {
     /** Issuer */
     iss?: string,
@@ -55,6 +80,9 @@ export type Payload = {
     jti?: string,
 };
 
+/**
+ * Sign a JWT Payload with the given algorithm and secret or private key
+ */
 export function generateJWT(
     payload: Payload,
     alg: JWTAlgorithm,
@@ -72,6 +100,9 @@ export function generateJWT(
     return `${headerBase64}.${payloadBase64}.${signature}`;
 }
 
+/**
+ * Validate a signed JWT against provided secret or private key
+ */
 export function validateJWT(
     token: string,
     secretOrPrivateKey: string,
