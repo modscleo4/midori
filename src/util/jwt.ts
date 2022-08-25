@@ -55,18 +55,10 @@ export type Payload = {
     jti?: string,
 };
 
-let _alg: JWTAlgorithm = JWTAlgorithm.HS256;
-let _secret: string = 'secret';
-
-export function configJWT(alg: JWTAlgorithm, secret: string) {
-    _alg = alg;
-    _secret = secret;
-}
-
 export function generateJWT(
     payload: Payload,
-    alg: JWTAlgorithm = _alg,
-    secretOrPrivateKey: string = _secret
+    alg: JWTAlgorithm,
+    secretOrPrivateKey: string,
 ): string {
     const header: Header = {
         alg: JWTAlgorithm[alg],
@@ -82,7 +74,7 @@ export function generateJWT(
 
 export function validateJWT(
     token: string,
-    secretOrPrivateKey: string = _secret,
+    secretOrPrivateKey: string,
 ): boolean {
     const [headerBase64, payloadBase64, signature] = token.split('.');
 

@@ -3,6 +3,10 @@ import Request from "./Request.js";
 import Response from "./Response.js";
 
 export default abstract class Middleware {
+    constructor(server: Server) {
+        //
+    }
+
     /**
      * Middlewares are used to process a request before it reaches the handler.
      * Here you can do things like authentication, authorization, etc.

@@ -7,12 +7,13 @@ import { performance } from 'perf_hooks';
 import { Constructor } from '../util/types.js';
 import Middleware from '../http/Middleware.js';
 import Response from '../http/Response.js';
+import ContentLengthMiddleware from '../middlewares/ContentLengthMiddleware.js';
 
 export default class Server {
     static #instances: number = 0;
 
-    #providers = new Container();
-    #pipeline: Constructor<Middleware>[] = [];
+    #providers = new Container({ throwNotFound: true });
+    #pipeline: Constructor<Middleware>[] = [ ContentLengthMiddleware ];
     #containerBuilder: () => Container;
 
     #server: HTTPServer;
@@ -43,11 +44,6 @@ export default class Server {
                 res.setHeader(header, value);
             }
 
-            // A server MUST NOT send a Content-Length header field in any response with a status code of 1xx (Informational) or 204 (No Content).
-            if (!(response.status < 200 || response.status === 204)) {
-                res.setHeader('Content-Length', response.bodyLength);
-            }
-
             response.body.pipe(res, { end: true });
         } catch (e) {
             this.providers.get('Logger').error('Unhandled Error', { context: e, fgColor: LogColor.LIGHT_RED });
@@ -69,12 +65,14 @@ export default class Server {
     /**
      * Stops the HTTP server.
      */
-    stop() {
+    stop(): HTTPServer {
         return this.#server.close();
     }
 
     /**
      * Applies a middleware before every Request.
+     *
+     * ContentLengthMiddleware is applied by default before any other Middleware.
      */
     pipe(middleware: Constructor<Middleware>): void {
         this.#pipeline.push(middleware);
@@ -93,7 +91,14 @@ export default class Server {
         return await next(request);
     }
 
+    /**
+     * Injects a Service Provider into the Server by the given name.
+     */
     install(name: string, provider: any): void {
+        if (this.#providers.has(name)) {
+            throw new Error(`A Service Provider with the name '${name}' already exists.`);
+        }
+
         this.#providers.set(name, provider);
     }
 

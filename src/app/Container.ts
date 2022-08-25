@@ -5,10 +5,22 @@
 export default class Container {
     #data = new Map<string, any>();
 
+    #options = {
+        throwNotFound: false
+    };
+
+    constructor(options?: { throwNotFound?: boolean }) {
+        this.#options.throwNotFound = options?.throwNotFound || false;
+    }
+
     /**
      * Get a value from the container.
      */
     get(key: string): any {
+        if (!this.has(key) && this.#options.throwNotFound) {
+            throw new Error(`Key '${key}' not found in container`);
+        }
+
         return this.#data.get(key);
     }
 

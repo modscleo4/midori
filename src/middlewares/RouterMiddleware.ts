@@ -5,16 +5,16 @@ import Response from "../http/Response.js";
 import Router from "../router/Router.js";
 
 export default class RouterMiddleware extends Middleware {
-    private router: Router;
+    #router: Router;
 
     constructor(server: Server) {
-        super();
+        super(server);
 
-        this.router = server.providers.get('Router');
+        this.#router = server.providers.get('Router');
     }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
-        const routes = this.router.filter(req.path);
+        const routes = this.#router.filter(req.path);
 
         const route = routes.find(r => r.method === req.method);
 

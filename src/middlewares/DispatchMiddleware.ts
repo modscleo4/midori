@@ -6,7 +6,7 @@ import Route from "../router/Route.js";
 
 export default class DispatchMiddleware extends Middleware {
     constructor(private server: Server) {
-        super();
+        super(server);
     }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {

@@ -2,9 +2,18 @@ import Server from "../app/Server.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
-import { Payload, validateJWT } from "../util/jwt.js";
+import JWT from "../jwt/JWT.js";
+import { Payload } from "../util/jwt.js";
 
 export default class AuthBearerMiddleware extends Middleware {
+    #jwt: JWT;
+
+    constructor(server: Server) {
+        super(server);
+
+        this.#jwt = server.providers.get('JWT');
+    }
+
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         if (!req.headers['authorization']) {
             return Response.json({ message: 'Invalid Authorization header.' })
@@ -20,7 +29,7 @@ export default class AuthBearerMiddleware extends Middleware {
                 .withStatus(401);
         }
 
-        if (!credentials || !validateJWT(credentials)) {
+        if (!credentials || !this.#jwt.verify(credentials)) {
             return Response.json({ message: 'Invalid Authorization credentials.' })
                 .withHeader('WWW-Authenticate', 'Bearer')
                 .withStatus(401);
