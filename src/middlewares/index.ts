@@ -9,5 +9,6 @@ export { default as ImplicitOptionsMiddleware } from './ImplicitOptionsMiddlewar
 export { default as MethodNotAllowedMiddleware } from './MethodNotAllowedMiddleware.js';
 export { default as NotFoundMiddleware } from './NotFoundMiddleware.js';
 export { default as ParseBodyMiddleware } from './ParseBodyMiddleware.js';
+export { default as PublicPathMiddleware } from './PublicPathMiddleware.js';
 export { default as ReadBodyMiddleware } from './ReadBodyMiddleware.js';
 export { default as RouterMiddleware } from './RouterMiddleware.js';

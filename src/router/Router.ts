@@ -1,12 +1,7 @@
-import { existsSync, statSync } from 'fs';
-
 import Handler from "../http/Handler.js";
 import Middleware from "../http/Middleware.js";
-import Request from "../http/Request.js";
-import Response from '../http/Response.js';
 import Route from "./Route.js";
 import { Constructor } from "../util/types.js";
-import Server from '../app/Server.js';
 
 export default class Router {
     #prefix: string = '';
@@ -73,18 +68,6 @@ export default class Router {
 
         this.#prefix = _prefix;
         this.#middlewares = _middlewares;
-    }
-
-    /**
-     * When no route matches the request, the router will try to find a matching file in the public directory.
-     * The public directory is relative to the project root.
-     */
-    usePublicPath(path: string): void {
-        if (!existsSync(path) || !statSync(path).isDirectory()) {
-            throw new Error('Path does not exist or is not a directory.');
-        }
-
-        this.#publicPath = path;
     }
 
     /** @internal */
