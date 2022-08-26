@@ -17,37 +17,45 @@
 import { createServer, IncomingMessage, ServerResponse, Server as HTTPServer } from 'http';
 
 import Request from "../http/Request.js";
-import { LogColor } from '../log/Logger.js';
 import Container from './Container.js';
-import { performance } from 'perf_hooks';
 import { Constructor } from '../util/types.js';
 import Middleware from '../http/Middleware.js';
 import Response from '../http/Response.js';
 import ContentLengthMiddleware from '../middlewares/ContentLengthMiddleware.js';
+import UnknownServiceProviderError from '../errors/UnknownServiceProviderError.js';
+
+class ServiceProviderContainer extends Container<string, any> {
+    get(key: string): any {
+        if (!this.has(key)) {
+            throw new UnknownServiceProviderError(key);
+        }
+
+        return super.get(key);
+    }
+}
 
 export default class Server {
     static #instances: number = 0;
 
-    #providers = new Container({ throwNotFound: true });
-    #pipeline: Constructor<Middleware>[] = [ ContentLengthMiddleware ];
-    #containerBuilder: () => Container;
+    #providers = new ServiceProviderContainer();
+    #pipeline: Constructor<Middleware>[] = [ContentLengthMiddleware];
+    #containerBuilder: () => Container<string, any>;
 
     #server: HTTPServer;
 
-    constructor(options?: { containerBuilder?: () => Container }) {
+    constructor(options?: { containerBuilder?: () => Container<string, any>; }) {
         if (Server.#instances > 0) {
             throw new Error('Only one instance of Server should be created.');
         }
 
         Server.#instances++;
-        this.#containerBuilder = options?.containerBuilder ?? (() => new Container());
+        this.#containerBuilder = options?.containerBuilder ?? (() => new Container<string, any>());
 
         this.#server = createServer(async (req, res) => await this.process(req, res));
     }
 
     /** @internal */
     async process(req: IncomingMessage, res: ServerResponse): Promise<void> {
-        const startTime = performance.now();
         const request = new Request(req, this.#containerBuilder());
 
         try {
@@ -62,12 +70,8 @@ export default class Server {
 
             response.body.pipe(res, { end: true });
         } catch (e) {
-            this.providers.get('Logger').error('Unhandled Error', { context: e, fgColor: LogColor.LIGHT_RED });
-
             res.statusCode = 500;
             res.end();
-        } finally {
-            this.providers.get('Logger').info(`${request.method} ${request.path} ${res.statusCode} (${(performance.now() - startTime).toFixed(2)}ms)`, { fgColor: res.statusCode < 400 ? LogColor.GREEN : res.statusCode < 500 ? LogColor.YELLOW : LogColor.RED });
         }
     }
 

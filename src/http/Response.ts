@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { readFileSync } from "fs";
+import { lookup } from "mime-types";
 import { OutgoingHttpHeader } from "http";
 import { Readable } from "stream";
 
@@ -60,6 +62,16 @@ export default class Response {
     json(data: any): Response {
         this.withHeader('Content-Type', 'application/json')
             .send(Buffer.from(JSON.stringify(data)));
+
+        return this;
+    }
+
+    /**
+     * Send a File. The Content-Type header will be set to application/json and the data will automatically be converted to JSON string.
+     */
+    file(filename: string): Response {
+        this.withHeader('Content-Type', lookup(filename) || 'text/plain')
+            .send(readFileSync(filename));
 
         return this;
     }
@@ -123,6 +135,11 @@ export default class Response {
     static json(data: any): Response {
         return new Response()
             .json(data);
+    }
+
+    static file(filename: string): Response {
+        return new Response()
+            .file(filename);
     }
 
     /**

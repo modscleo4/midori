@@ -31,11 +31,11 @@ export default class Request {
     #path: string;
     #body: string = '';
     #parsedBody: any = undefined;
-    #container: Container;
+    #container: Container<string, any>;
 
     static maxBodySize: number = 1024 * 1024;
 
-    constructor(req: IncomingMessage, container: Container) {
+    constructor(req: IncomingMessage, container: Container<string, any>) {
         this.#req = req;
         this.#container = container;
 

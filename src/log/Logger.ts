@@ -59,14 +59,21 @@ export type LogOptions = {
     fgColor?: LogColor;
 };
 
+export type LoggerOptions = {
+    colorsEnabled?: boolean;
+    minLevel?: LogLevel;
+};
+
 /**
  * Basic Logger Service Provider.
  */
 export default abstract class Logger {
-    #minLevel: LogLevel = LogLevel.INFO;
+    #colorsEnabled: boolean;
+    #minLevel: LogLevel;
 
-    constructor(options: { minLevel: LogLevel; } = { minLevel: LogLevel.INFO }) {
-        this.#minLevel = options.minLevel;
+    constructor(options?: LoggerOptions) {
+        this.#colorsEnabled = options?.colorsEnabled ?? false;
+        this.#minLevel = options?.minLevel ?? LogLevel.INFO;
     }
 
     emergency(message: string, options?: LogOptions): void {
@@ -108,5 +115,9 @@ export default abstract class Logger {
 
     get minLevel(): LogLevel {
         return this.#minLevel;
+    }
+
+    get colorsEnabled(): boolean {
+        return this.#colorsEnabled;
     }
 }

@@ -11,4 +11,5 @@ export { default as NotFoundMiddleware } from './NotFoundMiddleware.js';
 export { default as ParseBodyMiddleware } from './ParseBodyMiddleware.js';
 export { default as PublicPathMiddleware } from './PublicPathMiddleware.js';
 export { default as ReadBodyMiddleware } from './ReadBodyMiddleware.js';
+export { default as RequestLoggerMiddleware } from './RequestLoggerMiddleware.js';
 export { default as RouterMiddleware } from './RouterMiddleware.js';

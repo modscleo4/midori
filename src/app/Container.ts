@@ -18,32 +18,20 @@
  * Container is a class that is used to store and retrieve anything.
  * It is designed to be used on the request object.
  */
-export default class Container {
-    #data = new Map<string, any>();
-
-    #options = {
-        throwNotFound: false
-    };
-
-    constructor(options?: { throwNotFound?: boolean }) {
-        this.#options.throwNotFound = options?.throwNotFound || false;
-    }
+export default class Container<K, V> {
+    #data = new Map<K, V>();
 
     /**
      * Get a value from the container.
      */
-    get(key: string): any {
-        if (!this.has(key) && this.#options.throwNotFound) {
-            throw new Error(`Key '${key}' not found in container`);
-        }
-
+    get(key: K): V | undefined {
         return this.#data.get(key);
     }
 
     /**
      * Set a value in the container.
      */
-    set(key: string, value: any): Container {
+    set(key: K, value: V): Container<K, V> {
         this.#data.set(key, value);
 
         return this;
@@ -52,7 +40,7 @@ export default class Container {
     /**
      * Check if a value exists in the container.
      */
-    has(key: string): boolean {
+    has(key: K): boolean {
         return this.#data.has(key);
     }
 }

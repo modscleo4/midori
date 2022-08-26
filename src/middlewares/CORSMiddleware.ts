@@ -22,15 +22,15 @@ import { Constructor } from "../util/types.js";
 /**
  * Provides a middleware for CORS setup.
  */
-export default function CORSMiddleware(headers?: { origin?: string; methods?: string; headers?: string; maxAge?: number }): Constructor<Middleware> {
+export default function CORSMiddleware(options?: { origin?: string; methods?: string; headers?: string; maxAge?: number; }): Constructor<Middleware> {
     return class extends Middleware {
         async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
             const res = await next(req);
 
-            return res.withHeader('Access-Control-Allow-Origin', headers?.origin ?? '*')
-                .withHeader('Access-Control-Allow-Methods', headers?.methods ?? '*')
-                .withHeader('Access-Control-Allow-Headers', headers?.headers ?? '*')
-                .withHeader('Access-Control-Max-Age', headers?.maxAge ?? 86400);
+            return res.withHeader('Access-Control-Allow-Origin', options?.origin ?? '*')
+                .withHeader('Access-Control-Allow-Methods', options?.methods ?? '*')
+                .withHeader('Access-Control-Allow-Headers', options?.headers ?? '*')
+                .withHeader('Access-Control-Max-Age', options?.maxAge ?? 86400);
         }
     };
 }
