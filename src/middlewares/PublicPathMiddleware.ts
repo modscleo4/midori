@@ -15,6 +15,7 @@
  */
 
 import { existsSync, statSync } from "fs";
+import { EStatusCode } from "../http/EStatusCode.js";
 
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
@@ -28,8 +29,7 @@ export default function PublicPathMiddleware(options: { path: string; }): Constr
             const filename = options.path + (req.path.endsWith('/') ? req.path.substring(0, req.path.length - 1) : req.path);
 
             if (req.method === 'GET' && existsSync(filename) && statSync(filename).isFile()) {
-                return Response.file(filename)
-                    .withStatus(200);
+                return Response.file(filename);
             }
 
             return await next(req);

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
@@ -25,7 +26,7 @@ export default class MethodNotAllowedMiddleware extends Middleware {
         const route: Route = req.container.get('::route');
 
         if (routes.length > 0 && !route) {
-            return Response.status(405);
+            return Response.status(EStatusCode.METHOD_NOT_ALLOWED);
         }
 
         return await next(req);

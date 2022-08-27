@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
@@ -23,7 +24,7 @@ export default class ReadBodyMiddleware extends Middleware {
         try {
             await req.readBody();
         } catch (e) {
-            return Response.status(413);
+            return Response.status(EStatusCode.PAYLOAD_TOO_LARGE);
         }
 
         return await next(req);

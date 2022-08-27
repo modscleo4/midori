@@ -18,13 +18,14 @@ import { readFileSync } from "fs";
 import { lookup } from "mime-types";
 import { OutgoingHttpHeader } from "http";
 import { Readable } from "stream";
+import { EStatusCode } from "./EStatusCode.js";
 
 /**
  * Representation of an HTTP Response.
  */
 export default class Response {
     #headers = new Map<string, OutgoingHttpHeader>();
-    #status: number = 200;
+    #status: number = EStatusCode.OK;
     #body: Buffer[] = [];
 
     /**
@@ -155,6 +156,6 @@ export default class Response {
      */
     static empty(): Response {
         return new Response()
-            .withStatus(204);
+            .withStatus(EStatusCode.NO_CONTENT);
     }
 }

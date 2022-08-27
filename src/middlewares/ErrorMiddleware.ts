@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
@@ -31,7 +32,7 @@ export default function ErrorMiddleware(options: { exposeErrors?: boolean; logUn
                 }
 
                 // The status code for a server error is 500
-                const response = Response.status(500);
+                const response = Response.status(EStatusCode.INTERNAL_SERVER_ERROR);
                 if ((options?.logUnhandledErrors ?? false) && e instanceof Error) {
                     response.json({ message: e.message, stack: this.parseStack(e.stack ?? '') });
                 }

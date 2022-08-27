@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
@@ -23,7 +24,7 @@ export default class ParseBodyMiddleware extends Middleware {
         try {
             req.parseBody();
         } catch (e) {
-            return Response.status(415);
+            return Response.status(EStatusCode.UNSUPPORTED_MEDIA_TYPE);
         }
 
         return await next(req);

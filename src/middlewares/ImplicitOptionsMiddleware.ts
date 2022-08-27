@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
@@ -24,7 +25,7 @@ export default class ImplicitOptionsMiddleware extends Middleware {
         if (req.method === 'OPTIONS') {
             const routes: Route[] = req.container.get('::routes');
 
-            return Response.status(200)
+            return Response.status(EStatusCode.OK)
                 .withHeader('Allow', routes.map(r => r.method).join(','));
         }
 
