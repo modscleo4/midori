@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { createPrivateKey } from 'crypto';
-import ECDSA from './crypt/ecdsa.js';
-import HMAC from './crypt/hmac.js';
-import RSA from './crypt/rsa.js';
-import RSAPSS from './crypt/rsapss.js';
+import { createPrivateKey } from "crypto";
+import ECDSA from "./crypt/ecdsa.js";
+import HMAC from "./crypt/hmac.js";
+import RSA from "./crypt/rsa.js";
+import RSAPSS from "./crypt/rsapss.js";
 
 /**
  * JWT Algorithms
@@ -93,8 +93,8 @@ export function generateJWT(
         typ: 'JWT'
     };
 
-    const headerBase64 = Buffer.from(JSON.stringify(header)).toString("base64url");
-    const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString("base64url");
+    const headerBase64 = Buffer.from(JSON.stringify(header)).toString('base64url');
+    const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
     const signature = signJWT(headerBase64, payloadBase64, alg, secretOrPrivateKey);
 
     return `${headerBase64}.${payloadBase64}.${signature}`;

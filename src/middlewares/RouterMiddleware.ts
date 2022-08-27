@@ -20,6 +20,9 @@ import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import Router from "../router/Router.js";
 
+/**
+ * Middleware to route the request to the correct handler.
+ */
 export default class RouterMiddleware extends Middleware {
     #router: Router;
 

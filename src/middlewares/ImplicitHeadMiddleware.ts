@@ -19,6 +19,9 @@ import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import Route from "../router/Route.js";
 
+/**
+ * Middleware to handle the HEAD method, returning as a body-less GET request.
+ */
 export default class ImplicitHeadMiddleware extends Middleware {
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         if (req.method === 'HEAD') {

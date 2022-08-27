@@ -15,7 +15,7 @@
  */
 
 import Hash from "./Hash.js";
-import { randomBytes, scryptSync } from 'crypto';
+import { randomBytes, scryptSync } from "crypto";
 
 /**
  * Scrypt Hash implementation.

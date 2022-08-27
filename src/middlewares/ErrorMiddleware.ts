@@ -20,20 +20,18 @@ import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import { Constructor } from "../util/types.js";
 
-export default function ErrorMiddleware(options: { exposeErrors?: boolean; logUnhandledErrors?: boolean; }): Constructor<Middleware> {
+/**
+ * Middleware to handle any uncaught error, sending a 500 response with the error info, if set to expose errors.
+ */
+export default function ErrorMiddleware(options: { exposeErrors?: boolean; }): Constructor<Middleware> {
     return class extends Middleware {
         async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
             try {
                 return await next(req);
             } catch (e) {
-                // A unhandled error occurred, so we need to log it to the console since we can't trust the Server has the Logger Service registered
-                if (options?.logUnhandledErrors ?? false) {
-                    console.error(e);
-                }
-
                 // The status code for a server error is 500
                 const response = Response.status(EStatusCode.INTERNAL_SERVER_ERROR);
-                if ((options?.logUnhandledErrors ?? false) && e instanceof Error) {
+                if ((options?.exposeErrors ?? false) && e instanceof Error) {
                     response.json({ message: e.message, stack: this.parseStack(e.stack ?? '') });
                 }
 

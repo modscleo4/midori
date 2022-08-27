@@ -20,6 +20,9 @@ import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import Route from "../router/Route.js";
 
+/**
+ * Middleware to handle the OPTIONS method, returning the allowed methods in the Allow header.
+ */
 export default class ImplicitOptionsMiddleware extends Middleware {
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         if (req.method === 'OPTIONS') {

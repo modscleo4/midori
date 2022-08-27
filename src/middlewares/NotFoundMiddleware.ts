@@ -19,6 +19,9 @@ import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 
+/**
+ * Always return a 404 Not Found response.
+ */
 export default class NotFoundMiddleware extends Middleware {
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         return Response.status(EStatusCode.NOT_FOUND);

@@ -20,6 +20,9 @@ import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import Route from "../router/Route.js";
 
+/**
+ * Middleware to handle any request path that does match a route, but does not match any allowed method.
+ */
 export default class MethodNotAllowedMiddleware extends Middleware {
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         const routes: Route[] = req.container.get('::routes');

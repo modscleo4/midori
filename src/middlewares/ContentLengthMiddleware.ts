@@ -19,7 +19,7 @@ import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 
 /**
- * Middleware to set the content length of the response.
+ * Middleware to set the Content-Length header of the response.
  */
 export default class ContentLengthMiddleware extends Middleware {
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {

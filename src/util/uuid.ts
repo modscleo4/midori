@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { randomUUID } from 'crypto';
+import { randomUUID } from "crypto";
 
 /**
  * Generate a UUID v4

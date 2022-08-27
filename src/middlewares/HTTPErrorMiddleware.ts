@@ -19,6 +19,9 @@ import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import HTTPError from "../errors/HTTPError.js";
 
+/**
+ * Catches any HTTPError and returns as a Response.
+ */
 export default class HTTPErrorMiddleware extends Middleware {
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         try {

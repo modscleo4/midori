@@ -19,6 +19,9 @@ import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 
+/**
+ * Middleware to parse the request body, returning a 415 if no recognized Content-Type is detected.
+ */
 export default class ParseBodyMiddleware extends Middleware {
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         try {

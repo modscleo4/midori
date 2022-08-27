@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { createServer, IncomingMessage, ServerResponse, Server as HTTPServer } from 'http';
+import { createServer, IncomingMessage, ServerResponse, Server as HTTPServer } from "http";
 
 import Request from "../http/Request.js";
-import Container from './Container.js';
-import { Constructor } from '../util/types.js';
-import Middleware from '../http/Middleware.js';
-import Response from '../http/Response.js';
-import ContentLengthMiddleware from '../middlewares/ContentLengthMiddleware.js';
-import UnknownServiceProviderError from '../errors/UnknownServiceProviderError.js';
+import Container from "./Container.js";
+import { Constructor } from "../util/types.js";
+import Middleware from "../http/Middleware.js";
+import Response from "../http/Response.js";
+import ContentLengthMiddleware from "../middlewares/ContentLengthMiddleware.js";
+import UnknownServiceProviderError from "../errors/UnknownServiceProviderError.js";
 
 class ServiceProviderContainer extends Container<string, any> {
     get(key: string): any {
@@ -70,6 +70,9 @@ export default class Server {
 
             response.body.pipe(res, { end: true });
         } catch (e) {
+            // A unhandled error occurred, so we need to log it to the console
+            console.error(e);
+
             res.statusCode = 500;
             res.end();
         }
@@ -94,8 +97,10 @@ export default class Server {
      *
      * ContentLengthMiddleware is applied by default before any other Middleware.
      */
-    pipe(middleware: Constructor<Middleware>): void {
+    pipe(middleware: Constructor<Middleware>): Server {
         this.#pipeline.push(middleware);
+
+        return this;
     }
 
     /** @internal */
@@ -114,12 +119,14 @@ export default class Server {
     /**
      * Injects a Service Provider into the Server by the given name.
      */
-    install(name: string, provider: any): void {
+    install(name: string, provider: any): Server {
         if (this.#providers.has(name)) {
             throw new Error(`A Service Provider with the name '${name}' already exists.`);
         }
 
         this.#providers.set(name, provider);
+
+        return this;
     }
 
     get providers() {

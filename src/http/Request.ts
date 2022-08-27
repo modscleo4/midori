@@ -17,8 +17,6 @@
 import { IncomingMessage, IncomingHttpHeaders } from "http";
 import Container from "../app/Container.js";
 
-let hideHeadMethod = false;
-
 /**
  * Basic class representing an HTTP Request.
  */
@@ -113,10 +111,6 @@ export default class Request {
     }
 
     get method() {
-        if (this.#method === 'HEAD' && hideHeadMethod) {
-            return 'GET';
-        }
-
         return this.#method;
     }
 

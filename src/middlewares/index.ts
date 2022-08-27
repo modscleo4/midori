@@ -4,6 +4,7 @@ export { default as ContentLengthMiddleware } from './ContentLengthMiddleware.js
 export { default as CORSMiddleware } from './CORSMiddleware.js';
 export { default as DispatchMiddleware } from './DispatchMiddleware.js';
 export { default as ErrorMiddleware } from './ErrorMiddleware.js';
+export { default as ErrorLoggerMiddleware } from './ErrorLoggerMiddleware.js';
 export { default as HTTPErrorMiddleware } from './HTTPErrorMiddleware.js';
 export { default as ImplicitHeadMiddleware } from './ImplicitHeadMiddleware.js';
 export { default as ImplicitOptionsMiddleware } from './ImplicitOptionsMiddleware.js';

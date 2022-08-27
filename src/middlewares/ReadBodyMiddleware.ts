@@ -19,6 +19,9 @@ import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 
+/**
+ * Middleware to read the request body, returning a 413 if the body is too large.
+ */
 export default class ReadBodyMiddleware extends Middleware {
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         try {
