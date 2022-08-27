@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-export default abstract class User {
-    #id: string;
+import User from "./User.js";
 
-    constructor(id: string, public username: string) {
-        this.#id = id;
-    }
+export default abstract class UserProvider {
+    abstract getUserById(id: string): Promise<User | null>;
 
-    get id() {
-        return this.#id;
-    }
+    abstract getUserByCredentials(username: string, password: string): Promise<User | null>;
 }

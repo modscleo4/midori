@@ -15,6 +15,7 @@
  */
 
 import Server from "../app/Server.js";
+import Auth from "../auth/Auth.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
@@ -27,11 +28,13 @@ import { Payload } from "../util/jwt.js";
  */
 export default class AuthBearerMiddleware extends Middleware {
     #jwt: JWT;
+    #auth: Auth;
 
     constructor(server: Server) {
         super(server);
 
         this.#jwt = server.providers.get('JWT');
+        this.#auth = server.providers.get('Auth');
     }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
@@ -61,6 +64,7 @@ export default class AuthBearerMiddleware extends Middleware {
 
         if (!(
             typeof payload === 'object'
+            && payload.sub
             && payload.exp
             && payload.iat
         )) {
@@ -74,6 +78,8 @@ export default class AuthBearerMiddleware extends Middleware {
                 .withHeader('WWW-Authenticate', 'Bearer')
                 .withStatus(401);
         }
+
+        await this.#auth.authenticateById(req, payload.sub);
 
         req.container.set('jwt', payload);
 

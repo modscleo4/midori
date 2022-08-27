@@ -81,10 +81,17 @@
     },
     "./util/*": "./dist/util/*"
   },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/*"
+      ]
+    }
+  },
   "devDependencies": {
     "@types/mime-types": "^2.1.1",
     "@types/node": "^18.7.13",
-    "typescript": "^4.8.2"
+    "typescript": "^4.7.4"
   },
   "dependencies": {
     "mime-types": "^2.1.35"

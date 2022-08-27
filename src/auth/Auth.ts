@@ -14,15 +14,53 @@
  * limitations under the License.
  */
 
+import Server from "../app/Server.js";
 import Request from "../http/Request.js";
 import User from "./User.js";
+import UserProvider from "./UserProvider.js";
 
-export default abstract class Auth {
-    abstract authenticate(request: Request): Promise<User>;
+export default class Auth {
+    #userProvider: UserProvider;
 
-    abstract attempt(request: Request): Promise<User | null>;
+    constructor(server: Server) {
+        this.#userProvider = server.providers.get('User');
+    }
 
-    abstract authorize(request: Request, user: User): Promise<boolean>;
+    async authenticateById(request: Request, id: string): Promise<User> {
+        const user = await this.#userProvider.getUserById(id);
+        if (user === null) {
+            throw new Error('Invalid User.');
+        }
 
-    abstract logout(request: Request, user: User): Promise<void>;
+        request.container.set('::user', user);
+
+        return user;
+    }
+
+    async authenticate(request: Request, username: string, password: string): Promise<User> {
+        const user = await this.attempt(username, password);
+        if (user === null) {
+            throw new Error('Invalid credentials.');
+        }
+
+        request.container.set('::user', user);
+
+        return user;
+    }
+
+    async attempt(username: string, password: string): Promise<User | null> {
+        return this.#userProvider.getUserByCredentials(username, password);
+    }
+
+    check(request: Request): boolean {
+        return this.user(request) !== null;
+    }
+
+    user(request: Request): User | null {
+        return request.container.get('::user') ?? null;
+    }
+
+    id(request: Request): string | null {
+        return this.user(request)?.id ?? null;
+    }
 }
