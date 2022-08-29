@@ -50,7 +50,7 @@ export default class AuthBasicMiddleware extends Middleware {
 
         if (!credentialsBase64) {
             return Response.json({ message: 'Invalid Authorization credentials.' })
-                .withHeader('WWW-Authenticate', 'Bearer')
+                .withHeader('WWW-Authenticate', 'Basic')
                 .withStatus(EStatusCode.UNAUTHORIZED);
         }
 
@@ -61,7 +61,7 @@ export default class AuthBasicMiddleware extends Middleware {
             && password
         )) {
             return Response.json({ message: 'Invalid Authorization credentials.' })
-                .withHeader('WWW-Authenticate', 'Bearer')
+                .withHeader('WWW-Authenticate', 'Basic')
                 .withStatus(EStatusCode.UNAUTHORIZED);
         }
 

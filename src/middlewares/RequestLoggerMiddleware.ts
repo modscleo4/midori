@@ -28,7 +28,6 @@ export default class RequestLoggerMiddleware extends Middleware {
         return res;
     }
 
-    /** @internal */
     logRequest(req: Request, res: Response, time: number) {
         this.#logger.info(`${req.method} ${req.path} ${res.status} (${time.toFixed(2)}ms)`, { fgColor: res.status < 400 ? LogColor.GREEN : res.status < 500 ? LogColor.YELLOW : LogColor.RED });
     }
