@@ -14,4 +14,5 @@ export { default as ParseBodyMiddleware } from './ParseBodyMiddleware.js';
 export { default as PublicPathMiddleware } from './PublicPathMiddleware.js';
 export { default as ReadBodyMiddleware } from './ReadBodyMiddleware.js';
 export { default as RequestLoggerMiddleware } from './RequestLoggerMiddleware.js';
+export { default as ResponseCompressionMiddleware, CompressionAlgorithm } from './ResponseCompressionMiddleware.js';
 export { default as RouterMiddleware } from './RouterMiddleware.js';

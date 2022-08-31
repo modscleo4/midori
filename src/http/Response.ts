@@ -118,6 +118,16 @@ export default class Response {
         });
     }
 
+    /** @internal */
+    get bodyBuffer() {
+        return this.#body;
+    }
+
+    /** @internal */
+    set bodyBuffer(buffer: Buffer[]) {
+        this.#body = buffer;
+    }
+
     get bodyLength() {
         return this.#body.reduce((acc, chunk) => acc + chunk.length, 0);
     }
