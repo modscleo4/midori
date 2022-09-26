@@ -14,6 +14,32 @@
  * limitations under the License.
  */
 
+export class ReadonlyContainer<K, V> {
+    #data = new Map<K, V>();
+
+    constructor(data?: Container<K, V>) {
+        if (data) {
+            for (const [key, value] of data) {
+                this.#data.set(key, value);
+            }
+        }
+    }
+
+    /**
+     * Get a value from the container.
+     */
+    get(key: K): V | undefined {
+        return this.#data.get(key);
+    }
+
+    /**
+     * Check if a value exists in the container.
+     */
+    has(key: K): boolean {
+        return this.#data.has(key);
+    }
+}
+
 /**
  * Container is a class that is used to store and retrieve anything.
  * It is designed to be used on the request object.
@@ -42,5 +68,9 @@ export default class Container<K, V> {
      */
     has(key: K): boolean {
         return this.#data.has(key);
+    }
+
+    [Symbol.iterator]() {
+        return this.#data[Symbol.iterator]();
     }
 }

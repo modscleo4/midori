@@ -17,7 +17,7 @@
 import { createServer, IncomingMessage, ServerResponse, Server as HTTPServer } from "http";
 
 import Request from "../http/Request.js";
-import Container from "./Container.js";
+import Container, { ReadonlyContainer } from "./Container.js";
 import { Constructor } from "../util/types.js";
 import Middleware from "../http/Middleware.js";
 import Response from "../http/Response.js";
@@ -25,6 +25,16 @@ import ContentLengthMiddleware from "../middlewares/ContentLengthMiddleware.js";
 import UnknownServiceProviderError from "../errors/UnknownServiceProviderError.js";
 
 class ServiceProviderContainer extends Container<string, any> {
+    get(key: string): any {
+        if (!this.has(key)) {
+            throw new UnknownServiceProviderError(key);
+        }
+
+        return super.get(key);
+    }
+}
+
+class ReadonlyServiceProviderContainer extends ReadonlyContainer<string, any> {
     get(key: string): any {
         if (!this.has(key)) {
             throw new UnknownServiceProviderError(key);
@@ -51,7 +61,7 @@ export default class Server {
         Server.#instances++;
         this.#containerBuilder = options?.containerBuilder ?? (() => new Container<string, any>());
 
-        this.#server = createServer(async (req, res) => await this.process(req, res));
+        this.#server = createServer(this.process);
     }
 
     /** @internal */
@@ -129,7 +139,7 @@ export default class Server {
         return this;
     }
 
-    get providers() {
-        return this.#providers;
+    get providers(): ReadonlyServiceProviderContainer {
+        return new ReadonlyServiceProviderContainer(this.#providers);
     }
 }

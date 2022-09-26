@@ -26,12 +26,11 @@ export default class Router {
     #prefix: string = '';
     #middlewares: Constructor<Middleware>[] = [];
     #routes: Route[] = [];
-    #publicPath: string | null = null;
 
     #addRoute(method: string, path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []) {
         Router.validatePath(path);
 
-        const route = new Route(method, this.#prefix + path, handler, middlewares);
+        const route = new Route(method, this.#prefix + path, handler, this.#middlewares.concat(middlewares));
         this.#routes.push(route);
 
         return route;
