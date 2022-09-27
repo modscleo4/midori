@@ -61,7 +61,7 @@ export default class Server {
         Server.#instances++;
         this.#containerBuilder = options?.containerBuilder ?? (() => new Container<string, any>());
 
-        this.#server = createServer(this.process);
+        this.#server = createServer(async (req, res) => await this.process(req, res));
     }
 
     /** @internal */
@@ -139,7 +139,7 @@ export default class Server {
         return this;
     }
 
-    get providers(): ReadonlyServiceProviderContainer {
+    get providers() {
         return new ReadonlyServiceProviderContainer(this.#providers);
     }
 }
