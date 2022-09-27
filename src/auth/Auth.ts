@@ -49,7 +49,7 @@ export default class Auth {
     }
 
     async attempt(username: string, password: string): Promise<User | null> {
-        return this.#userProvider.getUserByCredentials(username, password);
+        return await this.#userProvider.getUserByCredentials(username, password);
     }
 
     check(request: Request): boolean {
