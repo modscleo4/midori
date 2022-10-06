@@ -22,7 +22,7 @@ import { Constructor } from "../util/types.js";
 /**
  * Provides a middleware for CORS setup.
  */
-export default function CORSMiddleware(options?: { origin?: string; methods?: string; headers?: string; maxAge?: number; }): Constructor<Middleware> {
+export default function CORSMiddleware(options?: { origin?: string; methods?: string; headers?: string; maxAge?: number; openerPolicy?: 'unsafe-none' | 'same-origin-allow-popups' |'same-origin'; embedderPolicy?: 'unsafe-none' | 'require-corp' }): Constructor<Middleware> {
     return class extends Middleware {
         async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
             const res = await next(req);
@@ -30,7 +30,9 @@ export default function CORSMiddleware(options?: { origin?: string; methods?: st
             return res.withHeader('Access-Control-Allow-Origin', options?.origin ?? '*')
                 .withHeader('Access-Control-Allow-Methods', options?.methods ?? '*')
                 .withHeader('Access-Control-Allow-Headers', options?.headers ?? '*')
-                .withHeader('Access-Control-Max-Age', options?.maxAge ?? 86400);
+                .withHeader('Access-Control-Max-Age', options?.maxAge ?? 86400)
+                .withHeader('Cross-Origin-Opener-Policy', options?.openerPolicy ?? 'unsafe-none')
+                .withHeader('Cross-Origin-Embedder-Policy', options?.embedderPolicy ?? 'unsafe-none');
         }
     };
 }

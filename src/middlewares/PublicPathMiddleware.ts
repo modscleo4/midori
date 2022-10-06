@@ -25,17 +25,42 @@ import { Constructor } from "../util/types.js";
 /**
  * Middleware to serve static files from a given directory.
  */
-export default function PublicPathMiddleware(options: { path: string; }): Constructor<Middleware> {
+export default function PublicPathMiddleware(options: { path: string; indexFiles?: string[] }): Constructor<Middleware> {
     return class extends Middleware {
         async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
-            // Try to find a matching file in the public directory
-            const filename = options.path + (req.path.endsWith('/') ? req.path.substring(0, req.path.length - 1) : req.path);
+            if (req.method !== 'GET') {
+                return await next(req);
+            }
 
-            if (req.method === 'GET' && existsSync(filename) && statSync(filename).isFile()) {
-                return Response.file(filename);
+            if (req.path === '/') {
+                for (const path of options.indexFiles ?? ['index.html']) {
+                    const res = await this.tryFile(path);
+
+                    if (res) {
+                        return res;
+                    }
+                }
+            } else {
+                const res = await this.tryFile(req.path);
+
+                if (res) {
+                    return res;
+                }
             }
 
             return await next(req);
+        }
+
+        /** @internal */
+        async tryFile(path: string): Promise<Response|false> {
+            // Try to find a matching file in the public directory
+            const filename = options.path + (!path.startsWith('/') ? '/' : '') + (path.endsWith('/') ? path.substring(0, path.length - 1) : path);
+
+            if (existsSync(filename) && statSync(filename).isFile()) {
+                return Response.file(filename);
+            }
+
+            return false;
         }
     };
 }

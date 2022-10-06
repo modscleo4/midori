@@ -168,4 +168,10 @@ export default class Response {
         return new Response()
             .withStatus(EStatusCode.NO_CONTENT);
     }
+
+    static redirect(to: string): Response {
+        return new Response()
+            .withStatus(EStatusCode.FOUND)
+            .withHeader('Location', to);
+    }
 }
