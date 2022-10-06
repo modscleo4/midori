@@ -1,9 +1,13 @@
 {
-  "name": "apiframework",
+  "name": "midori",
   "version": "1.0.0",
-  "description": "",
+  "description": "Midori is a Node.js web API framework with minimal dependencies and based on PSR ideas.",
   "type": "module",
-  "keywords": [],
+  "keywords": [
+    "node",
+    "api",
+    "framework"
+  ],
   "author": {
     "name": "Dhiego Cassiano Fogaça Barbosa",
     "email": "modscleo4@modscleo4.dev.br"
@@ -90,8 +94,8 @@
   },
   "devDependencies": {
     "@types/mime-types": "^2.1.1",
-    "@types/node": "^18.7.23",
-    "typescript": "^4.8.3"
+    "@types/node": "^18.8.3",
+    "typescript": "^4.8.4"
   },
   "dependencies": {
     "mime-types": "^2.1.35"
