@@ -55,6 +55,7 @@ export enum LogColor {
  */
 export type LogOptions = {
     context?: any;
+    separator?: string;
     bgColor?: LogColor;
     fgColor?: LogColor;
 };

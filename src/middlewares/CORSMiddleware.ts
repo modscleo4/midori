@@ -22,7 +22,16 @@ import { Constructor } from "../util/types.js";
 /**
  * Provides a middleware for CORS setup.
  */
-export default function CORSMiddleware(options?: { origin?: string; methods?: string; headers?: string; maxAge?: number; openerPolicy?: 'unsafe-none' | 'same-origin-allow-popups' |'same-origin'; embedderPolicy?: 'unsafe-none' | 'require-corp' }): Constructor<Middleware> {
+export default function CORSMiddleware(
+    options?: {
+        origin?: string;
+        methods?: string;
+        headers?: string;
+        maxAge?: number;
+        openerPolicy?: 'unsafe-none' | 'same-origin-allow-popups' |'same-origin';
+        embedderPolicy?: 'unsafe-none' | 'require-corp';
+    }
+): Constructor<Middleware> {
     return class extends Middleware {
         async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
             const res = await next(req);

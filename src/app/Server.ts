@@ -44,24 +44,15 @@ class ReadonlyServiceProviderContainer extends ReadonlyContainer<string, any> {
     }
 }
 
-export default class Server {
-    static #instances: number = 0;
-
+export default class Server extends HTTPServer {
     #providers = new ServiceProviderContainer();
     #pipeline: Constructor<Middleware>[] = [ContentLengthMiddleware];
     #containerBuilder: () => Container<string, any>;
 
-    #server: HTTPServer;
-
     constructor(options?: { containerBuilder?: () => Container<string, any>; }) {
-        if (Server.#instances > 0) {
-            throw new Error('Only one instance of Server should be created.');
-        }
+        super(async (req, res) => await this.process(req, res));
 
-        Server.#instances++;
         this.#containerBuilder = options?.containerBuilder ?? (() => new Container<string, any>());
-
-        this.#server = createServer(async (req, res) => await this.process(req, res));
     }
 
     /** @internal */
@@ -88,31 +79,6 @@ export default class Server {
         }
     }
 
-    /**
-     * Starts the HTTP server on the specified port.
-     */
-    listen(port: number = 80): HTTPServer {
-        return this.#server.listen(port);
-    }
-
-    /**
-     * Stops the HTTP server.
-     */
-    stop(): HTTPServer {
-        return this.#server.close();
-    }
-
-    /**
-     * Applies a middleware before every Request.
-     *
-     * ContentLengthMiddleware is applied by default before any other Middleware.
-     */
-    pipe(middleware: Constructor<Middleware>): Server {
-        this.#pipeline.push(middleware);
-
-        return this;
-    }
-
     /** @internal */
     async processRequest(request: Request): Promise<Response> {
         let index = 0;
@@ -124,6 +90,17 @@ export default class Server {
         };
 
         return await next(request);
+    }
+
+    /**
+     * Applies a middleware before every Request.
+     *
+     * ContentLengthMiddleware is applied by default before any other Middleware.
+     */
+    pipe(middleware: Constructor<Middleware>): Server {
+        this.#pipeline.push(middleware);
+
+        return this;
     }
 
     /**

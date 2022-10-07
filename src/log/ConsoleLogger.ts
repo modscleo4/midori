@@ -39,7 +39,7 @@ export default class ConsoleLogger extends Logger {
         }
 
         if (options?.context !== undefined) {
-            fn(logMessage, options?.context);
+            fn(logMessage + (options?.separator ?? ' ') + options?.context);
         } else {
             fn(logMessage);
         }

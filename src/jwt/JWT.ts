@@ -30,8 +30,12 @@ export default class JWT {
         const publicKey = publicKeyFile ? readFileSync(publicKeyFile, { encoding: 'utf8' }) : undefined;
         const privateKey = privateKeyFile ? readFileSync(privateKeyFile, { encoding: 'utf8' }) : undefined;
 
+        if (![JWTAlgorithm.HS256, JWTAlgorithm.HS384, JWTAlgorithm.HS512].includes(alg) && !privateKey) {
+            throw new Error('Private key is required for this algorithm');
+        }
+
         this.#alg = alg;
-        this.#secretOrPrivateKey = ([JWTAlgorithm.HS256, JWTAlgorithm.HS384, JWTAlgorithm.HS512].includes(alg) ? secret : privateKey) || 'secret';
+        this.#secretOrPrivateKey = ([JWTAlgorithm.HS256, JWTAlgorithm.HS384, JWTAlgorithm.HS512].includes(alg) ? secret : privateKey)!;
     }
 
     sign(payload: Payload): string {
