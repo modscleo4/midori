@@ -18,7 +18,7 @@ import { IncomingMessage, IncomingHttpHeaders } from "http";
 import Container from "../app/Container.js";
 
 /**
- * Basic class representing an HTTP Request.
+ * Basic class representing a HTTP Request.
  */
 export default class Request {
     #req: IncomingMessage;

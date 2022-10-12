@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import User from "./User.js";
+import Server from "./Server.js";
 
-export default abstract class UserProvider {
-    abstract getUserById(id: string): Promise<User | null>;
+export default abstract class ServiceProvider<T> {
+    static service: string;
 
-    abstract getUserByCredentials(username: string, password: string): Promise<User | null>;
+    abstract register(server: Server): T;
 }

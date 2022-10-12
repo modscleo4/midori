@@ -18,10 +18,11 @@ import Server from "../app/Server.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
+import { RouterServiceProvider } from "../providers/RouterServiceProvider.js";
 import Router from "../router/Router.js";
 
 /**
- * Middleware to route the request to the correct handler.
+ * Middleware to route the request to the correct handler using the Router Service.
  */
 export default class RouterMiddleware extends Middleware {
     #router: Router;
@@ -29,7 +30,7 @@ export default class RouterMiddleware extends Middleware {
     constructor(server: Server) {
         super(server);
 
-        this.#router = server.providers.get('Router');
+        this.#router = server.services.get(RouterServiceProvider);
     }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {

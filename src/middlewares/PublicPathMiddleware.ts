@@ -25,7 +25,7 @@ import { Constructor } from "../util/types.js";
 /**
  * Middleware to serve static files from a given directory.
  */
-export default function PublicPathMiddleware(options: { path: string; indexFiles?: string[] }): Constructor<Middleware> {
+export default function PublicPathMiddlewareFactory(options: { path: string; indexFiles?: string[] }): Constructor<Middleware> {
     return class extends Middleware {
         async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
             if (req.method !== 'GET') {

@@ -19,9 +19,10 @@ import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import Logger, { LogColor } from "../log/Logger.js";
+import { LoggerServiceProvider } from "../providers/LoggerServiceProvider.js";
 
 /**
- * Log every unhandled error to the Logger Service Provider.
+ * Log every unhandled error to the Logger Service.
  */
 export default class ErrorLoggerMiddleware extends Middleware {
     #logger: Logger;
@@ -29,7 +30,7 @@ export default class ErrorLoggerMiddleware extends Middleware {
     constructor(server: Server) {
         super(server);
 
-        this.#logger = server.providers.get('Logger');
+        this.#logger = server.services.get(LoggerServiceProvider);
     }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {

@@ -22,7 +22,7 @@ import { Constructor } from "../util/types.js";
 /**
  * Provides a middleware for CORS setup.
  */
-export default function CORSMiddleware(
+export default function CORSMiddlewareFactory(
     options?: {
         origin?: string;
         methods?: string;

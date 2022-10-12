@@ -38,6 +38,10 @@ export class ReadonlyContainer<K, V> {
     has(key: K): boolean {
         return this.#data.has(key);
     }
+
+    [Symbol.iterator]() {
+        return this.#data[Symbol.iterator]();
+    }
 }
 
 /**

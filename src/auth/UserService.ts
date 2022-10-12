@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-/**
- * Provides a hash function for strings.
- */
-export default abstract class Hash {
-    /**
-     * Creates a hash from the specified string.
-     */
-    abstract hash(data: string | Buffer, options?: { salt?: Buffer, cost?: number; }): string;
+import User from "./User.js";
 
-    /**
-     * Compares the specified hash with the specified string.
-     */
-    abstract verify(hash: string, data: string | Buffer): boolean;
+export default abstract class UserService {
+    abstract getUserById(id: string): Promise<User | null>;
+
+    abstract getUserByCredentials(username: string, password: string): Promise<User | null>;
 }

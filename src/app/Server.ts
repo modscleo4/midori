@@ -14,40 +14,40 @@
  * limitations under the License.
  */
 
-import { createServer, IncomingMessage, ServerResponse, Server as HTTPServer } from "http";
+import { IncomingMessage, ServerResponse, Server as HTTPServer } from "http";
 
 import Request from "../http/Request.js";
-import Container, { ReadonlyContainer } from "./Container.js";
+import Container from "./Container.js";
 import { Constructor } from "../util/types.js";
 import Middleware from "../http/Middleware.js";
 import Response from "../http/Response.js";
 import ContentLengthMiddleware from "../middlewares/ContentLengthMiddleware.js";
-import UnknownServiceProviderError from "../errors/UnknownServiceProviderError.js";
+import UnknownServiceError from "../errors/UnknownServiceError.js";
+import ServiceProvider from "./ServiceProvider.js";
 
-class ServiceProviderContainer extends Container<string, any> {
+class ServiceContainer extends Container<string, any> {
     get(key: string): any {
         if (!this.has(key)) {
-            throw new UnknownServiceProviderError(key);
+            throw new UnknownServiceError(key);
         }
 
         return super.get(key);
     }
 }
 
-class ReadonlyServiceProviderContainer extends ReadonlyContainer<string, any> {
-    get(key: string): any {
-        if (!this.has(key)) {
-            throw new UnknownServiceProviderError(key);
-        }
-
-        return super.get(key);
-    }
+interface ReadonlyServiceContainer {
+    get<T>(service: typeof ServiceProvider<T>): T;
+    has(service: typeof ServiceProvider): boolean;
 }
 
 export default class Server extends HTTPServer {
-    #providers = new ServiceProviderContainer();
+    #services = new ServiceContainer();
     #pipeline: Constructor<Middleware>[] = [ContentLengthMiddleware];
     #containerBuilder: () => Container<string, any>;
+    #readonlyServices: ReadonlyServiceContainer = {
+        get: provider => this.#services.get(provider.service),
+        has: provider => this.#services.has(provider.service),
+    };
 
     constructor(options?: { containerBuilder?: () => Container<string, any>; }) {
         super(async (req, res) => await this.process(req, res));
@@ -84,6 +84,11 @@ export default class Server extends HTTPServer {
         let index = 0;
 
         const next = async (req: Request): Promise<Response> => {
+            if (index == this.#pipeline.length) {
+                // No more middlewares to process
+                throw new Error('No more middlewares to process the request.');
+            }
+
             const middleware = new this.#pipeline[index++](this);
 
             return await middleware.process(req, next);
@@ -104,19 +109,22 @@ export default class Server extends HTTPServer {
     }
 
     /**
-     * Injects a Service Provider into the Server by the given name.
+     * Injects a Service Provider into the Server.
      */
-    install(name: string, provider: any): Server {
-        if (this.#providers.has(name)) {
+    install<T>(provider: Constructor<ServiceProvider<T>> & { [K in keyof typeof ServiceProvider<T>]: typeof ServiceProvider<T>[K] }): Server {
+        const name = provider.service;
+        if (this.#services.has(name)) {
             throw new Error(`A Service Provider with the name '${name}' already exists.`);
         }
 
-        this.#providers.set(name, provider);
+        const instance = new provider(this);
+
+        this.#services.set(name, instance.register(this));
 
         return this;
     }
 
-    get providers() {
-        return new ReadonlyServiceProviderContainer(this.#providers);
+    get services(): ReadonlyServiceContainer {
+        return this.#readonlyServices;
     }
 }

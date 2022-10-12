@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-/**
- * Provides a hash function for strings.
- */
-export default abstract class Hash {
-    /**
-     * Creates a hash from the specified string.
-     */
-    abstract hash(data: string | Buffer, options?: { salt?: Buffer, cost?: number; }): string;
+export default class UnknownServiceError extends Error {
+    name: string = 'UnknownServiceError';
 
-    /**
-     * Compares the specified hash with the specified string.
-     */
-    abstract verify(hash: string, data: string | Buffer): boolean;
+    constructor(serviceName: string) {
+        super(`Unknown service: ${serviceName}`);
+    }
 }

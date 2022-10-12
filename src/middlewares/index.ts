@@ -1,10 +1,10 @@
 export { default as AuthBasicMiddleware } from './AuthBasicMiddleware.js';
 export { default as AuthBearerMiddleware } from './AuthBearerMiddleware.js';
 export { default as ContentLengthMiddleware } from './ContentLengthMiddleware.js';
-export { default as ContentSecurityPolicyMiddleware, ContentSecurityPolicyValue } from './ContentSecurityPolicyMiddleware.js';
-export { default as CORSMiddleware } from './CORSMiddleware.js';
+export { default as ContentSecurityPolicyMiddlewareFactory, ContentSecurityPolicyValue } from './ContentSecurityPolicyMiddleware.js';
+export { default as CORSMiddlewareFactory } from './CORSMiddleware.js';
 export { default as DispatchMiddleware } from './DispatchMiddleware.js';
-export { default as ErrorMiddleware } from './ErrorMiddleware.js';
+export { default as ErrorMiddlewareFactory } from './ErrorMiddleware.js';
 export { default as ErrorLoggerMiddleware } from './ErrorLoggerMiddleware.js';
 export { default as HTTPErrorMiddleware } from './HTTPErrorMiddleware.js';
 export { default as ImplicitHeadMiddleware } from './ImplicitHeadMiddleware.js';
@@ -12,8 +12,8 @@ export { default as ImplicitOptionsMiddleware } from './ImplicitOptionsMiddlewar
 export { default as MethodNotAllowedMiddleware } from './MethodNotAllowedMiddleware.js';
 export { default as NotFoundMiddleware } from './NotFoundMiddleware.js';
 export { default as ParseBodyMiddleware } from './ParseBodyMiddleware.js';
-export { default as PublicPathMiddleware } from './PublicPathMiddleware.js';
+export { default as PublicPathMiddlewareFactory } from './PublicPathMiddleware.js';
 export { default as ReadBodyMiddleware } from './ReadBodyMiddleware.js';
 export { default as RequestLoggerMiddleware } from './RequestLoggerMiddleware.js';
-export { default as ResponseCompressionMiddleware, CompressionAlgorithm } from './ResponseCompressionMiddleware.js';
+export { default as ResponseCompressionMiddlewareFactory, CompressionAlgorithm } from './ResponseCompressionMiddleware.js';
 export { default as RouterMiddleware } from './RouterMiddleware.js';

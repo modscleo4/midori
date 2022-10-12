@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-/**
- * Provides a hash function for strings.
- */
-export default abstract class Hash {
-    /**
-     * Creates a hash from the specified string.
-     */
-    abstract hash(data: string | Buffer, options?: { salt?: Buffer, cost?: number; }): string;
+import Server from "../app/Server.js";
+import ServiceProvider from "../app/ServiceProvider.js";
+import Auth from "../auth/Auth.js";
+import UserProvider from "../auth/UserService.js";
+import { UserServiceProvider } from "./UserServiceProvider.js";
 
-    /**
-     * Compares the specified hash with the specified string.
-     */
-    abstract verify(hash: string, data: string | Buffer): boolean;
+export default class AuthServiceProvider extends ServiceProvider<Auth> {
+    static service: string = 'Auth';
+
+    register(server: Server): Auth {
+        const userProvider = server.services.get(UserServiceProvider);
+
+        return new Auth(userProvider);
+    }
 }

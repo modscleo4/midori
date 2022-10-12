@@ -20,6 +20,7 @@ import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
+import AuthServiceProvider from "../providers/AuthServiceProvider.js";
 
 /**
  * Provides a middleware for authentication using Basic Authentication.
@@ -30,7 +31,7 @@ export default class AuthBasicMiddleware extends Middleware {
     constructor(server: Server) {
         super(server);
 
-        this.#auth = server.providers.get('Auth');
+        this.#auth = server.services.get(AuthServiceProvider);
     }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {

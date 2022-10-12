@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-import Server from "../app/Server.js";
 import Request from "../http/Request.js";
 import User from "./User.js";
-import UserProvider from "./UserProvider.js";
+import UserService from "./UserService.js";
 
 export default class Auth {
-    #userProvider: UserProvider;
+    #userService: UserService;
 
-    constructor(server: Server) {
-        this.#userProvider = server.providers.get('User');
+    constructor(userService: UserService) {
+        this.#userService = userService;
     }
 
     async authenticateById(request: Request, id: string): Promise<User> {
-        const user = await this.#userProvider.getUserById(id);
+        const user = await this.#userService.getUserById(id);
         if (user === null) {
             throw new Error('Invalid User.');
         }
@@ -49,7 +48,7 @@ export default class Auth {
     }
 
     async attempt(username: string, password: string): Promise<User | null> {
-        return await this.#userProvider.getUserByCredentials(username, password);
+        return await this.#userService.getUserByCredentials(username, password);
     }
 
     check(request: Request): boolean {

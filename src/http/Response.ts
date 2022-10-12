@@ -21,7 +21,7 @@ import { Readable } from "stream";
 import { EStatusCode } from "./EStatusCode.js";
 
 /**
- * Representation of an HTTP Response.
+ * Representation of a HTTP Response.
  */
 export default class Response {
     #headers = new Map<string, OutgoingHttpHeader>();

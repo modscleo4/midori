@@ -21,6 +21,8 @@ import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import JWT from "../jwt/JWT.js";
+import AuthServiceProvider from "../providers/AuthServiceProvider.js";
+import { JWTServiceProvider } from "../providers/JWTServiceProvider.js";
 import { Payload } from "../util/jwt.js";
 
 /**
@@ -34,8 +36,8 @@ export default class AuthBearerMiddleware extends Middleware {
     constructor(server: Server) {
         super(server);
 
-        this.#jwt = server.providers.get('JWT');
-        this.#auth = server.providers.get('Auth');
+        this.#jwt = server.services.get(JWTServiceProvider);
+        this.#auth = server.services.get(AuthServiceProvider);
     }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {

@@ -21,14 +21,16 @@ import { randomBytes, scryptSync } from "crypto";
  * Scrypt Hash implementation.
  */
 export default class Scrypt extends Hash {
-    hash(data: string, options?: { salt?: string, cost?: number; }): string {
-        const salt = Buffer.from(options?.salt || randomBytes(16).toString('hex'));
+    hash(data: string | Buffer, options?: { salt?: Buffer, cost?: number; }): string {
+        const salt = options?.salt ?? randomBytes(16);
         const cost = options?.cost || 10;
-        return ['', '2s', cost, salt, scryptSync(data, salt, 64, { N: 1 << (cost) }).toString('hex')].join('$');
+        const hashData = scryptSync(data, salt, 64, { N: 1 << cost }).toString('base64');
+
+        return ['', '7', cost, salt.toString('base64'), hashData].join('$');
     }
 
-    verify(hash: string, data: string): boolean {
-        const [, , cost, salt, hashData] = hash.split('$');
-        return this.hash(data, { salt, cost: parseInt(cost) }) === hash;
+    verify(hash: string, data: string | Buffer): boolean {
+        const [, , cost, salt] = hash.split('$');
+        return this.hash(data, { salt: Buffer.from(salt, 'base64'), cost: parseInt(cost) }) === hash;
     }
 }

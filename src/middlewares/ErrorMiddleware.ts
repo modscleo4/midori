@@ -23,7 +23,7 @@ import { Constructor } from "../util/types.js";
 /**
  * Middleware to handle any uncaught error, sending a 500 response with the error info, if set to expose errors.
  */
-export default function ErrorMiddleware(options: { exposeErrors?: boolean; }): Constructor<Middleware> {
+export default function ErrorMiddlewareFactory(options: { exposeErrors?: boolean; }): Constructor<Middleware> {
     return class extends Middleware {
         async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
             try {

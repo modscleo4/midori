@@ -59,7 +59,7 @@ function globMatch(pattern: string, search: string): boolean {
 /**
  * Compress the response body using the best algorithm available, based on the request Accept-Encoding header.
  */
-export default function ResponseCompressionMiddleware(options?: { contentTypes?: string[], defaultAlgorithm?: CompressionAlgorithm; }): Constructor<Middleware> {
+export default function ResponseCompressionMiddlewareFactory(options?: { contentTypes?: string[], defaultAlgorithm?: CompressionAlgorithm; }): Constructor<Middleware> {
     return class extends Middleware {
         async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
             const res = await next(req);

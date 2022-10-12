@@ -1,10 +1,10 @@
 {
     "compilerOptions": {
-        "moduleResolution": "NodeNext",
-        "module": "ESNext",
-        "target": "ESNext",
+        "moduleResolution": "Node16",
+        "module": "ES2022",
+        "target": "ES2022",
         "lib": [
-            "ESNext"
+            "ES2022"
         ],
         "sourceMap": true,
         "declaration": true,
