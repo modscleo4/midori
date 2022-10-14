@@ -30,7 +30,7 @@ export enum CompressionAlgorithm {
     IDENTITY = 'identity',
 }
 
-function parseAcceptEncoding(acceptEncoding: string): string[] {
+function parseAcceptEncoding(acceptEncoding: string, order: CompressionAlgorithm[]): string[] {
     const algorithms = acceptEncoding.split(',').map((algorithm) => {
         const [alg, q] = algorithm.split(';');
         return {
@@ -39,7 +39,22 @@ function parseAcceptEncoding(acceptEncoding: string): string[] {
         };
     });
 
-    algorithms.sort((a, b) => b.q - a.q);
+    function algOrder(a: CompressionAlgorithm, b: CompressionAlgorithm) {
+        const aIndex = order.indexOf(a);
+        const bIndex = order.indexOf(b);
+
+        if (aIndex === -1 && bIndex === -1) {
+            return 0;
+        } else if (aIndex === -1) {
+            return 1;
+        } else if (bIndex === -1) {
+            return -1;
+        }
+
+        return aIndex - bIndex;
+    }
+
+    algorithms.sort((a, b) => b.q - a.q || algOrder(a.alg, b.alg));
 
     return algorithms.map((a) => a.alg);
 }
@@ -59,7 +74,7 @@ function globMatch(pattern: string, search: string): boolean {
 /**
  * Compress the response body using the best algorithm available, based on the request Accept-Encoding header.
  */
-export default function ResponseCompressionMiddlewareFactory(options?: { contentTypes?: string[], defaultAlgorithm?: CompressionAlgorithm; }): Constructor<Middleware> {
+export default function ResponseCompressionMiddlewareFactory(options?: { contentTypes?: string[], defaultAlgorithm?: CompressionAlgorithm; order?: CompressionAlgorithm[] }): Constructor<Middleware> {
     return class extends Middleware {
         async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
             const res = await next(req);
@@ -74,7 +89,7 @@ export default function ResponseCompressionMiddlewareFactory(options?: { content
 
                 const algorithm = (header === '*')
                     ? options?.defaultAlgorithm ?? CompressionAlgorithm.BROTLI
-                    : parseAcceptEncoding(Array.isArray(header) ? header.at(-1) ?? '' : header)[0];
+                    : parseAcceptEncoding(Array.isArray(header) ? header.at(-1) ?? '' : header, options?.order ?? [CompressionAlgorithm.BROTLI, CompressionAlgorithm.GZIP, CompressionAlgorithm.DEFLATE])[0];
 
                 if (!algorithm) {
                     return res;
