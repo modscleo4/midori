@@ -10,6 +10,7 @@
         "declaration": true,
         "stripInternal": true,
         "strict": true,
+        "alwaysStrict": true,
         "pretty": true,
         "experimentalDecorators": true,
         "outDir": "./dist"

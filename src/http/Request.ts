@@ -15,33 +15,29 @@
  */
 
 import { IncomingMessage, IncomingHttpHeaders } from "http";
+import { Socket } from "net";
 import Container from "../app/Container.js";
 
 /**
  * Basic class representing a HTTP Request.
  */
-export default class Request {
-    #req: IncomingMessage;
-    #headers: IncomingHttpHeaders;
-    #query: URLSearchParams;
+export default class Request extends IncomingMessage {
+    #query?: URLSearchParams;
     #params = new Map<string, string>();
-    #method: string;
-    #path: string;
+    #path?: string;
     #body: string = '';
     #parsedBody: any = undefined;
-    #container: Container<string, any>;
+    #container?: Container<string, any>;
 
     static maxBodySize: number = 1024 * 1024;
 
-    constructor(req: IncomingMessage, container: Container<string, any>) {
-        this.#req = req;
+    /** @internal */
+    init(container: Container<string, any>) {
         this.#container = container;
 
-        const url = new URL(req.url ?? '', `http://${req.headers.host}`);
+        const url = new URL(this.url ?? '', `http://${this.headers.host}`);
 
-        this.#headers = req.headers;
         this.#query = url.searchParams;
-        this.#method = req.method ?? '';
         this.#path = url.pathname + (url.pathname.endsWith('/') ? '' : '/');
     }
 
@@ -50,9 +46,9 @@ export default class Request {
         // Wait for the body to be fully read before processing the request
         await new Promise((resolve, reject) => {
             let len = 0;
-            this.#req.on('readable', () => {
+            this.on('readable', () => {
                 let chunk: Buffer;
-                while ((chunk = this.#req.read(1024)) !== null) {
+                while ((chunk = this.read(1024)) !== null) {
                     len += chunk.length;
                     if (len > Request.maxBodySize) {
                         reject(new Error('Max body size exceeded.'));
@@ -62,8 +58,8 @@ export default class Request {
                 }
             });
 
-            this.#req.on('end', resolve);
-            this.#req.on('error', reject);
+            this.on('end', resolve);
+            this.on('error', reject);
         });
     }
 
@@ -73,9 +69,9 @@ export default class Request {
             return;
         }
 
-        if (this.#headers['content-type']?.startsWith('application/json')) {
+        if (this.headers['content-type']?.startsWith('application/json')) {
             this.#parsedBody = JSON.parse(this.#body);
-        } else if (this.#headers['content-type']?.startsWith('application/x-www-form-urlencoded')) {
+        } else if (this.headers['content-type']?.startsWith('application/x-www-form-urlencoded')) {
             const parsed = new URLSearchParams(this.#body);
 
             const obj: Record<string, string> = {};
@@ -91,36 +87,23 @@ export default class Request {
             if (this.#parsedBody.documentElement.nodeName === 'parsererror') {
                 throw new Error('Invalid XML');
             }
-        }*/ else if (this.#headers['content-type']?.startsWith('text/plain')) {
+        }*/ else if (this.headers['content-type']?.startsWith('text/plain')) {
             this.#parsedBody = this.#body;
         } else {
             throw new Error('Unsupported content type');
         }
     }
 
-    get headers() {
-        return this.#headers;
-    }
-
     get query() {
-        return this.#query;
+        return this.#query!;
     }
 
     get params() {
         return this.#params;
     }
 
-    get method() {
-        return this.#method;
-    }
-
-    /** @internal */
-    set method(method: string) {
-        this.#method = method;
-    }
-
     get path() {
-        return this.#path;
+        return this.#path!;
     }
 
     get body() {
@@ -136,6 +119,6 @@ export default class Request {
     }
 
     get container() {
-        return this.#container;
+        return this.#container!;
     }
 }

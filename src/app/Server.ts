@@ -50,17 +50,17 @@ export default class Server extends HTTPServer {
     };
 
     constructor(options?: { containerBuilder?: () => Container<string, any>; }) {
-        super(async (req, res) => await this.process(req, res));
+        super({ IncomingMessage: Request }, async (req, res) => await this.process(<Request> req, res));
 
         this.#containerBuilder = options?.containerBuilder ?? (() => new Container<string, any>());
     }
 
     /** @internal */
-    async process(req: IncomingMessage, res: ServerResponse): Promise<void> {
-        const request = new Request(req, this.#containerBuilder());
+    async process(req: Request, res: ServerResponse): Promise<void> {
+        req.init(this.#containerBuilder());
 
         try {
-            const response = await this.processRequest(request);
+            const response = await this.processRequest(req);
 
             // Send the returning response status code, headers and body to the response
             res.statusCode = response.status;
@@ -124,7 +124,7 @@ export default class Server extends HTTPServer {
         return this;
     }
 
-    get services(): ReadonlyServiceContainer {
+    get services() {
         return this.#readonlyServices;
     }
 }
