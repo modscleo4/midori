@@ -32,8 +32,9 @@ export default class ImplicitHeadMiddleware extends Middleware {
 
             req.container.set('::route', route);
 
-            const res = await next(req);
-            return res.empty();
+            req.method = 'HEAD';
+
+            return await next(req);
         }
 
         return await next(req);

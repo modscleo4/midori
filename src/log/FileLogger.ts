@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { appendFileSync } from "fs";
+import { appendFileSync } from "node:fs";
 import Logger, { LoggerOptions, LogLevel, LogOptions } from "./Logger.js";
 
 /**

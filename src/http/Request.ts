@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { IncomingMessage, IncomingHttpHeaders } from "http";
-import { Socket } from "net";
+import { IncomingMessage } from "node:http";
+
 import Container from "../app/Container.js";
 
 /**

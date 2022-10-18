@@ -14,18 +14,6 @@
  * limitations under the License.
  */
 
-import { Transform } from "node:stream";
-import { promisify } from "node:util";
-import { createDeflate, deflate } from "node:zlib";
-
-export default class Deflate {
-    static async compress(data: Buffer) {
-        return await promisify(deflate)(data);
-    }
-
-    static compressStream(): Transform {
-        const stream = createDeflate();
-
-        return stream;
-    }
+export default class JWTError extends Error {
+    name: string = 'JWTError';
 }

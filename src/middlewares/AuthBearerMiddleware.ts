@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Server from "../app/Server.js";
+import { Application } from "../app/Server.js";
 import Auth from "../auth/Auth.js";
 import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
@@ -33,11 +33,11 @@ export default class AuthBearerMiddleware extends Middleware {
     #jwt: JWT;
     #auth: Auth;
 
-    constructor(server: Server) {
-        super(server);
+    constructor(app: Application) {
+        super(app);
 
-        this.#jwt = server.services.get(JWTServiceProvider);
-        this.#auth = server.services.get(AuthServiceProvider);
+        this.#jwt = app.services.get(JWTServiceProvider);
+        this.#auth = app.services.get(AuthServiceProvider);
     }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
@@ -63,14 +63,21 @@ export default class AuthBearerMiddleware extends Middleware {
 
         const [, payloadBase64] = credentials.split('.');
 
-        const payload: Payload = JSON.parse(Buffer.from(payloadBase64, 'base64url').toString());
+        let payload: Payload;
+        try {
+            payload = JSON.parse(Buffer.from(payloadBase64, 'base64url').toString());
+        } catch (e) {
+            return Response.json({ message: 'Invalid Authorization credentials.' })
+                .withHeader('WWW-Authenticate', 'Bearer')
+                .withStatus(EStatusCode.UNAUTHORIZED);
+        }
 
-        if (!(
-            typeof payload === 'object'
-            && payload.sub
-            && payload.exp
-            && payload.iat
-        )) {
+        if (
+            typeof payload !== 'object'
+            || !payload.sub
+            || !payload.exp
+            || !payload.iat
+        ) {
             return Response.json({ message: 'Invalid Authorization credentials.' })
                 .withHeader('WWW-Authenticate', 'Bearer')
                 .withStatus(EStatusCode.UNAUTHORIZED);

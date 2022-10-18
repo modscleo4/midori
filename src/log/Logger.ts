@@ -121,4 +121,25 @@ export default abstract class Logger {
     get colorsEnabled(): boolean {
         return this.#colorsEnabled;
     }
+
+    static levelToColor(level: LogLevel): LogColor {
+        switch (level) {
+            case LogLevel.DEBUG:
+                return LogColor.GRAY;
+            case LogLevel.INFO:
+                return LogColor.LIGHT_GREEN;
+            case LogLevel.NOTICE:
+                return LogColor.LIGHT_BLUE;
+            case LogLevel.WARNING:
+                return LogColor.YELLOW;
+            case LogLevel.ERROR:
+                return LogColor.RED;
+            case LogLevel.CRITICAL:
+                return LogColor.MAGENTA;
+            case LogLevel.ALERT:
+                return LogColor.LIGHT_YELLOW;
+            case LogLevel.EMERGENCY:
+                return LogColor.LIGHT_RED;
+        }
+    }
 }

@@ -44,6 +44,13 @@ export default class Router {
     }
 
     /**
+     * Handle a HEAD (Body-less GET) request.
+     */
+    head(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
+        return this.#addRoute('HEAD', path, handler, middlewares);
+    }
+
+    /**
      * Handles a POST (Create) request.
      */
     post(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {

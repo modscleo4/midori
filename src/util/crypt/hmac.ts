@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { createHmac } from "crypto";
+import { createHmac } from "node:crypto";
 
 /**
- * Hash-based Message Authentication Code, as used by JWT
+ * Hash-based Message Authentication Code, as used by JWS.
  */
 export default class HMAC {
     static sign(shaVersion: 256 | 384 | 512, secret: string, data: Buffer): Buffer {
@@ -29,6 +29,6 @@ export default class HMAC {
     static verify(shaVersion: 256 | 384 | 512, secret: string, data: Buffer, signature: Buffer): boolean {
         const hmac = createHmac('sha' + shaVersion, secret);
         hmac.update(data);
-        return Buffer.compare(hmac.digest(), signature) === 0;
+        return hmac.digest().equals(signature);
     }
 }

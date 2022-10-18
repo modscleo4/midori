@@ -26,8 +26,22 @@ export default class ContentLengthMiddleware extends Middleware {
         const res = await next(req);
 
         // A server MUST NOT send a Content-Length header field in any response with a status code of 1xx (Informational) or 204 (No Content).
-        if (!(res.status < 200 || res.status === 204)) {
-            res.withHeader('Content-Length', res.bodyLength);
+        if (res.status >= 200 && res.status !== 204 && !res.headers.has('Content-Length')) {
+            if (res.bodyLength > -1) { // The bodyLength is -1 if the body is a stream
+                res.headers.set('Content-Length', res.bodyLength);
+            } else if (req.method === 'HEAD') { // Calculate Content-Length for HEAD requests
+                await new Promise<void>((resolve, reject) => {
+                    let bodyLength = 0;
+                    const body = res.body;
+
+                    body.on('data', chunk => bodyLength += chunk.length);
+                    body.on('close', () => {
+                        res.headers.set('Content-Length', bodyLength);
+                        resolve();
+                    });
+                    body.on('error', reject);
+                });
+            }
         }
 
         return res;

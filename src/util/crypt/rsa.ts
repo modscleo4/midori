@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { createSign, createVerify, KeyObject } from "crypto";
+import { createSign, createVerify, KeyObject } from "node:crypto";
 
 /**
- * Rivest–Shamir–Adleman, as used by JWT
+ * Rivest–Shamir–Adleman, as used by JWS.
  */
 export default class RSA {
     static sign(shaVersion: 256 | 384 | 512, privateKey: KeyObject, data: Buffer): Buffer {

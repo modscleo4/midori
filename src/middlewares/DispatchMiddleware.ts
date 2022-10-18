@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Server from "../app/Server.js";
+import { Application } from "../app/Server.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
@@ -24,8 +24,8 @@ import Route from "../router/Route.js";
  * Dispatches the Request to the Handler from the Router.
  */
 export default class DispatchMiddleware extends Middleware {
-    constructor(private server: Server) {
-        super(server);
+    constructor(private app: Application) {
+        super(app);
     }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
@@ -41,6 +41,6 @@ export default class DispatchMiddleware extends Middleware {
         }
 
         // Handle the request and get the response
-        return await route.handle(req, this.server);
+        return await route.handle(req, this.app);
     }
 }

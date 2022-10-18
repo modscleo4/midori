@@ -1,6 +1,6 @@
 import { performance } from "perf_hooks";
 
-import Server from "../app/Server.js";
+import { Application } from "../app/Server.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
@@ -13,10 +13,10 @@ import { LoggerServiceProvider } from "../providers/LoggerServiceProvider.js";
 export default class RequestLoggerMiddleware extends Middleware {
     #logger: Logger;
 
-    constructor(server: Server) {
-        super(server);
+    constructor(app: Application) {
+        super(app);
 
-        this.#logger = server.services.get(LoggerServiceProvider);
+        this.#logger = app.services.get(LoggerServiceProvider);
     }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {

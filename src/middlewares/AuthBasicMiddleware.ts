@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Server from "../app/Server.js";
+import { Application } from "../app/Server.js";
 import Auth from "../auth/Auth.js";
 import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
@@ -28,10 +28,10 @@ import AuthServiceProvider from "../providers/AuthServiceProvider.js";
 export default class AuthBasicMiddleware extends Middleware {
     #auth: Auth;
 
-    constructor(server: Server) {
-        super(server);
+    constructor(app: Application) {
+        super(app);
 
-        this.#auth = server.services.get(AuthServiceProvider);
+        this.#auth = app.services.get(AuthServiceProvider);
     }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
@@ -57,10 +57,10 @@ export default class AuthBasicMiddleware extends Middleware {
 
         const [username, password] = Buffer.from(credentialsBase64, 'base64').toString('utf-8').split(':');
 
-        if (!(
-            username
-            && password
-        )) {
+        if (
+            !username
+            || !password
+        ) {
             return Response.json({ message: 'Invalid Authorization credentials.' })
                 .withHeader('WWW-Authenticate', 'Basic')
                 .withStatus(EStatusCode.UNAUTHORIZED);

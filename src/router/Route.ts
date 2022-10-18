@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Server from "../app/Server.js";
+import { Application } from "../app/Server.js";
 import Handler from "../http/Handler.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
@@ -59,18 +59,18 @@ export default class Route {
     }
 
     /** @internal */
-    async handle(req: Request, server: Server): Promise<Response> {
+    async handle(req: Request, app: Application): Promise<Response> {
         let index = 0;
 
         const next = async (req: Request): Promise<Response> => {
             if (index == this.#middlewares.length) {
                 // No more middlewares to process
-                const handler = new this.#handler(server);
+                const handler = new this.#handler(app);
 
                 return await handler.handle(req);
             }
 
-            const middleware = new this.#middlewares[index++](server);
+            const middleware = new this.#middlewares[index++](app);
 
             return await middleware.process(req, next);
         };

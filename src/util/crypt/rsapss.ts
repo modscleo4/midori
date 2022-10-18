@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { createSign, createVerify, KeyObject, constants } from "crypto";
+import { createSign, createVerify, KeyObject, constants } from "node:crypto";
 
 /**
- * Rivest–Shamir–Adleman + Probabilistic Signature Scheme, as used by JWT
+ * Rivest–Shamir–Adleman + Probabilistic Signature Scheme, as used by JWS.
  */
 export default class RSAPSS {
     static sign(shaVersion: 256 | 384 | 512, privateKey: KeyObject, data: Buffer): Buffer {

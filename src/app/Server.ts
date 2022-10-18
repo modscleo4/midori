@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { IncomingMessage, ServerResponse, Server as HTTPServer } from "http";
+import { ServerResponse, Server as HTTPServer } from "node:http";
 
 import Request from "../http/Request.js";
 import Container from "./Container.js";
@@ -40,7 +40,11 @@ interface ReadonlyServiceContainer {
     has(service: typeof ServiceProvider): boolean;
 }
 
-export default class Server extends HTTPServer {
+export interface Application {
+    readonly services: ReadonlyServiceContainer;
+}
+
+export default class Server extends HTTPServer implements Application {
     #services = new ServiceContainer();
     #pipeline: Constructor<Middleware>[] = [ContentLengthMiddleware];
     #containerBuilder: () => Container<string, any>;
@@ -67,6 +71,12 @@ export default class Server extends HTTPServer {
 
             for (const [header, value] of response.headers) {
                 res.setHeader(header, value);
+            }
+
+            // HEAD requests should not have a body
+            if (req.method === 'HEAD') {
+                res.end();
+                return;
             }
 
             response.body.pipe(res, { end: true });

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { colorizeBackground, colorizeForeground } from "../util/ascii.js";
 import Logger, { LogLevel, LogOptions } from "./Logger.js";
 
 /**
@@ -25,23 +26,28 @@ export default class ConsoleLogger extends Logger {
             return;
         }
 
-        let logMessage = `[${new Date().toISOString()}] [${LogLevel[level]}] ${message}`;
+        let logDate = `[${new Date().toISOString()}]`;
+        let logLevel = `[${LogLevel[level]}]`;
+        let logMessage = `${message}`;
         const fn = level < LogLevel.WARNING ? console.log : console.error;
 
         if (this.colorsEnabled) {
+            const logLevelColor = Logger.levelToColor(level);
+            logLevel = colorizeForeground(logLevel, logLevelColor);
+
             if (options?.bgColor) {
-                logMessage = `\x1b[${(options.bgColor + 40) + (options.bgColor >= 100 ? ';1' : '')}m${logMessage}\x1b[0m`;
+                logMessage = colorizeBackground(logMessage, options.bgColor);
             }
 
             if (options?.fgColor) {
-                logMessage = `\x1b[${(options.fgColor + 30) + (options.fgColor >= 100 ? ';1' : '')}m${logMessage}\x1b[0m`;
+                logMessage = colorizeForeground(logMessage, options.fgColor);
             }
         }
 
         if (options?.context !== undefined) {
-            fn(logMessage + (options?.separator ?? ' ') + options?.context);
+            fn(`${logDate} ${logLevel} ${logMessage}` + (options?.separator ?? ' ') + options?.context);
         } else {
-            fn(logMessage);
+            fn(`${logDate} ${logLevel} ${logMessage}`);
         }
     }
 }
