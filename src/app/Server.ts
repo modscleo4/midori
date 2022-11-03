@@ -42,6 +42,8 @@ interface ReadonlyServiceContainer {
 
 export interface Application {
     readonly services: ReadonlyServiceContainer;
+
+    readonly production: boolean;
 }
 
 export default class Server extends HTTPServer implements Application {
@@ -52,6 +54,7 @@ export default class Server extends HTTPServer implements Application {
         get: provider => this.#services.get(provider.service),
         has: provider => this.#services.has(provider.service),
     };
+    #production: boolean = false;
 
     constructor(options?: { containerBuilder?: () => Container<string, any>; }) {
         super({ IncomingMessage: Request }, async (req, res) => await this.process(<Request> req, res));
@@ -120,6 +123,8 @@ export default class Server extends HTTPServer implements Application {
 
     /**
      * Injects a Service Provider into the Server.
+     *
+     * @throws {Error}
      */
     install<T>(provider: Constructor<ServiceProvider<T>> & { [K in keyof typeof ServiceProvider<T>]: typeof ServiceProvider<T>[K] }): Server {
         const name = provider.service;
@@ -136,5 +141,13 @@ export default class Server extends HTTPServer implements Application {
 
     get services() {
         return this.#readonlyServices;
+    }
+
+    get production() {
+        return this.#production;
+    }
+
+    set production(value: boolean) {
+        this.#production = value;
     }
 }

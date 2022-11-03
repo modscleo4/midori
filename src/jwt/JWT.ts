@@ -15,6 +15,7 @@
  */
 
 import { readFileSync } from "node:fs";
+
 import { Payload } from "../util/jwt.js";
 import { signJWT, verifyJWS, JWSAlgorithm } from "../util/jws.js";
 import { decryptJWE, encryptJWT, JWEAlgorithm, JWEEncryption } from "../util/jwe.js";

@@ -116,7 +116,7 @@ export default class Response {
     }
 
     get body(): Readable {
-        const sourceStream = this.#stream ?? Readable.from(Buffer.concat(this.#body));
+        const sourceStream = this.#stream ?? Readable.from(this.#body);
 
         if (this.#pipeStreams.length === 0) {
             return sourceStream;

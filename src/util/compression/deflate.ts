@@ -19,7 +19,7 @@ import { promisify } from "node:util";
 import { createDeflate, deflate } from "node:zlib";
 
 export default class Deflate {
-    static async compress(data: Buffer) {
+    static async compress(data: Buffer): Promise<Buffer> {
         return await promisify(deflate)(data);
     }
 

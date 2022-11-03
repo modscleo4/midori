@@ -25,7 +25,7 @@ export default class Request extends IncomingMessage {
     #query?: URLSearchParams;
     #params = new Map<string, string>();
     #path?: string;
-    #body: string = '';
+    #body: Buffer[] = [];
     #parsedBody: any = undefined;
     #container?: Container<string, any>;
 
@@ -54,7 +54,7 @@ export default class Request extends IncomingMessage {
                         reject(new Error('Max body size exceeded.'));
                     }
 
-                    this.#body += chunk.toString();
+                    this.#body.push(chunk);
                 }
             });
 
@@ -65,14 +65,14 @@ export default class Request extends IncomingMessage {
 
     /** @internal */
     parseBody(): void {
-        if (!this.#body) {
+        if (this.#body.length === 0) {
             return;
         }
 
         if (this.headers['content-type']?.startsWith('application/json')) {
-            this.#parsedBody = JSON.parse(this.#body);
+            this.#parsedBody = JSON.parse(this.body.toString());
         } else if (this.headers['content-type']?.startsWith('application/x-www-form-urlencoded')) {
-            const parsed = new URLSearchParams(this.#body);
+            const parsed = new URLSearchParams(this.body.toString());
 
             const obj: Record<string, string> = {};
             for (const [key, value] of parsed) {
@@ -88,7 +88,7 @@ export default class Request extends IncomingMessage {
                 throw new Error('Invalid XML');
             }
         }*/ else if (this.headers['content-type']?.startsWith('text/plain')) {
-            this.#parsedBody = this.#body;
+            // this.#parsedBody = this.body;
         } else {
             throw new Error('Unsupported content type');
         }
@@ -107,12 +107,12 @@ export default class Request extends IncomingMessage {
     }
 
     get body() {
-        return this.#body;
+        return Buffer.concat(this.#body);
     }
 
     get parsedBody() {
         if (this.#parsedBody === undefined) {
-            return this.#body;
+            return this.body;
         }
 
         return this.#parsedBody;

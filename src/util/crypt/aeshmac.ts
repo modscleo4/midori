@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createCipheriv, createVerify, createDecipheriv, KeyObject, createHmac } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHmac } from "node:crypto";
 
 /**
  * Advanced Encryption Standard (Cipher Block Chaining) + Hash-based Message Authentication Code, as used by JWE.
