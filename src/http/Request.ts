@@ -41,57 +41,19 @@ export default class Request extends IncomingMessage {
         this.#path = url.pathname + (url.pathname.endsWith('/') ? '' : '/');
     }
 
-    /** @internal */
-    async readBody(): Promise<void> {
+    async readBody(): Promise<Buffer> {
         // Wait for the body to be fully read before processing the request
-        await new Promise((resolve, reject) => {
-            let len = 0;
-            this.on('readable', () => {
-                let chunk: Buffer;
-                while ((chunk = this.read(1024)) !== null) {
-                    len += chunk.length;
-                    if (len > Request.maxBodySize) {
-                        reject(new Error('Max body size exceeded.'));
-                    }
-
-                    this.#body.push(chunk);
-                }
-            });
-
-            this.on('end', resolve);
-            this.on('error', reject);
-        });
-    }
-
-    /** @internal */
-    parseBody(): void {
-        if (this.#body.length === 0) {
-            return;
-        }
-
-        if (this.headers['content-type']?.startsWith('application/json')) {
-            this.#parsedBody = JSON.parse(this.body.toString());
-        } else if (this.headers['content-type']?.startsWith('application/x-www-form-urlencoded')) {
-            const parsed = new URLSearchParams(this.body.toString());
-
-            const obj: Record<string, string> = {};
-            for (const [key, value] of parsed) {
-                obj[key] = value;
+        let len = 0;
+        for await (const chunk of this) {
+            len += chunk.length;
+            if (len > Request.maxBodySize) {
+                throw new Error('Max body size exceeded.');
             }
 
-            this.#parsedBody = obj;
-        } /* else if (this.#headers['content-type']?.startsWith('text/xml')) {
-            const parser = new DOMParser();
-            this.#parsedBody = parser.parseFromString(this.#body, 'text/xml');
-
-            if (this.#parsedBody.documentElement.nodeName === 'parsererror') {
-                throw new Error('Invalid XML');
-            }
-        }*/ else if (this.headers['content-type']?.startsWith('text/plain')) {
-            // this.#parsedBody = this.body;
-        } else {
-            throw new Error('Unsupported content type');
+            this.#body.push(chunk);
         }
+
+        return this.body;
     }
 
     get query() {
@@ -118,7 +80,16 @@ export default class Request extends IncomingMessage {
         return this.#parsedBody;
     }
 
+    /** @internal */
+    set parsedBody(value: any) {
+        this.#parsedBody = value;
+    }
+
     get container() {
         return this.#container!;
+    }
+
+    [Symbol.asyncIterator](): AsyncIterableIterator<Buffer> {
+        return super[Symbol.asyncIterator]();
     }
 }

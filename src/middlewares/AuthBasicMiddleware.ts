@@ -55,7 +55,7 @@ export default class AuthBasicMiddleware extends Middleware {
                 .withStatus(EStatusCode.UNAUTHORIZED);
         }
 
-        const [username, password] = Buffer.from(credentialsBase64, 'base64').toString('utf-8').split(':');
+        const [username, password] = Buffer.from(credentialsBase64, 'base64').toString('utf8').split(':');
 
         if (
             !username

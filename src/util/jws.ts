@@ -89,7 +89,7 @@ export function verifyJWS(
 
     const header: Header = JSON.parse(Buffer.from(headerBase64, 'base64url').toString('utf8'));
 
-    if (typeof header !== 'object' || header.alg) {
+    if (typeof header !== 'object' || !header.alg) {
         return false;
     }
 
@@ -97,6 +97,7 @@ export function verifyJWS(
     if (_alg !== alg) {
         throw new JWTError(`Invalid alg: ${_alg}`);
     }
+
 
     return verify(headerBase64, payloadBase64, signature, alg, secretOrPrivateKey);
 }

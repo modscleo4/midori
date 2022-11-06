@@ -63,42 +63,44 @@ export default class AuthBearerMiddleware extends Middleware {
 
         const [, payloadBase64] = credentials.split('.');
 
-        let payload: Payload;
         try {
-            payload = JSON.parse(Buffer.from(payloadBase64, 'base64url').toString());
+            const payload = JSON.parse(Buffer.from(payloadBase64, 'base64url').toString());
+
+            if (!await this.validateToken(req, payload)) {
+                throw new Error();
+            }
+
+            req.container.set('jwt', payload);
         } catch (e) {
             return Response.json({ message: 'Invalid Authorization credentials.' })
                 .withHeader('WWW-Authenticate', 'Bearer')
                 .withStatus(EStatusCode.UNAUTHORIZED);
         }
 
+
+        return await next(req);
+    }
+
+    async validateToken(req: Request, payload: Payload): Promise<boolean> {
         if (
             typeof payload !== 'object'
             || !payload.sub
             || !payload.exp
             || !payload.iat
         ) {
-            return Response.json({ message: 'Invalid Authorization credentials.' })
-                .withHeader('WWW-Authenticate', 'Bearer')
-                .withStatus(EStatusCode.UNAUTHORIZED);
+            return false;
         }
 
         if (payload.exp * 1000 < Date.now()) {
-            return Response.json({ message: 'Token has expired.' })
-                .withHeader('WWW-Authenticate', 'Bearer')
-                .withStatus(EStatusCode.UNAUTHORIZED);
+            return false;
         }
 
         try {
             await this.#auth.authenticateById(req, payload.sub);
         } catch (e) {
-            return Response.json({ message: 'Invalid Authorization credentials.' })
-                .withHeader('WWW-Authenticate', 'Bearer')
-                .withStatus(EStatusCode.UNAUTHORIZED);
+            return false;
         }
 
-        req.container.set('jwt', payload);
-
-        return await next(req);
+        return true;
     }
 }
