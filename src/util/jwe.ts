@@ -171,6 +171,15 @@ function ivLength(enc: JWEEncryption): number {
 
 function encryptCEK(cek: Buffer, alg: JWEAlgorithm, secretOrPrivateKey: string): Buffer {
     switch (alg) {
+        case JWEAlgorithm.RSA1_5:
+            return publicEncrypt(
+                {
+                    key: secretOrPrivateKey,
+                    padding: constants.RSA_PKCS1_PADDING,
+                },
+                cek,
+            )
+
         case JWEAlgorithm["RSA-OAEP"]:
             return publicEncrypt(
                 {
@@ -196,6 +205,15 @@ function encryptCEK(cek: Buffer, alg: JWEAlgorithm, secretOrPrivateKey: string):
 
 function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, secretOrPrivateKey: string): Buffer {
     switch (alg) {
+        case JWEAlgorithm.RSA1_5:
+            return privateDecrypt(
+                {
+                    key: secretOrPrivateKey,
+                    padding: constants.RSA_PKCS1_PADDING,
+                },
+                encryptedKey,
+            );
+
         case JWEAlgorithm["RSA-OAEP"]:
             return privateDecrypt(
                 {
