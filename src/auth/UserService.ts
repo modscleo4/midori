@@ -17,7 +17,7 @@
 import User from "./User.js";
 
 export default abstract class UserService {
-    abstract getUserById(id: string): Promise<User | null>;
+    abstract getUserById(id: any): Promise<User | null>;
 
     abstract getUserByCredentials(username: string, password: string): Promise<User | null>;
 }

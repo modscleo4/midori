@@ -17,7 +17,6 @@
 import Server from "../app/Server.js";
 import ServiceProvider from "../app/ServiceProvider.js";
 import Auth from "../auth/Auth.js";
-import UserProvider from "../auth/UserService.js";
 import { UserServiceProvider } from "./UserServiceProvider.js";
 
 export default class AuthServiceProvider extends ServiceProvider<Auth> {

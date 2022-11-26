@@ -16,15 +16,25 @@
 
 import { Transform } from "node:stream";
 import { promisify } from "node:util";
-import { createGzip, gzip } from "node:zlib";
+import { createGzip, createGunzip, gzip, gunzip } from "node:zlib";
 
 export default class Gzip {
-    static async compress(data: Buffer) {
+    static async compress(data: Buffer): Promise<Buffer> {
         return await promisify(gzip)(data);
+    }
+
+    static async decompress(data: Buffer): Promise<Buffer> {
+        return await promisify(gunzip)(data);
     }
 
     static compressStream(): Transform {
         const stream = createGzip();
+
+        return stream;
+    }
+
+    static decompressStream(): Transform {
+        const stream = createGunzip();
 
         return stream;
     }

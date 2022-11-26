@@ -44,14 +44,14 @@ export default class ParseBodyMiddleware extends Middleware {
             const data: { [key: string]: any; } = {};
 
             for (const part of parts) {
-                const lines = part.split('\r\n');
+                const lines = part.split('\r\n', 5);
 
                 if (lines.length < 4) {
                     continue;
                 }
 
-                const name = lines[1].split(';')[1].trim().split('=')[1].replace(/"/g, '');
-                const value = lines[3].trim();
+                const name = lines[1].split(';')[1].split('=')[1].replace(/"/g, '');
+                const value = lines[3];
 
                 data[name] = value;
             }

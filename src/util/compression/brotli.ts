@@ -16,15 +16,25 @@
 
 import { Transform } from "node:stream";
 import { promisify } from "node:util";
-import { brotliCompress, createBrotliCompress } from "node:zlib";
+import { brotliCompress, brotliDecompress, createBrotliCompress, createBrotliDecompress } from "node:zlib";
 
 export default class Brotli {
-    static async compress(data: Buffer) {
+    static async compress(data: Buffer): Promise<Buffer> {
         return await promisify(brotliCompress)(data);
+    }
+
+    static async decompress(data: Buffer): Promise<Buffer> {
+        return await promisify(brotliDecompress)(data);
     }
 
     static compressStream(): Transform {
         const stream = createBrotliCompress();
+
+        return stream;
+    }
+
+    static decompressStream(): Transform {
+        const stream = createBrotliDecompress();
 
         return stream;
     }
