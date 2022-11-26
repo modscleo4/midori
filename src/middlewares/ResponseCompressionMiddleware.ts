@@ -79,6 +79,10 @@ export default function ResponseCompressionMiddlewareFactory(options?: { content
         async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
             const res = await next(req);
 
+            if (res.bodyLength === 0) {
+                return res;
+            }
+
             const contentTypes = options?.contentTypes ?? ['*/*'];
 
             if (contentTypes.find((c) => globMatch(c, '' + res.headers.get('Content-Type')))) {
@@ -99,15 +103,15 @@ export default function ResponseCompressionMiddlewareFactory(options?: { content
 
                 switch (algorithm) {
                     case CompressionAlgorithm.GZIP:
-                        res.bodyBuffer = [await Gzip.compress(Buffer.concat(res.bodyBuffer))];
+                        res.pipe(Gzip.compressStream());
                         break;
 
                     case CompressionAlgorithm.DEFLATE:
-                        res.bodyBuffer = [await Deflate.compress(Buffer.concat(res.bodyBuffer))];
+                        res.pipe(Deflate.compressStream());
                         break;
 
                     case CompressionAlgorithm.BROTLI:
-                        res.bodyBuffer = [await Brotli.compress(Buffer.concat(res.bodyBuffer))];
+                        res.pipe(Brotli.compressStream());
                         break;
                 }
             }

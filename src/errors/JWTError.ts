@@ -14,17 +14,6 @@
  * limitations under the License.
  */
 
-import Server from "../app/Server.js";
-import ServiceProvider from "../app/ServiceProvider.js";
-import Auth from "../auth/Auth.js";
-import { UserServiceProvider } from "./UserServiceProvider.js";
-
-export default class AuthServiceProvider extends ServiceProvider<Auth> {
-    static service: string = 'Auth';
-
-    register(server: Server): Auth {
-        const userProvider = server.services.get(UserServiceProvider);
-
-        return new Auth(userProvider);
-    }
+export default class JWTError extends Error {
+    name: string = 'JWTError';
 }

@@ -14,16 +14,28 @@
  * limitations under the License.
  */
 
-import { deflate } from "zlib";
+import { Transform } from "node:stream";
+import { promisify } from "node:util";
+import { createDeflate, createInflate, deflate, inflate } from "node:zlib";
 
 export default class Deflate {
-    static async compress(data: Buffer) {
-        return await new Promise<Buffer>((resolve, reject) => deflate(data, {  }, (err, result) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        }));
+    static async compress(data: Buffer): Promise<Buffer> {
+        return await promisify(deflate)(data);
+    }
+
+    static async decompress(data: Buffer): Promise<Buffer> {
+        return await promisify(inflate)(data);
+    }
+
+    static compressStream(): Transform {
+        const stream = createDeflate();
+
+        return stream;
+    }
+
+    static decompressStream(): Transform {
+        const stream = createInflate();
+
+        return stream;
     }
 }

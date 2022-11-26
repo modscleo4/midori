@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { existsSync, statSync } from "fs";
+import { existsSync, statSync } from "node:fs";
 import { EStatusCode } from "../http/EStatusCode.js";
 
 import Middleware from "../http/Middleware.js";
@@ -25,10 +25,10 @@ import { Constructor } from "../util/types.js";
 /**
  * Middleware to serve static files from a given directory.
  */
-export default function PublicPathMiddlewareFactory(options: { path: string; indexFiles?: string[] }): Constructor<Middleware> {
+export default function PublicPathMiddlewareFactory(options: { path: string; indexFiles?: string[]; cache?: { maxAge?: number; } }): Constructor<Middleware> {
     return class extends Middleware {
         async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
-            if (req.method !== 'GET') {
+            if (req.method !== 'GET' && req.method !== 'HEAD') {
                 return await next(req);
             }
 
@@ -44,6 +44,10 @@ export default function PublicPathMiddlewareFactory(options: { path: string; ind
                 const res = await this.tryFile(req.path);
 
                 if (res) {
+                    if (options.cache?.maxAge) {
+                        res.headers.set('Cache-Control', `public, max-age=${options.cache.maxAge}`);
+                    }
+
                     return res;
                 }
             }

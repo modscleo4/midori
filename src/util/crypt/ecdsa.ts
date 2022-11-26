@@ -17,7 +17,7 @@
 import { createSign, createVerify, KeyObject } from "node:crypto";
 
 /**
- * Elliptic Curve Digital Signature Algorithm, as used by JWT
+ * Elliptic Curve Digital Signature Algorithm, as used by JWS.
  */
 export default class ECDSA {
     static sign(shaVersion: 256 | 384 | 512, privateKey: KeyObject, data: Buffer): Buffer {

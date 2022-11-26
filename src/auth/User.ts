@@ -15,9 +15,9 @@
  */
 
 export default abstract class User {
-    #id: string;
+    #id: any;
 
-    constructor(id: string, public username: string) {
+    constructor(id: any, public username: string) {
         this.#id = id;
     }
 

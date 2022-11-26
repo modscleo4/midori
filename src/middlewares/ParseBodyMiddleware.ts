@@ -23,9 +23,53 @@ import Response from "../http/Response.js";
  * Middleware to parse the request body, returning a 415 if no recognized Content-Type is detected.
  */
 export default class ParseBodyMiddleware extends Middleware {
+    #parsers: { [key: string]: (req: Request, enc: BufferEncoding) => Promise<any>; } = {
+        'application/json': async (req: Request, enc: BufferEncoding = 'utf8') => {
+            return JSON.parse((await req.readBody()).toString(enc));
+        },
+
+        'application/x-www-form-urlencoded': async (req: Request, enc: BufferEncoding = 'utf8') => {
+            return Object.fromEntries(new URLSearchParams((await req.readBody()).toString(enc)));
+        },
+
+        'text/plain': async (req: Request, enc: BufferEncoding = 'utf8') => {
+            return (await req.readBody()).toString(enc);
+        },
+
+        'multipart/form-data': async (req: Request, enc: BufferEncoding = 'utf8') => {
+            const boundary = req.headers['content-type']?.split(';')[1].trim().split('=')[1];
+            const body = (await req.readBody()).toString(enc);
+
+            const parts = body.split(`--${boundary}`);
+            const data: { [key: string]: any; } = {};
+
+            for (const part of parts) {
+                const lines = part.split('\r\n', 5);
+
+                if (lines.length < 4) {
+                    continue;
+                }
+
+                const name = lines[1].split(';')[1].split('=')[1].replace(/"/g, '');
+                const value = lines[3];
+
+                data[name] = value;
+            }
+
+            return data;
+        },
+    };
+
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         try {
-            req.parseBody();
+            if ('content-type' in req.headers) {
+                const contentType = req.headers['content-type']?.split(';')[0].trim().toLowerCase();
+                const encoding = <BufferEncoding> 'utf8';
+
+                if (contentType && contentType in this.#parsers) {
+                    req.parsedBody = await this.#parsers[contentType](req, encoding);
+                }
+            }
         } catch (e) {
             return Response.status(EStatusCode.UNSUPPORTED_MEDIA_TYPE);
         }

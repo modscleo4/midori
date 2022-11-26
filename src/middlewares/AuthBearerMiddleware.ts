@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Server from "../app/Server.js";
+import { Application } from "../app/Server.js";
 import Auth from "../auth/Auth.js";
 import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
@@ -33,11 +33,11 @@ export default class AuthBearerMiddleware extends Middleware {
     #jwt: JWT;
     #auth: Auth;
 
-    constructor(server: Server) {
-        super(server);
+    constructor(app: Application) {
+        super(app);
 
-        this.#jwt = server.services.get(JWTServiceProvider);
-        this.#auth = server.services.get(AuthServiceProvider);
+        this.#jwt = app.services.get(JWTServiceProvider);
+        this.#auth = app.services.get(AuthServiceProvider);
     }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
@@ -63,35 +63,44 @@ export default class AuthBearerMiddleware extends Middleware {
 
         const [, payloadBase64] = credentials.split('.');
 
-        const payload: Payload = JSON.parse(Buffer.from(payloadBase64, 'base64url').toString());
-
-        if (!(
-            typeof payload === 'object'
-            && payload.sub
-            && payload.exp
-            && payload.iat
-        )) {
-            return Response.json({ message: 'Invalid Authorization credentials.' })
-                .withHeader('WWW-Authenticate', 'Bearer')
-                .withStatus(EStatusCode.UNAUTHORIZED);
-        }
-
-        if (payload.exp * 1000 < Date.now()) {
-            return Response.json({ message: 'Token has expired.' })
-                .withHeader('WWW-Authenticate', 'Bearer')
-                .withStatus(EStatusCode.UNAUTHORIZED);
-        }
-
         try {
-            await this.#auth.authenticateById(req, payload.sub);
+            const payload = JSON.parse(Buffer.from(payloadBase64, 'base64url').toString());
+
+            if (!await this.validateToken(req, payload)) {
+                throw new Error();
+            }
+
+            req.container.set('jwt', payload);
         } catch (e) {
             return Response.json({ message: 'Invalid Authorization credentials.' })
                 .withHeader('WWW-Authenticate', 'Bearer')
                 .withStatus(EStatusCode.UNAUTHORIZED);
         }
 
-        req.container.set('jwt', payload);
 
         return await next(req);
+    }
+
+    async validateToken(req: Request, payload: Payload): Promise<boolean> {
+        if (
+            typeof payload !== 'object'
+            || !payload.sub
+            || !payload.exp
+            || !payload.iat
+        ) {
+            return false;
+        }
+
+        if (payload.exp * 1000 < Date.now()) {
+            return false;
+        }
+
+        try {
+            await this.#auth.authenticateById(req, payload.sub);
+        } catch (e) {
+            return false;
+        }
+
+        return true;
     }
 }

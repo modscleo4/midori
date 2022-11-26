@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import { readFileSync } from "fs";
+import { createReadStream } from "node:fs";
+import { OutgoingHttpHeader } from "node:http";
+import { Readable, Transform } from "node:stream";
 import { lookup } from "mime-types";
-import { OutgoingHttpHeader } from "http";
-import { Readable } from "stream";
+
 import { EStatusCode } from "./EStatusCode.js";
 
 /**
@@ -27,6 +28,8 @@ export default class Response {
     #headers = new Map<string, OutgoingHttpHeader>();
     #status: number = EStatusCode.OK;
     #body: Buffer[] = [];
+    #stream?: Readable;
+    #pipeStreams: Transform[] = [];
 
     /**
      * Add a header to the response.
@@ -57,6 +60,12 @@ export default class Response {
         return this;
     }
 
+    stream(stream: Readable): Response {
+        this.#stream = stream;
+
+        return this;
+    }
+
     /**
      * Send JSON data. The Content-Type header will be set to application/json and the data will automatically be converted to JSON string.
      */
@@ -68,11 +77,11 @@ export default class Response {
     }
 
     /**
-     * Send a File. The Content-Type header will be set to application/json and the data will automatically be converted to JSON string.
+     * Send a File. The Content-Type header will be set based on the filename.
      */
     file(filename: string): Response {
         this.withHeader('Content-Type', lookup(filename) || 'text/plain')
-            .send(readFileSync(filename));
+            .stream(createReadStream(filename));
 
         return this;
     }
@@ -92,6 +101,12 @@ export default class Response {
         return this;
     }
 
+    pipe(stream: Transform): Response {
+        this.#pipeStreams.push(stream);
+
+        return this;
+    }
+
     get headers() {
         return this.#headers;
     }
@@ -100,35 +115,27 @@ export default class Response {
         return this.#status;
     }
 
-    get body() {
-        const buffer = Buffer.concat(this.#body);
+    get body(): Readable {
+        const sourceStream = this.#stream ?? Readable.from(this.#body);
 
-        let offset = 0;
-        return new Readable({
-            read(size) {
-                const chunk = buffer.subarray(offset, offset + size);
-                offset += chunk.length;
+        if (this.#pipeStreams.length === 0) {
+            return sourceStream;
+        }
 
-                if (chunk.length === 0) {
-                    this.push(null);
-                } else {
-                    this.push(chunk);
-                }
-            }
-        });
-    }
+        let stream = sourceStream;
 
-    /** @internal */
-    get bodyBuffer() {
-        return this.#body;
-    }
+        for (const transform of this.#pipeStreams) {
+            stream = stream.pipe(transform);
+        }
 
-    /** @internal */
-    set bodyBuffer(buffer: Buffer[]) {
-        this.#body = buffer;
+        return stream;
     }
 
     get bodyLength() {
+        if (this.#stream || this.#pipeStreams.length > 0) {
+            return -1;
+        }
+
         return this.#body.reduce((acc, chunk) => acc + chunk.length, 0);
     }
 
@@ -148,6 +155,9 @@ export default class Response {
             .json(data);
     }
 
+    /**
+     * Send a File. The Content-Type header will be set based on the filename.
+     */
     static file(filename: string): Response {
         return new Response()
             .file(filename);

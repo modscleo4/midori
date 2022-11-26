@@ -14,16 +14,28 @@
  * limitations under the License.
  */
 
-import { brotliCompress } from "zlib";
+import { Transform } from "node:stream";
+import { promisify } from "node:util";
+import { brotliCompress, brotliDecompress, createBrotliCompress, createBrotliDecompress } from "node:zlib";
 
 export default class Brotli {
-    static async compress(data: Buffer) {
-        return await new Promise<Buffer>((resolve, reject) => brotliCompress(data, {  }, (err, result) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        }));
+    static async compress(data: Buffer): Promise<Buffer> {
+        return await promisify(brotliCompress)(data);
+    }
+
+    static async decompress(data: Buffer): Promise<Buffer> {
+        return await promisify(brotliDecompress)(data);
+    }
+
+    static compressStream(): Transform {
+        const stream = createBrotliCompress();
+
+        return stream;
+    }
+
+    static decompressStream(): Transform {
+        const stream = createBrotliDecompress();
+
+        return stream;
     }
 }

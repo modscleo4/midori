@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { IncomingMessage, ServerResponse, Server as HTTPServer } from "http";
+import { ServerResponse, Server as HTTPServer } from "node:http";
 
 import Request from "../http/Request.js";
 import Container from "./Container.js";
@@ -40,7 +40,13 @@ interface ReadonlyServiceContainer {
     has(service: typeof ServiceProvider): boolean;
 }
 
-export default class Server extends HTTPServer {
+export interface Application {
+    readonly services: ReadonlyServiceContainer;
+
+    readonly production: boolean;
+}
+
+export default class Server extends HTTPServer implements Application {
     #services = new ServiceContainer();
     #pipeline: Constructor<Middleware>[] = [ContentLengthMiddleware];
     #containerBuilder: () => Container<string, any>;
@@ -48,6 +54,7 @@ export default class Server extends HTTPServer {
         get: provider => this.#services.get(provider.service),
         has: provider => this.#services.has(provider.service),
     };
+    #production: boolean = false;
 
     constructor(options?: { containerBuilder?: () => Container<string, any>; }) {
         super({ IncomingMessage: Request }, async (req, res) => await this.process(<Request> req, res));
@@ -67,6 +74,12 @@ export default class Server extends HTTPServer {
 
             for (const [header, value] of response.headers) {
                 res.setHeader(header, value);
+            }
+
+            // HEAD requests should not have a body
+            if (req.method === 'HEAD') {
+                res.end();
+                return;
             }
 
             response.body.pipe(res, { end: true });
@@ -110,6 +123,8 @@ export default class Server extends HTTPServer {
 
     /**
      * Injects a Service Provider into the Server.
+     *
+     * @throws {Error}
      */
     install<T>(provider: Constructor<ServiceProvider<T>> & { [K in keyof typeof ServiceProvider<T>]: typeof ServiceProvider<T>[K] }): Server {
         const name = provider.service;
@@ -126,5 +141,13 @@ export default class Server extends HTTPServer {
 
     get services() {
         return this.#readonlyServices;
+    }
+
+    get production() {
+        return this.#production;
+    }
+
+    set production(value: boolean) {
+        this.#production = value;
     }
 }

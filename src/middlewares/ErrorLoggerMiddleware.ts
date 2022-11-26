@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Server from "../app/Server.js";
+import { Application } from "../app/Server.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
@@ -27,10 +27,10 @@ import { LoggerServiceProvider } from "../providers/LoggerServiceProvider.js";
 export default class ErrorLoggerMiddleware extends Middleware {
     #logger: Logger;
 
-    constructor(server: Server) {
-        super(server);
+    constructor(app: Application) {
+        super(app);
 
-        this.#logger = server.services.get(LoggerServiceProvider);
+        this.#logger = app.services.get(LoggerServiceProvider);
     }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
@@ -38,6 +38,9 @@ export default class ErrorLoggerMiddleware extends Middleware {
             return await next(req);
         } catch (e) {
             this.#logger.error('An uncaught error occurred while handling a request.', { context: e, fgColor: LogColor.RED });
+            if (e instanceof Error) {
+                this.#logger.debug('Stack trace:', { context: e.stack, fgColor: LogColor.RED });
+            }
 
             throw e;
         }

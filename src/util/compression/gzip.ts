@@ -14,16 +14,28 @@
  * limitations under the License.
  */
 
-import { gzip } from "zlib";
+import { Transform } from "node:stream";
+import { promisify } from "node:util";
+import { createGzip, createGunzip, gzip, gunzip } from "node:zlib";
 
-export default class GZip {
-    static async compress(data: Buffer) {
-        return await new Promise<Buffer>((resolve, reject) => gzip(data, {  }, (err, result) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(result);
-            }
-        }));
+export default class Gzip {
+    static async compress(data: Buffer): Promise<Buffer> {
+        return await promisify(gzip)(data);
+    }
+
+    static async decompress(data: Buffer): Promise<Buffer> {
+        return await promisify(gunzip)(data);
+    }
+
+    static compressStream(): Transform {
+        const stream = createGzip();
+
+        return stream;
+    }
+
+    static decompressStream(): Transform {
+        const stream = createGunzip();
+
+        return stream;
     }
 }

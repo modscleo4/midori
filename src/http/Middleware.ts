@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Server from "../app/Server.js";
+import { Application } from "../app/Server.js";
 import Request from "./Request.js";
 import Response from "./Response.js";
 
@@ -23,7 +23,7 @@ import Response from "./Response.js";
  * It sits between the request and the handler, and can be used to implement authentication, logging, etc.
  */
 export default abstract class Middleware {
-    constructor(server: Server) {
+    constructor(app: Application) {
         //
     }
 

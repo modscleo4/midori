@@ -25,8 +25,6 @@ export abstract class JWTServiceProvider extends ServiceProvider<JWT> {
 
 export default function JWTServiceProviderFactory(jwtService: JWT): Constructor<JWTServiceProvider> & { [K in keyof typeof JWTServiceProvider]: typeof ServiceProvider[K]; } {
     return class extends JWTServiceProvider {
-        static service: string = 'JWT';
-
         register(server: Server): JWT {
             return jwtService;
         }

@@ -14,35 +14,105 @@
  * limitations under the License.
  */
 
-import { readFileSync } from "fs";
-import { generateJWT, validateJWT, JWTAlgorithm, Payload } from "../util/jwt.js";
+import { readFileSync } from "node:fs";
+
+import { Payload } from "../util/jwt.js";
+import { signJWT, verifyJWS, JWSAlgorithm } from "../util/jws.js";
+import { decryptJWE, encryptJWT, JWEAlgorithm, JWEEncryption } from "../util/jwe.js";
 
 /**
- * JWT (JSON Web Token) Service Provider.
+ * JWT (JSON Web Token) Service.
  */
 export default class JWT {
-    #alg: JWTAlgorithm;
-    #secretOrPrivateKey: string = 'secret';
+    #sign?: {
+        alg: JWSAlgorithm;
+        secretOrPrivateKey: string;
+    };
+    #encrypt?: {
+        alg: JWEAlgorithm;
+        enc: JWEEncryption;
+        secretOrPrivateKey: string;
+    };
 
-    constructor(_alg: string, _secret: string, publicKeyFile?: string, privateKeyFile?: string) {
-        const alg = JWTAlgorithm[_alg as keyof typeof JWTAlgorithm];
-        const secret = _secret || 'secret';
-        const publicKey = publicKeyFile ? readFileSync(publicKeyFile, { encoding: 'utf8' }) : undefined;
-        const privateKey = privateKeyFile ? readFileSync(privateKeyFile, { encoding: 'utf8' }) : undefined;
+    constructor(sign?: { alg: string; secret: string; privateKeyFile?: string; }, encrypt?: { alg: string; enc: string; secret?: string; privateKeyFile: string; }) {
+        if (sign) {
+            const alg = JWSAlgorithm[sign.alg as keyof typeof JWSAlgorithm];
+            const secret = sign.secret || null;
+            const privateKey = sign.privateKeyFile ? readFileSync(sign.privateKeyFile, { encoding: 'utf8' }) : null;
 
-        if (![JWTAlgorithm.HS256, JWTAlgorithm.HS384, JWTAlgorithm.HS512].includes(alg) && !privateKey) {
-            throw new Error('Private key is required for this algorithm');
+            if (![JWSAlgorithm.HS256, JWSAlgorithm.HS384, JWSAlgorithm.HS512].includes(alg) && !privateKey) {
+                throw new Error('Private key is required for this algorithm');
+            }
+
+            if ([JWSAlgorithm.HS256, JWSAlgorithm.HS384, JWSAlgorithm.HS512].includes(alg) && !secret) {
+                throw new Error('Secret is required for this algorithm');
+            }
+
+            this.#sign = {
+                alg,
+                secretOrPrivateKey: ([JWSAlgorithm.HS256, JWSAlgorithm.HS384, JWSAlgorithm.HS512].includes(alg) ? secret : privateKey)!,
+            };
         }
 
-        this.#alg = alg;
-        this.#secretOrPrivateKey = ([JWTAlgorithm.HS256, JWTAlgorithm.HS384, JWTAlgorithm.HS512].includes(alg) ? secret : privateKey)!;
+        if (encrypt) {
+            const alg = JWEAlgorithm[encrypt.alg as keyof typeof JWEAlgorithm];
+            const enc = JWEEncryption[encrypt.enc as keyof typeof JWEEncryption];
+            const secret = encrypt.secret || null;
+            const privateKey = encrypt.privateKeyFile ? readFileSync(encrypt.privateKeyFile, { encoding: 'utf8' }) : undefined;
+
+            if ([JWEAlgorithm.RSA1_5, JWEAlgorithm['RSA-OAEP'], JWEAlgorithm['RSA-OAEP-256'], JWEAlgorithm['ECDH-ES'], JWEAlgorithm['ECDH-ES+A128KW'], JWEAlgorithm['ECDH-ES+A192KW'], JWEAlgorithm['ECDH-ES+A256KW']].includes(alg) && !privateKey) {
+                throw new Error('Private key is required for this algorithm');
+            }
+
+            if ([JWEAlgorithm.A128KW, JWEAlgorithm.A192KW, JWEAlgorithm.A256KW, JWEAlgorithm.dir].includes(alg) && !secret) {
+                throw new Error('Secret is required for this algorithm');
+            }
+
+            this.#encrypt = {
+                alg,
+                enc,
+                secretOrPrivateKey: ([JWEAlgorithm.A128KW, JWEAlgorithm.A192KW, JWEAlgorithm.A256KW, JWEAlgorithm.dir].includes(alg) ? secret : privateKey)!,
+            };
+        }
     }
 
     sign(payload: Payload): string {
-        return generateJWT(payload, this.#alg, this.#secretOrPrivateKey);
+        if (!this.#sign) {
+            throw new Error('Sign is not configured');
+        }
+
+        return signJWT(payload, this.#sign.alg, this.#sign.secretOrPrivateKey);
     }
 
     verify(token: string): boolean {
-        return validateJWT(token, this.#secretOrPrivateKey);
+        if (!this.#sign) {
+            throw new Error('Sign is not configured');
+        }
+
+        try {
+            return verifyJWS(token, this.#sign.alg, this.#sign.secretOrPrivateKey);
+        } catch (e) {
+            return false;
+        }
+    }
+
+    encrypt(plainText: Buffer, contentType: string): string {
+        if (!this.#encrypt) {
+            throw new Error('Encrypt is not configured');
+        }
+
+        return encryptJWT(plainText, contentType, this.#encrypt.alg, this.#encrypt.enc, this.#encrypt.secretOrPrivateKey);
+    }
+
+    decrypt(token: string): Buffer | null {
+        if (!this.#encrypt) {
+            throw new Error('Encrypt is not configured');
+        }
+
+        try {
+            return decryptJWE(token, this.#encrypt.alg, this.#encrypt.enc, this.#encrypt.secretOrPrivateKey);
+        } catch (e) {
+            return null;
+        }
     }
 }

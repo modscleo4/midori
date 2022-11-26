@@ -25,7 +25,7 @@ export default class Auth {
         this.#userService = userService;
     }
 
-    async authenticateById(request: Request, id: string): Promise<User> {
+    async authenticateById(request: Request, id: any): Promise<User> {
         const user = await this.#userService.getUserById(id);
         if (user === null) {
             throw new Error('Invalid User.');
@@ -59,7 +59,7 @@ export default class Auth {
         return request.container.get('::user') ?? null;
     }
 
-    id(request: Request): string | null {
+    id(request: Request): any | null {
         return this.user(request)?.id ?? null;
     }
 }

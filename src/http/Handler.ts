@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Server from "../app/Server.js";
+import { Application } from "../app/Server.js";
 import Request from "./Request.js";
 import Response from "./Response.js";
 
@@ -22,7 +22,7 @@ import Response from "./Response.js";
  * Provides a handler for HTTP requests.
  */
 export default abstract class Handler {
-    constructor(server: Server) {
+    constructor(app: Application) {
         //
     }
 
