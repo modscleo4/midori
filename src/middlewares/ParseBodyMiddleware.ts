@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Application } from "../app/Server.js";
 import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
@@ -23,20 +24,24 @@ import Response from "../http/Response.js";
  * Middleware to parse the request body, returning a 415 if no recognized Content-Type is detected.
  */
 export default class ParseBodyMiddleware extends Middleware {
-    #parsers: { [key: string]: (req: Request, enc: BufferEncoding) => Promise<any>; } = {
-        'application/json': async (req: Request, enc: BufferEncoding = 'utf8') => {
+    #parsers: Map<string, (req: Request, encoding: BufferEncoding) => Promise<any>> = new Map();
+
+    constructor(app: Application) {
+        super(app);
+
+        this.#parsers.set('application/json', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<any> => {
             return JSON.parse((await req.readBody()).toString(enc));
-        },
+        });
 
-        'application/x-www-form-urlencoded': async (req: Request, enc: BufferEncoding = 'utf8') => {
+        this.#parsers.set('application/x-www-form-urlencoded', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<Record<string, string>> => {
             return Object.fromEntries(new URLSearchParams((await req.readBody()).toString(enc)));
-        },
+        });
 
-        'text/plain': async (req: Request, enc: BufferEncoding = 'utf8') => {
+        this.#parsers.set('text/plain', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<string> => {
             return (await req.readBody()).toString(enc);
-        },
+        });
 
-        'multipart/form-data': async (req: Request, enc: BufferEncoding = 'utf8') => {
+        this.#parsers.set('multipart/form-data', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<Record<string, any>> => {
             const boundary = req.headers['content-type']?.split(';')[1].trim().split('=')[1];
             const body = (await req.readBody()).toString(enc);
 
@@ -57,8 +62,8 @@ export default class ParseBodyMiddleware extends Middleware {
             }
 
             return data;
-        },
-    };
+        });
+    }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         try {
@@ -66,8 +71,8 @@ export default class ParseBodyMiddleware extends Middleware {
                 const contentType = req.headers['content-type']?.split(';')[0].trim().toLowerCase();
                 const encoding = <BufferEncoding> 'utf8';
 
-                if (contentType && contentType in this.#parsers) {
-                    req.parsedBody = await this.#parsers[contentType](req, encoding);
+                if (contentType && this.#parsers.has(contentType)) {
+                    req.parsedBody = await this.#parsers.get(contentType)!(req, encoding);
                 }
             }
         } catch (e) {

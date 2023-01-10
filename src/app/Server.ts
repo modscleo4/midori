@@ -56,10 +56,11 @@ export default class Server extends HTTPServer implements Application {
     };
     #production: boolean = false;
 
-    constructor(options?: { containerBuilder?: () => Container<string, any>; }) {
+    constructor(options?: { containerBuilder?: () => Container<string, any>; production?: boolean }) {
         super({ IncomingMessage: Request }, async (req, res) => await this.process(<Request> req, res));
 
         this.#containerBuilder = options?.containerBuilder ?? (() => new Container<string, any>());
+        this.#production = options?.production ?? false;
     }
 
     /** @internal */
@@ -145,9 +146,5 @@ export default class Server extends HTTPServer implements Application {
 
     get production() {
         return this.#production;
-    }
-
-    set production(value: boolean) {
-        this.#production = value;
     }
 }
