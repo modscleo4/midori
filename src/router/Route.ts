@@ -15,11 +15,10 @@
  */
 
 import { Application } from "../app/Server.js";
-import Handler from "../http/Handler.js";
-import Middleware from "../http/Middleware.js";
+import Handler, { HandlerConstructor, HandlerFunction } from "../http/Handler.js";
+import Middleware, { MiddlewareConstructor, MiddlewareFunction } from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
-import { Constructor } from "../util/types.js";
 
 /**
  * Route representation
@@ -27,11 +26,11 @@ import { Constructor } from "../util/types.js";
 export default class Route {
     #method: string;
     #path: string;
-    #handler: Constructor<Handler>;
-    #middlewares: Constructor<Middleware>[];
+    #handler: HandlerConstructor | HandlerFunction;
+    #middlewares: (MiddlewareConstructor | MiddlewareFunction)[];
     #name?: string;
 
-    constructor(method: string, path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[]) {
+    constructor(method: string, path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[]) {
         this.#method = method;
         this.#path = path + (path.endsWith('/') ? '' : '/');
         this.#handler = handler;
@@ -65,14 +64,23 @@ export default class Route {
         const next = async (req: Request): Promise<Response> => {
             if (index == this.#middlewares.length) {
                 // No more middlewares to process
-                const handler = new this.#handler(app);
 
-                return await handler.handle(req);
+                if (this.#handler.prototype instanceof Handler) {
+                    const handler = new (this.#handler as HandlerConstructor)(app);
+
+                    return await handler.handle(req);
+                } else {
+                    return await (this.#handler as HandlerFunction)(req, app);
+                }
             }
 
-            const middleware = new this.#middlewares[index++](app);
+            if (this.#middlewares[index].prototype instanceof Middleware) {
+                const middleware = new (this.#middlewares[index++] as MiddlewareConstructor)(app);
 
-            return await middleware.process(req, next);
+                return await middleware.process(req, next);
+            } else {
+                return await (this.#middlewares[index++] as MiddlewareFunction)(req, next, app);
+            }
         };
 
         return await next(req);

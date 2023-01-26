@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-import Server from "./Server.js";
+import Server, { Application } from "./Server.js";
 
 export default abstract class ServiceProvider<T> {
     static service: string;
+
+    constructor(app: Application) {
+        //
+    }
 
     abstract register(server: Server): T;
 }

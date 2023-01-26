@@ -18,8 +18,11 @@ import { Application } from "../app/Server.js";
 import Request from "./Request.js";
 import Response from "./Response.js";
 
+export type MiddlewareFunction = (req: Request, next: (req: Request) => Promise<Response>, app: Application) => Promise<Response>;
+export type MiddlewareConstructor = new (app: Application) => Middleware;
+
 /**
- * Middleware is a function that takes a request and a response and returns a response.
+ * Middleware is a function that takes a request and returns a response.
  * It sits between the request and the handler, and can be used to implement authentication, logging, etc.
  */
 export default abstract class Middleware {

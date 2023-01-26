@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-import Handler from "../http/Handler.js";
-import Middleware from "../http/Middleware.js";
+import Handler, { HandlerConstructor, HandlerFunction } from "../http/Handler.js";
+import Middleware, { MiddlewareConstructor, MiddlewareFunction } from "../http/Middleware.js";
 import Route from "./Route.js";
-import { Constructor } from "../util/types.js";
 
 /**
  * Router Helper
  */
 export default class Router {
     #prefix: string = '';
-    #middlewares: Constructor<Middleware>[] = [];
+    #middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [];
     #routes: Route[] = [];
 
-    #addRoute(method: string, path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []) {
+    /**
+     * Handles a custom method request.
+     */
+    route(method: string, path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): Route {
         Router.validatePath(path);
 
         const route = new Route(method, this.#prefix + path, handler, this.#middlewares.concat(middlewares));
@@ -39,49 +41,49 @@ export default class Router {
     /**
      * Handle a GET (List) request.
      */
-    get(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
-        return this.#addRoute('GET', path, handler, middlewares);
+    get(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): Route {
+        return this.route('GET', path, handler, middlewares);
     }
 
     /**
      * Handle a HEAD (Body-less GET) request.
      */
-    head(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
-        return this.#addRoute('HEAD', path, handler, middlewares);
+    head(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): Route {
+        return this.route('HEAD', path, handler, middlewares);
     }
 
     /**
      * Handles a POST (Create) request.
      */
-    post(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
-        return this.#addRoute('POST', path, handler, middlewares);
+    post(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): Route {
+        return this.route('POST', path, handler, middlewares);
     }
 
     /**
      * Handles a PUT (Full Update) request.
      */
-    put(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
-        return this.#addRoute('PUT', path, handler, middlewares);
+    put(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): Route {
+        return this.route('PUT', path, handler, middlewares);
     }
 
     /**
      * Handles a PATCH (Partial Update) request.
      */
-    patch(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
-        return this.#addRoute('PATCH', path, handler, middlewares);
+    patch(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): Route {
+        return this.route('PATCH', path, handler, middlewares);
     }
 
     /**
      * Handles a DELETE request.
      */
-    delete(path: string, handler: Constructor<Handler>, middlewares: Constructor<Middleware>[] = []): Route {
-        return this.#addRoute('DELETE', path, handler, middlewares);
+    delete(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): Route {
+        return this.route('DELETE', path, handler, middlewares);
     }
 
     /**
      * Groups routes together. Use this to apply middlewares to a group of routes, or when there are routes with a common path prefix.
      */
-    group(prefix: string, groupCallback: (Router: Router) => void, middlewares: Constructor<Middleware>[] = []): void {
+    group(prefix: string, groupCallback: (Router: Router) => void, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): void {
         Router.validatePath(prefix);
 
         const _prefix = this.#prefix;

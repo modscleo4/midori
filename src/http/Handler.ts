@@ -18,6 +18,9 @@ import { Application } from "../app/Server.js";
 import Request from "./Request.js";
 import Response from "./Response.js";
 
+export type HandlerFunction = (req: Request, app: Application) => Promise<Response>;
+export type HandlerConstructor = new (app: Application) => Handler;
+
 /**
  * Provides a handler for HTTP requests.
  */

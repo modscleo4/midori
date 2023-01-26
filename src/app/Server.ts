@@ -19,7 +19,7 @@ import { ServerResponse, Server as HTTPServer } from "node:http";
 import Request from "../http/Request.js";
 import Container from "./Container.js";
 import { Constructor } from "../util/types.js";
-import Middleware from "../http/Middleware.js";
+import Middleware, { MiddlewareConstructor, MiddlewareFunction } from "../http/Middleware.js";
 import Response from "../http/Response.js";
 import ContentLengthMiddleware from "../middlewares/ContentLengthMiddleware.js";
 import UnknownServiceError from "../errors/UnknownServiceError.js";
@@ -48,7 +48,7 @@ export interface Application {
 
 export default class Server extends HTTPServer implements Application {
     #services = new ServiceContainer();
-    #pipeline: Constructor<Middleware>[] = [ContentLengthMiddleware];
+    #pipeline: (MiddlewareConstructor | MiddlewareFunction)[] = [ContentLengthMiddleware];
     #containerBuilder: () => Container<string, any>;
     #readonlyServices: ReadonlyServiceContainer = {
         get: provider => this.#services.get(provider.service),
@@ -103,9 +103,13 @@ export default class Server extends HTTPServer implements Application {
                 throw new Error('No more middlewares to process the request.');
             }
 
-            const middleware = new this.#pipeline[index++](this);
+            if (this.#pipeline[index].prototype instanceof Middleware) {
+                const middleware = new (this.#pipeline[index++] as MiddlewareConstructor)(this);
 
-            return await middleware.process(req, next);
+                return await middleware.process(req, next);
+            } else {
+                return await (this.#pipeline[index++] as MiddlewareFunction)(req, next, this);
+            }
         };
 
         return await next(request);
@@ -116,7 +120,7 @@ export default class Server extends HTTPServer implements Application {
      *
      * ContentLengthMiddleware is applied by default before any other Middleware.
      */
-    pipe(middleware: Constructor<Middleware>): Server {
+    pipe(middleware: MiddlewareConstructor | MiddlewareFunction): Server {
         this.#pipeline.push(middleware);
 
         return this;
