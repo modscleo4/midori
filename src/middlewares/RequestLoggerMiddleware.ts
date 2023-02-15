@@ -30,6 +30,7 @@ export default class RequestLoggerMiddleware extends Middleware {
     }
 
     logRequest(req: Request, res: Response, time: number) {
-        this.#logger.info(`${req.method} ${req.path} ${res.status} (${time.toFixed(2)}ms)`, { fgColor: res.status < 400 ? LogColor.GREEN : res.status < 500 ? LogColor.YELLOW : LogColor.RED });
+        const ip = req.headers['x-real-ip'] ?? (Array.isArray(req.headers['x-forwarded-for']) ? req.headers['x-forwarded-for'][0] : req.headers['x-forwarded-for']) ?? req.socket.remoteAddress ?? 'unknown ip';
+        this.#logger.info(`<${ip}> ${req.method} ${req.path} ${res.status} (${time.toFixed(2)}ms)`, { fgColor: res.status < 400 ? LogColor.GREEN : res.status < 500 ? LogColor.YELLOW : LogColor.RED });
     }
 }
