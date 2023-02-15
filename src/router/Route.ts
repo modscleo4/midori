@@ -28,6 +28,8 @@ export default class Route {
     #path: string;
     #handler: HandlerConstructor | HandlerFunction;
     #middlewares: (MiddlewareConstructor | MiddlewareFunction)[];
+    #compiledHandler: Map<Application, HandlerFunction> = new Map();
+    #compiledMiddlewares: Map<Application, MiddlewareFunction>[];
     #name?: string;
 
     constructor(method: string, path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[]) {
@@ -35,6 +37,7 @@ export default class Route {
         this.#path = path + (path.endsWith('/') ? '' : '/');
         this.#handler = handler;
         this.#middlewares = middlewares;
+        this.#compiledMiddlewares = Array.from({length: middlewares.length}, () => new Map());
     }
 
     get method() {
@@ -58,6 +61,46 @@ export default class Route {
     }
 
     /** @internal */
+    compileHandler(app: Application): HandlerFunction {
+        if (!this.#compiledHandler.has(app)) {
+            let compiledHandler: HandlerFunction | undefined;
+            if (this.#handler.prototype instanceof Handler) {
+                const handler = new (this.#handler as HandlerConstructor)(app);
+
+                compiledHandler = handler.handle.bind(handler);
+            } else {
+                compiledHandler = this.#handler as HandlerFunction;
+            }
+
+            this.#compiledHandler.set(app, compiledHandler);
+
+            return compiledHandler;
+        }
+
+        return this.#compiledHandler.get(app)!;
+    }
+
+    /** @internal */
+    compileMiddleware(i: number, app: Application): MiddlewareFunction {
+        if (!this.#compiledMiddlewares[i].has(app)) {
+            let compiledMiddleware: MiddlewareFunction | undefined;
+            if (this.#middlewares[i].prototype instanceof Middleware) {
+                const middleware = new (this.#middlewares[i] as MiddlewareConstructor)(app);
+
+                compiledMiddleware = middleware.process.bind(middleware);
+            } else {
+                compiledMiddleware = this.#middlewares[i] as MiddlewareFunction;
+            }
+
+            this.#compiledMiddlewares[i].set(app, compiledMiddleware);
+
+            return compiledMiddleware;
+        }
+
+        return this.#compiledMiddlewares[i].get(app)!;
+    }
+
+    /** @internal */
     async handle(req: Request, app: Application): Promise<Response> {
         let index = 0;
 
@@ -65,22 +108,10 @@ export default class Route {
             if (index == this.#middlewares.length) {
                 // No more middlewares to process
 
-                if (this.#handler.prototype instanceof Handler) {
-                    const handler = new (this.#handler as HandlerConstructor)(app);
-
-                    return await handler.handle(req);
-                } else {
-                    return await (this.#handler as HandlerFunction)(req, app);
-                }
+                return await this.compileHandler(app)(req, app);
             }
 
-            if (this.#middlewares[index].prototype instanceof Middleware) {
-                const middleware = new (this.#middlewares[index++] as MiddlewareConstructor)(app);
-
-                return await middleware.process(req, next);
-            } else {
-                return await (this.#middlewares[index++] as MiddlewareFunction)(req, next, app);
-            }
+            return await this.compileMiddleware(index++, app)(req, next, app);
         };
 
         return await next(req);

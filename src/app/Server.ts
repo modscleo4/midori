@@ -49,6 +49,7 @@ export interface Application {
 export default class Server extends HTTPServer implements Application {
     #services = new ServiceContainer();
     #pipeline: (MiddlewareConstructor | MiddlewareFunction)[] = [ContentLengthMiddleware];
+    #compiledPipeline: MiddlewareFunction[] = [];
     #containerBuilder: () => Container<string, any>;
     #readonlyServices: ReadonlyServiceContainer = {
         get: provider => this.#services.get(provider.service),
@@ -94,6 +95,21 @@ export default class Server extends HTTPServer implements Application {
     }
 
     /** @internal */
+    compilePipeline(i: number): MiddlewareFunction {
+        if (!this.#compiledPipeline[i]) {
+            if (this.#pipeline[i].prototype instanceof Middleware) {
+                const middleware = new (this.#pipeline[i] as MiddlewareConstructor)(this);
+
+                this.#compiledPipeline[i] = middleware.process.bind(middleware);
+            } else {
+                this.#compiledPipeline[i] = this.#pipeline[i] as MiddlewareFunction;
+            }
+        }
+
+        return this.#compiledPipeline[i];
+    }
+
+    /** @internal */
     async processRequest(request: Request): Promise<Response> {
         let index = 0;
 
@@ -103,13 +119,7 @@ export default class Server extends HTTPServer implements Application {
                 throw new Error('No more middlewares to process the request.');
             }
 
-            if (this.#pipeline[index].prototype instanceof Middleware) {
-                const middleware = new (this.#pipeline[index++] as MiddlewareConstructor)(this);
-
-                return await middleware.process(req, next);
-            } else {
-                return await (this.#pipeline[index++] as MiddlewareFunction)(req, next, this);
-            }
+            return await this.compilePipeline(index++)(req, next, this);
         };
 
         return await next(request);

@@ -63,20 +63,15 @@ export default class AuthBearerMiddleware extends Middleware {
 
         const [, payloadBase64] = credentials.split('.');
 
-        try {
-            const payload = JSON.parse(Buffer.from(payloadBase64, 'base64url').toString());
+        const payload = JSON.parse(Buffer.from(payloadBase64, 'base64url').toString());
 
-            if (!await this.validateToken(req, payload)) {
-                throw new Error();
-            }
-
-            req.container.set('jwt', payload);
-        } catch (e) {
+        if (!await this.validateToken(req, payload)) {
             return Response.json({ message: 'Invalid Authorization credentials.' })
                 .withHeader('WWW-Authenticate', 'Bearer')
                 .withStatus(EStatusCode.UNAUTHORIZED);
         }
 
+        req.container.set('::jwt', payload);
 
         return await next(req);
     }
@@ -85,13 +80,19 @@ export default class AuthBearerMiddleware extends Middleware {
         if (
             typeof payload !== 'object'
             || !payload.sub
-            || !payload.exp
             || !payload.iat
         ) {
             return false;
         }
 
-        if (payload.exp * 1000 < Date.now()) {
+        if (payload.exp && payload.exp * 1000 < Date.now()) {
+            return false;
+        }
+
+        const iss = `${req.headers['x-forwarded-proto'] ?? 'http'}://${req.headers.host}`;
+        if (payload.aud && Array.isArray(payload.aud) && !payload.aud.includes(iss)) {
+            return false;
+        } else if (payload.aud && payload.aud !== iss) {
             return false;
         }
 
