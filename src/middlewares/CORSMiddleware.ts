@@ -36,6 +36,11 @@ export default function CORSMiddlewareFactory(
         async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
             const res = await next(req);
 
+            if (req.method !== 'OPTIONS') {
+                // CORS is only needed for preflight (OPTIONS) requests
+                return res;
+            }
+
             return res.withHeader('Access-Control-Allow-Origin', options?.origin ?? '*')
                 .withHeader('Access-Control-Allow-Methods', options?.methods ?? '*')
                 .withHeader('Access-Control-Allow-Headers', options?.headers ?? '*')

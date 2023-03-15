@@ -118,10 +118,6 @@ export default class Response {
     get body(): Readable {
         const sourceStream = this.#stream ?? Readable.from(this.#body);
 
-        if (this.#pipeStreams.length === 0) {
-            return sourceStream;
-        }
-
         let stream = sourceStream;
 
         for (const transform of this.#pipeStreams) {
