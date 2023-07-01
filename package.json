@@ -100,8 +100,8 @@
   },
   "devDependencies": {
     "@types/mime-types": "^2.1.1",
-    "@types/node": "^18.11.9",
-    "typescript": "^4.8.4"
+    "@types/node": "^18.15.13",
+    "typescript": "^5.0.4"
   },
   "dependencies": {
     "mime-types": "^2.1.35"

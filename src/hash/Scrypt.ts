@@ -20,13 +20,15 @@ import Hash from "./Hash.js";
 
 /**
  * Scrypt Hash implementation.
+ *
+ * Format: $7$<cost>$<salt>$<hash>
  */
 export default class Scrypt extends Hash {
     static version: string = '7';
 
-    hash(data: string | Buffer, options?: { salt?: Buffer, cost?: number; }): string {
-        const salt = options?.salt ?? randomBytes(16);
-        const cost = options?.cost || 10;
+    hash(data: string | Buffer, options?: { salt?: Buffer, cost?: number; iterations?: number; digest?: string }): string {
+        const salt     = options?.salt ?? randomBytes(16);
+        const cost     = options?.cost || 10;
         const hashData = scryptSync(data, salt, 64, { N: 1 << cost }).toString('base64');
 
         return ['', Scrypt.version, cost, salt.toString('base64'), hashData].join('$');

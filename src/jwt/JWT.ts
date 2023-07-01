@@ -34,7 +34,10 @@ export default class JWT {
         secretOrPrivateKey: string;
     };
 
-    constructor(sign?: { alg: string; secret: string; privateKeyFile?: string; }, encrypt?: { alg: string; enc: string; secret?: string; privateKeyFile: string; }) {
+    constructor(
+        sign?: { alg: string; secret: string; privateKeyFile?: string; },
+        encrypt?: { alg: string; enc: string; secret?: string; privateKeyFile: string; }
+    ) {
         if (sign) {
             const alg = JWSAlgorithm[sign.alg as keyof typeof JWSAlgorithm];
             const secret = sign.secret || null;
@@ -60,11 +63,17 @@ export default class JWT {
             const secret = encrypt.secret || null;
             const privateKey = encrypt.privateKeyFile ? readFileSync(encrypt.privateKeyFile, { encoding: 'utf8' }) : undefined;
 
-            if ([JWEAlgorithm.RSA1_5, JWEAlgorithm['RSA-OAEP'], JWEAlgorithm['RSA-OAEP-256'], JWEAlgorithm['ECDH-ES'], JWEAlgorithm['ECDH-ES+A128KW'], JWEAlgorithm['ECDH-ES+A192KW'], JWEAlgorithm['ECDH-ES+A256KW']].includes(alg) && !privateKey) {
+            if (
+                [JWEAlgorithm.RSA1_5, JWEAlgorithm['RSA-OAEP'], JWEAlgorithm['RSA-OAEP-256'], JWEAlgorithm['ECDH-ES'], JWEAlgorithm['ECDH-ES+A128KW'], JWEAlgorithm['ECDH-ES+A192KW'], JWEAlgorithm['ECDH-ES+A256KW']].includes(alg)
+                && !privateKey
+            ) {
                 throw new Error('Private key is required for this algorithm');
             }
 
-            if ([JWEAlgorithm.A128KW, JWEAlgorithm.A192KW, JWEAlgorithm.A256KW, JWEAlgorithm.dir].includes(alg) && !secret) {
+            if (
+                [JWEAlgorithm.A128KW, JWEAlgorithm.A192KW, JWEAlgorithm.A256KW, JWEAlgorithm.dir].includes(alg)
+                && !secret
+            ) {
                 throw new Error('Secret is required for this algorithm');
             }
 

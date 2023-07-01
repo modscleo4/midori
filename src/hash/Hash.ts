@@ -21,7 +21,7 @@ export default abstract class Hash {
     /**
      * Creates a hash from the specified string.
      */
-    abstract hash(data: string | Buffer, options?: { salt?: Buffer, cost?: number; }): string;
+    abstract hash(data: string | Buffer, options?: { salt?: Buffer, cost?: number; iterations?: number; digest?: string }): string;
 
     /**
      * Compares the specified hash with the specified string.

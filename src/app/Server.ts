@@ -144,12 +144,28 @@ export default class Server extends HTTPServer implements Application {
     install<T>(provider: Constructor<ServiceProvider<T>> & { [K in keyof typeof ServiceProvider<T>]: typeof ServiceProvider<T>[K] }): Server {
         const name = provider.service;
         if (this.#services.has(name)) {
-            throw new Error(`A Service Provider with the name '${name}' already exists.`);
+            throw new Error(`A Service Provider with the name '${name}' is already installed.`);
         }
 
         const instance = new provider(this);
 
         this.#services.set(name, instance.register(this));
+
+        return this;
+    }
+
+    /**
+     * Removes a Service Provider from the Server.
+     *
+     * @throws {Error}
+     */
+    uninstall<T>(provider: Constructor<ServiceProvider<T>> & { [K in keyof typeof ServiceProvider<T>]: typeof ServiceProvider<T>[K] }): Server {
+        const name = provider.service;
+        if (!this.#services.has(name)) {
+            throw new Error(`A Service Provider with the name '${name}' is not installed.`);
+        }
+
+        this.#services.delete(name);
 
         return this;
     }

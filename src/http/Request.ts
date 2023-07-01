@@ -28,6 +28,7 @@ export default class Request extends IncomingMessage {
     #body: Buffer[] = [];
     #parsedBody: any = undefined;
     #container?: Container<string, any>;
+    #ip?: string;
 
     static maxBodySize: number = 1024 * 1024;
 
@@ -39,6 +40,7 @@ export default class Request extends IncomingMessage {
 
         this.#query = url.searchParams;
         this.#path = url.pathname + (url.pathname.endsWith('/') ? '' : '/');
+        this.#ip = (Array.isArray(this.headers['x-real-ip']) ? this.headers['x-real-ip'][0] : this.headers['x-real-ip']) ?? (Array.isArray(this.headers['x-forwarded-for']) ? this.headers['x-forwarded-for'][0] : this.headers['x-forwarded-for']) ?? this.socket.remoteAddress;
     }
 
     async readBody(): Promise<Buffer> {
@@ -87,6 +89,10 @@ export default class Request extends IncomingMessage {
 
     get container() {
         return this.#container!;
+    }
+
+    get ip() {
+        return this.#ip;
     }
 
     [Symbol.asyncIterator](): AsyncIterableIterator<Buffer> {

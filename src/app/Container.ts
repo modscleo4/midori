@@ -68,6 +68,15 @@ export default class Container<K, V> {
     }
 
     /**
+     * Delete a value from the container.
+     */
+    delete(key: K): Container<K, V> {
+        this.#data.delete(key);
+
+        return this;
+    }
+
+    /**
      * Check if a value exists in the container.
      */
     has(key: K): boolean {
