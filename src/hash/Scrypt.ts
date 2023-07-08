@@ -21,7 +21,7 @@ import Hash from "./Hash.js";
 /**
  * Scrypt Hash implementation.
  *
- * Format: $7$<cost>$<salt>$<hash>
+ * Format: `$7$<cost>$<salt>$<hash>`
  */
 export default class Scrypt extends Hash {
     static version: string = '7';

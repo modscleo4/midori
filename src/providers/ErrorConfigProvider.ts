@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
+import ConfigProvider from "../app/ConfigProvider.js";
 import { Application } from "../app/Server.js";
-import ServiceProvider from "../app/ServiceProvider.js";
-import Router from "../router/Router.js";
 import { Constructor } from "../util/types.js";
 
-export abstract class RouterServiceProvider extends ServiceProvider<Router> {
-    static service: string = 'midori::Router';
+export type ErrorConfig = {
+    exposeErrors?: boolean;
+};
+
+export abstract class ErrorConfigProvider extends ConfigProvider<ErrorConfig> {
+    static config = 'midori::Error';
 }
 
-export default function RouterServiceProviderFactory(routerService: Router): Constructor<RouterServiceProvider> & { [K in keyof typeof RouterServiceProvider]: typeof RouterServiceProvider[K] } {
-    return class extends RouterServiceProvider {
-        register(app: Application): Router {
-            return routerService;
+export default function ErrorConfigProviderFactory(options: ErrorConfig): Constructor<ErrorConfigProvider> & { [K in keyof typeof ErrorConfigProvider]: typeof ErrorConfigProvider[K] } {
+    return class extends ErrorConfigProvider {
+        register(app: Application): ErrorConfig {
+            return options;
         }
     };
-}
+};

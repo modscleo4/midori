@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import Server from "../app/Server.js";
+import { Application } from "../app/Server.js";
 import ServiceProvider from "../app/ServiceProvider.js";
 import Hash from "../hash/Hash.js";
 import { Constructor } from "../util/types.js";
 
 export abstract class HashServiceProvider extends ServiceProvider<Hash> {
-    static service: string = 'Hash';
+    static service: string = 'midori::Hash';
 }
 
 export default function HashServiceProviderFactory(hashService: Hash): Constructor<HashServiceProvider> & { [K in keyof typeof HashServiceProvider]: typeof HashServiceProvider[K] } {
     return class extends HashServiceProvider {
-        register(server: Server): Hash {
+        register(app: Application): Hash {
             return hashService;
         }
     };

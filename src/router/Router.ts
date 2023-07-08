@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import Handler, { HandlerConstructor, HandlerFunction } from "../http/Handler.js";
-import Middleware, { MiddlewareConstructor, MiddlewareFunction } from "../http/Middleware.js";
+import { HandlerConstructor, HandlerFunction } from "../http/Handler.js";
+import { MiddlewareConstructor, MiddlewareFunction } from "../http/Middleware.js";
 import Route from "./Route.js";
 
 /**

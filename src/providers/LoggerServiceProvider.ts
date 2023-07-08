@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-import Server from "../app/Server.js";
+import { Application } from "../app/Server.js";
 import ServiceProvider from "../app/ServiceProvider.js";
 import Logger from "../log/Logger.js";
 import { Constructor } from "../util/types.js";
 
 export abstract class LoggerServiceProvider extends ServiceProvider<Logger> {
-    static service: string = 'Logger';
+    static service: string = 'midori::Logger';
 }
 
 export default function LoggerServiceProviderFactory(loggerService: Logger): Constructor<LoggerServiceProvider> & { [K in keyof typeof LoggerServiceProvider]: typeof LoggerServiceProvider[K] } {
     return class extends LoggerServiceProvider {
-        register(server: Server): Logger {
+        register(app: Application): Logger {
             return loggerService;
         }
     };

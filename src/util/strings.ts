@@ -14,14 +14,22 @@
  * limitations under the License.
  */
 
-import { Application } from "./Server.js";
+/**
+ * Check if a string matches a glob pattern.
+ *
+ * @param pattern The glob pattern, like `text/*`
+ * @param search The string to be searched
+ *
+ * @returns `true` if the string matches the pattern, `false` otherwise.
+ */
+export function globMatch(pattern: string, search: string): boolean {
+    const regex = new RegExp(
+        pattern
+            .split('*')
+            .map((part) => part.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'))
+            .join('.*'),
+        'i',
+    );
 
-export default abstract class ServiceProvider<T> {
-    static service: string;
-
-    constructor(app: Application) {
-        //
-    }
-
-    abstract register(app: Application): T;
+    return regex.test(search);
 }

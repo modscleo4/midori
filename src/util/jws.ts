@@ -16,6 +16,7 @@
 
 import { createPrivateKey } from "node:crypto";
 
+import { Payload as JWKPayload, PayloadEC, PayloadRSA, PayloadSymmetric } from "./jwk.js";
 import { Payload } from "./jwt.js";
 import ECDSA from "./crypt/ecdsa.js";
 import HMAC from "./crypt/hmac.js";
@@ -63,7 +64,7 @@ export type Header = {
 export function signJWT(
     payload: Payload,
     alg: JWSAlgorithm,
-    secretOrPrivateKey: string,
+    key: JWKPayload,
 ): string {
     const header: Header = {
         alg: JWSAlgorithm[alg],
@@ -72,7 +73,7 @@ export function signJWT(
 
     const headerBase64 = Buffer.from(JSON.stringify(header)).toString('base64url');
     const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
-    const signature = sign(headerBase64, payloadBase64, alg, secretOrPrivateKey);
+    const signature = sign(headerBase64, payloadBase64, alg, key);
 
     return `${headerBase64}.${payloadBase64}.${signature}`;
 }
@@ -83,7 +84,7 @@ export function signJWT(
 export function verifyJWS(
     token: string,
     alg: JWSAlgorithm,
-    secretOrPrivateKey: string,
+    key: JWKPayload,
 ): boolean {
     const [headerBase64, payloadBase64, signature] = token.split('.');
 
@@ -99,145 +100,145 @@ export function verifyJWS(
     }
 
 
-    return verify(headerBase64, payloadBase64, signature, alg, secretOrPrivateKey);
+    return verify(headerBase64, payloadBase64, signature, alg, key);
 }
 
 function sign(
     headerBase64: string,
     payloadBase64: string,
     alg: JWSAlgorithm,
-    secretOrPrivateKey: string
+    key: JWKPayload,
 ): string {
     switch (alg) {
         case JWSAlgorithm.HS256:
-            if (!secretOrPrivateKey) {
+            if (!(<PayloadSymmetric> key).k) {
                 throw new JWTError('Missing secret');
             }
 
             return HMAC.sign(
                 256,
-                secretOrPrivateKey,
+                (<PayloadSymmetric> key).k!,
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWSAlgorithm.HS384:
-            if (!secretOrPrivateKey) {
+            if (!(<PayloadSymmetric> key).k) {
                 throw new JWTError('Missing secret');
             }
 
             return HMAC.sign(
                 384,
-                secretOrPrivateKey,
+                (<PayloadSymmetric> key).k!,
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWSAlgorithm.HS512:
-            if (!secretOrPrivateKey) {
+            if (!(<PayloadSymmetric> key).k!) {
                 throw new JWTError('Missing secret');
             }
 
             return HMAC.sign(
                 512,
-                secretOrPrivateKey,
+                (<PayloadSymmetric> key).k!,
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWSAlgorithm.RS256:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return RSA.sign(
                 256,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWSAlgorithm.RS384:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return RSA.sign(
                 384,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWSAlgorithm.RS512:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return RSA.sign(
                 512,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWSAlgorithm.ES256:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return ECDSA.sign(
                 256,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadEC> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWSAlgorithm.ES384:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return ECDSA.sign(
                 384,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadEC> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWSAlgorithm.ES512:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return ECDSA.sign(
                 512,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadEC> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWSAlgorithm.PS256:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return RSAPSS.sign(
                 256,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWSAlgorithm.PS384:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return RSAPSS.sign(
                 384,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWSAlgorithm.PS512:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return RSAPSS.sign(
                 512,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
     }
@@ -251,149 +252,149 @@ function verify(
     payloadBase64: string,
     signature: string,
     alg: JWSAlgorithm,
-    secretOrPrivateKey: string
+    key: JWKPayload,
 ): boolean {
     switch (alg) {
         case JWSAlgorithm.HS256:
-            if (!secretOrPrivateKey) {
+            if (!(<PayloadSymmetric> key).k) {
                 throw new JWTError('Missing secret');
             }
 
             return HMAC.verify(
                 256,
-                secretOrPrivateKey,
+                (<PayloadSymmetric> key).k!,
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
         case JWSAlgorithm.HS384:
-            if (!secretOrPrivateKey) {
+            if (!(<PayloadSymmetric> key).k) {
                 throw new JWTError('Missing secret');
             }
 
             return HMAC.verify(
                 384,
-                secretOrPrivateKey,
+                (<PayloadSymmetric> key).k!,
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
         case JWSAlgorithm.HS512:
-            if (!secretOrPrivateKey) {
+            if (!(<PayloadSymmetric> key).k) {
                 throw new JWTError('Missing secret');
             }
 
             return HMAC.verify(
                 512,
-                secretOrPrivateKey,
+                (<PayloadSymmetric> key).k!,
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
         case JWSAlgorithm.RS256:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return RSA.verify(
                 256,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
         case JWSAlgorithm.RS384:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return RSA.verify(
                 384,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
         case JWSAlgorithm.RS512:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return RSA.verify(
                 512,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
         case JWSAlgorithm.ES256:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return ECDSA.verify(
                 256,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadEC> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
         case JWSAlgorithm.ES384:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return ECDSA.verify(
                 384,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadEC> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
         case JWSAlgorithm.ES512:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return ECDSA.verify(
                 512,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadEC> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
         case JWSAlgorithm.PS256:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return RSAPSS.verify(
                 256,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
         case JWSAlgorithm.PS384:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return RSAPSS.verify(
                 384,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
         case JWSAlgorithm.PS512:
-            if (!secretOrPrivateKey) {
+            if (!key) {
                 throw new JWTError('Missing private key');
             }
 
             return RSAPSS.verify(
                 512,
-                createPrivateKey(secretOrPrivateKey),
+                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );

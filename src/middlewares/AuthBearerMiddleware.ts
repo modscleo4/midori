@@ -22,7 +22,7 @@ import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import JWT from "../jwt/JWT.js";
 import AuthServiceProvider from "../providers/AuthServiceProvider.js";
-import { JWTServiceProvider } from "../providers/JWTServiceProvider.js";
+import JWTServiceProvider from "../providers/JWTServiceProvider.js";
 import { Payload } from "../util/jwt.js";
 
 /**

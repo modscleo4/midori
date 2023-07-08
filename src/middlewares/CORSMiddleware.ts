@@ -14,39 +14,68 @@
  * limitations under the License.
  */
 
+import { Application } from "../app/Server.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
-import { Constructor } from "../util/types.js";
+import { CORSConfig, CORSConfigProvider } from "../providers/CORSConfigProvider.js";
+
+export class CORSMiddleware extends Middleware {
+    #options?: CORSConfig;
+
+    constructor(app: Application) {
+        super(app);
+
+        this.#options = app.config.get(CORSConfigProvider);
+    }
+
+    get options(): CORSConfig | undefined {
+        return this.#options;
+    }
+
+    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+        const res = await next(req);
+
+        if (req.method !== 'OPTIONS') {
+            // CORS is only needed for preflight (OPTIONS) requests
+            return res;
+        }
+
+        if (this.options?.origin) {
+            res.withHeader('Access-Control-Allow-Origin', this.options.origin);
+        }
+
+        if (this.options?.methods) {
+            res.withHeader('Access-Control-Allow-Methods', this.options.methods);
+        }
+
+        if (this.options?.headers) {
+            res.withHeader('Access-Control-Allow-Headers', this.options.headers);
+        }
+
+        if (this.options?.maxAge) {
+            res.withHeader('Access-Control-Max-Age', this.options.maxAge);
+        }
+
+        if (this.options?.openerPolicy) {
+            res.withHeader('Cross-Origin-Opener-Policy', this.options.openerPolicy);
+        }
+
+        if (this.options?.embedderPolicy) {
+            res.withHeader('Cross-Origin-Embedder-Policy', this.options.embedderPolicy);
+        }
+
+        return res;
+    }
+}
 
 /**
  * Provides a middleware for CORS setup.
  */
-export default function CORSMiddlewareFactory(
-    options?: {
-        origin?: string;
-        methods?: string;
-        headers?: string;
-        maxAge?: number;
-        openerPolicy?: 'unsafe-none' | 'same-origin-allow-popups' |'same-origin';
-        embedderPolicy?: 'unsafe-none' | 'require-corp';
-    }
-): Constructor<Middleware> {
-    return class extends Middleware {
-        async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
-            const res = await next(req);
-
-            if (req.method !== 'OPTIONS') {
-                // CORS is only needed for preflight (OPTIONS) requests
-                return res;
-            }
-
-            return res.withHeader('Access-Control-Allow-Origin', options?.origin ?? '*')
-                .withHeader('Access-Control-Allow-Methods', options?.methods ?? '*')
-                .withHeader('Access-Control-Allow-Headers', options?.headers ?? '*')
-                .withHeader('Access-Control-Max-Age', options?.maxAge ?? 86400)
-                .withHeader('Cross-Origin-Opener-Policy', options?.openerPolicy ?? 'unsafe-none')
-                .withHeader('Cross-Origin-Embedder-Policy', options?.embedderPolicy ?? 'unsafe-none');
+export default function CORSMiddlewareFactory(options: CORSConfig): typeof CORSMiddleware {
+    return class extends CORSMiddleware {
+        get options(): CORSConfig {
+            return options;
         }
     };
 }

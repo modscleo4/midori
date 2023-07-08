@@ -15,8 +15,9 @@
  */
 
 import { constants, createPrivateKey, createPublicKey, privateDecrypt, publicEncrypt, randomBytes } from "node:crypto";
-import JWTError from "../errors/JWTError.js";
 
+import { Payload as JWKPayload, PayloadEC, PayloadRSA } from "./jwk.js";
+import JWTError from "../errors/JWTError.js";
 import AESGCM from "./crypt/aesgcm.js";
 import AESHMAC from "./crypt/aeshmac.js";
 
@@ -83,10 +84,10 @@ export function encryptJWT(
     cty: string,
     alg: JWEAlgorithm,
     enc: JWEEncryption,
-    secretOrPrivateKey: string,
+    key: JWKPayload,
 ): string {
     const cek = randomBytes(cekLength(enc) / 8);
-    const encryptedKey = encryptCEK(cek, alg, secretOrPrivateKey);
+    const encryptedKey = encryptCEK(cek, alg, key);
     const iv = randomBytes(ivLength(enc) / 8);
     const header: Header = {
         alg,
@@ -112,7 +113,7 @@ export function decryptJWE(
     token: string,
     alg: JWEAlgorithm,
     enc: JWEEncryption,
-    secretOrPrivateKey: string,
+    key: JWKPayload,
 ): Buffer {
     const [protectedHeaderBase64, encryptedKeyBase64, ivBase64, cipherTextBase64, authenticationTagBase64] = token.split('.', 5);
     const protectedHeader: Header = JSON.parse(Buffer.from(protectedHeaderBase64, 'base64url').toString('utf8'));
@@ -129,7 +130,7 @@ export function decryptJWE(
     }
 
     const encryptedKey = Buffer.from(encryptedKeyBase64, 'base64url');
-    const cek = decryptCEK(encryptedKey, alg, secretOrPrivateKey);
+    const cek = decryptCEK(encryptedKey, alg, key);
     const iv = Buffer.from(ivBase64, 'base64url');
     const aad = Buffer.from(protectedHeaderBase64, 'ascii');
     const authenticationTag = Buffer.from(authenticationTagBase64, 'base64url');
@@ -169,12 +170,12 @@ function ivLength(enc: JWEEncryption): number {
     }
 }
 
-function encryptCEK(cek: Buffer, alg: JWEAlgorithm, secretOrPrivateKey: string): Buffer {
+function encryptCEK(cek: Buffer, alg: JWEAlgorithm, key: JWKPayload): Buffer {
     switch (alg) {
         case JWEAlgorithm.RSA1_5:
             return publicEncrypt(
                 {
-                    key: secretOrPrivateKey,
+                    key: createPublicKey(createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' })),
                     padding: constants.RSA_PKCS1_PADDING,
                 },
                 cek,
@@ -183,7 +184,7 @@ function encryptCEK(cek: Buffer, alg: JWEAlgorithm, secretOrPrivateKey: string):
         case JWEAlgorithm["RSA-OAEP"]:
             return publicEncrypt(
                 {
-                    key: createPublicKey(createPrivateKey(secretOrPrivateKey)),
+                    key: createPublicKey(createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' })),
                     padding: constants.RSA_PKCS1_OAEP_PADDING,
                 },
                 cek
@@ -192,7 +193,7 @@ function encryptCEK(cek: Buffer, alg: JWEAlgorithm, secretOrPrivateKey: string):
         case JWEAlgorithm["RSA-OAEP-256"]:
             return publicEncrypt(
                 {
-                    key: createPublicKey(createPrivateKey(secretOrPrivateKey)),
+                    key: createPublicKey(createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' })),
                     padding: constants.RSA_PKCS1_OAEP_PADDING,
                     oaepHash: 'sha256',
                 },
@@ -203,12 +204,12 @@ function encryptCEK(cek: Buffer, alg: JWEAlgorithm, secretOrPrivateKey: string):
     throw new JWTError(`Unsupported algorithm: ${alg}`);
 }
 
-function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, secretOrPrivateKey: string): Buffer {
+function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, key: JWKPayload): Buffer {
     switch (alg) {
         case JWEAlgorithm.RSA1_5:
             return privateDecrypt(
                 {
-                    key: secretOrPrivateKey,
+                    key: createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                     padding: constants.RSA_PKCS1_PADDING,
                 },
                 encryptedKey,
@@ -217,7 +218,7 @@ function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, secretOrPrivateKey:
         case JWEAlgorithm["RSA-OAEP"]:
             return privateDecrypt(
                 {
-                    key: createPrivateKey(secretOrPrivateKey),
+                    key: createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                     padding: constants.RSA_PKCS1_OAEP_PADDING,
                 },
                 encryptedKey
@@ -226,7 +227,7 @@ function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, secretOrPrivateKey:
         case JWEAlgorithm["RSA-OAEP-256"]:
             return privateDecrypt(
                 {
-                    key: createPrivateKey(secretOrPrivateKey),
+                    key: createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
                     padding: constants.RSA_PKCS1_OAEP_PADDING,
                     oaepHash: 'sha256',
                 },

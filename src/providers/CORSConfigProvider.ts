@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
+import ConfigProvider from "../app/ConfigProvider.js";
 import { Application } from "../app/Server.js";
-import ServiceProvider from "../app/ServiceProvider.js";
-import Router from "../router/Router.js";
 import { Constructor } from "../util/types.js";
 
-export abstract class RouterServiceProvider extends ServiceProvider<Router> {
-    static service: string = 'midori::Router';
+export type CORSConfig = {
+    origin?: string;
+    methods?: string;
+    headers?: string;
+    maxAge?: number;
+    openerPolicy?: 'unsafe-none' | 'same-origin-allow-popups' | 'same-origin';
+    embedderPolicy?: 'unsafe-none' | 'require-corp';
+};
+
+export abstract class CORSConfigProvider extends ConfigProvider<CORSConfig> {
+    static config = 'midori::CORS';
 }
 
-export default function RouterServiceProviderFactory(routerService: Router): Constructor<RouterServiceProvider> & { [K in keyof typeof RouterServiceProvider]: typeof RouterServiceProvider[K] } {
-    return class extends RouterServiceProvider {
-        register(app: Application): Router {
-            return routerService;
+export default function CORSConfigProviderFactory(options: CORSConfig): Constructor<CORSConfigProvider> & { [K in keyof typeof CORSConfigProvider]: typeof CORSConfigProvider[K] } {
+    return class extends CORSConfigProvider {
+        register(app: Application): CORSConfig {
+            return options;
         }
     };
-}
+};

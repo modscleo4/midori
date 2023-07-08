@@ -22,6 +22,14 @@ import Response from "../http/Response.js";
 
 /**
  * Middleware to parse the request body, returning a 415 if no recognized Content-Type is detected.
+ *
+ * The following Content-Types are recognized by default:
+ * - application/json
+ * - application/x-www-form-urlencoded
+ * - text/plain
+ * - multipart/form-data
+ *
+ * Install a parser with the method `installParser()`.
  */
 export default class ParseBodyMiddleware extends Middleware {
     #parsers: Map<string, (req: Request, encoding: BufferEncoding) => Promise<any>> = new Map();
@@ -29,19 +37,19 @@ export default class ParseBodyMiddleware extends Middleware {
     constructor(app: Application) {
         super(app);
 
-        this.#parsers.set('application/json', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<any> => {
+        this.installParser('application/json', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<any> => {
             return JSON.parse((await req.readBody()).toString(enc));
         });
 
-        this.#parsers.set('application/x-www-form-urlencoded', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<Record<string, string>> => {
+        this.installParser('application/x-www-form-urlencoded', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<Record<string, string>> => {
             return Object.fromEntries(new URLSearchParams((await req.readBody()).toString(enc)));
         });
 
-        this.#parsers.set('text/plain', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<string> => {
+        this.installParser('text/plain', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<string> => {
             return (await req.readBody()).toString(enc);
         });
 
-        this.#parsers.set('multipart/form-data', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<Record<string, any>> => {
+        this.installParser('multipart/form-data', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<Record<string, any>> => {
             const boundary = req.headers['content-type']?.split(';')[1].trim().split('=')[1];
             const body = (await req.readBody()).toString(enc);
 
@@ -63,6 +71,10 @@ export default class ParseBodyMiddleware extends Middleware {
 
             return data;
         });
+    }
+
+    installParser(contentType: string, parser: (req: Request, encoding: BufferEncoding) => Promise<any>) {
+        this.#parsers.set(contentType, parser);
     }
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {

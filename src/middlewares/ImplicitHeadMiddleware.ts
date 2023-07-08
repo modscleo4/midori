@@ -25,14 +25,10 @@ import Route from "../router/Route.js";
 export default class ImplicitHeadMiddleware extends Middleware {
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         if (req.method === 'HEAD') {
-            req.method = 'GET';
-
             const routes: Route[] = req.container.get('::routes');
-            const route = routes.find(r => r.method === req.method);
+            const route = routes.find(r => r.method === 'GET');
 
             req.container.set('::route', route);
-
-            req.method = 'HEAD';
 
             return await next(req);
         }

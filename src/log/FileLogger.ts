@@ -34,8 +34,10 @@ export default class ConsoleLogger extends Logger {
             return;
         }
 
-        let logMessage = `[${new Date().toISOString()}] [${LogLevel[level]}] ${message}`;
+        let logDate = `[${new Date().toISOString()}]`;
+        let logLevel = `[${LogLevel[level]}]`;
+        let logMessage = `${message}`;
 
-        appendFileSync(this.#file, logMessage + (options?.context !== undefined ? '\n\tContext: ' + JSON.stringify(options.context) : ''));
+        appendFileSync(this.#file, `${logDate} ${logLevel} ${logMessage}` + (options?.context !== undefined ? '\n\tContext: ' + JSON.stringify(options.context) : ''));
     }
 }

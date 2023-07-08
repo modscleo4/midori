@@ -14,19 +14,32 @@
  * limitations under the License.
  */
 
+import ConfigProvider from "../app/ConfigProvider.js";
 import { Application } from "../app/Server.js";
-import ServiceProvider from "../app/ServiceProvider.js";
-import Router from "../router/Router.js";
 import { Constructor } from "../util/types.js";
 
-export abstract class RouterServiceProvider extends ServiceProvider<Router> {
-    static service: string = 'midori::Router';
+export type JWTConfig = {
+    sign?: {
+        alg: string;
+        secret?: string;
+        privateKeyFile?: string;
+    };
+    encrypt?: {
+        alg: string;
+        enc: string;
+        secret?: string;
+        privateKeyFile?: string;
+    };
+};
+
+export abstract class JWTConfigProvider extends ConfigProvider<JWTConfig> {
+    static config = 'midori::JWT';
 }
 
-export default function RouterServiceProviderFactory(routerService: Router): Constructor<RouterServiceProvider> & { [K in keyof typeof RouterServiceProvider]: typeof RouterServiceProvider[K] } {
-    return class extends RouterServiceProvider {
-        register(app: Application): Router {
-            return routerService;
+export default function JWTConfigProviderFactory(options: JWTConfig): Constructor<JWTConfigProvider> & { [K in keyof typeof JWTConfigProvider]: typeof JWTConfigProvider[K] } {
+    return class extends JWTConfigProvider {
+        register(app: Application): JWTConfig {
+            return options;
         }
     };
-}
+};

@@ -14,19 +14,26 @@
  * limitations under the License.
  */
 
+import ConfigProvider from "../app/ConfigProvider.js";
 import { Application } from "../app/Server.js";
-import ServiceProvider from "../app/ServiceProvider.js";
-import Router from "../router/Router.js";
 import { Constructor } from "../util/types.js";
 
-export abstract class RouterServiceProvider extends ServiceProvider<Router> {
-    static service: string = 'midori::Router';
+export type PublicPathConfig = {
+    path: string;
+    indexFiles?: string[];
+    cache?: {
+        maxAge?: number;
+    };
+};
+
+export abstract class PublicPathConfigProvider extends ConfigProvider<PublicPathConfig> {
+    static config = 'midori::PublicPath';
 }
 
-export default function RouterServiceProviderFactory(routerService: Router): Constructor<RouterServiceProvider> & { [K in keyof typeof RouterServiceProvider]: typeof RouterServiceProvider[K] } {
-    return class extends RouterServiceProvider {
-        register(app: Application): Router {
-            return routerService;
+export default function PublicPathConfigProviderFactory(options: PublicPathConfig): Constructor<PublicPathConfigProvider> & { [K in keyof typeof PublicPathConfigProvider]: typeof PublicPathConfigProvider[K] } {
+    return class extends PublicPathConfigProvider {
+        register(app: Application): PublicPathConfig {
+            return options;
         }
     };
-}
+};

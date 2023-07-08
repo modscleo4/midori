@@ -14,117 +14,105 @@
  * limitations under the License.
  */
 
+import { Application } from "../app/Server.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
-import { Constructor } from "../util/types.js";
+import { ContentSecurityPolicyConfig, ContentSecurityPolicyValue, ContentSecurityPolicyConfigProvider } from "../providers/ContentSecurityPolicyConfigProvider.js";
 
-export enum ContentSecurityPolicyValue {
-    NONE = "'none'",
-    SELF = "'self'",
-    STRICT_DYNAMIC = "'strict-dynamic'",
-    REPORT_SAMPLE = "'report-sample'",
-    UNSAFE_INLINE = "'unsafe-inline'",
-    UNSAFE_EVAL = "'unsafe-eval'",
-    UNSAFE_HASHES = "'unsafe-hashes'",
-    UNSAFE_ALLOW_REDIRECTS = "'unsafe-allow-redirects'",
-    ANY = "*",
+export class ContentSecurityPolicyMiddleware extends Middleware {
+    #options?: ContentSecurityPolicyConfig;
+
+    constructor(app: Application) {
+        super(app);
+
+        this.#options = app.config.get(ContentSecurityPolicyConfigProvider);
+    }
+
+    get options(): ContentSecurityPolicyConfig | undefined {
+        return this.#options;
+    }
+
+    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+        const csp: string[] = [];
+
+        if (this.options?.connect) {
+            csp.push(`connect-src ${this.options.connect}`);
+        }
+
+        if (this.options?.default) {
+            csp.push(`default-src ${this.options.default}`);
+        }
+
+        if (this.options?.font) {
+            csp.push(`font-src ${this.options.font}`);
+        }
+
+        if (this.options?.frame) {
+            csp.push(`frame-src ${this.options.frame}`);
+        }
+
+        if (this.options?.img) {
+            csp.push(`img-src ${this.options.img}`);
+        }
+
+        if (this.options?.manifest) {
+            csp.push(`manifest-src ${this.options.manifest}`);
+        }
+
+        if (this.options?.media) {
+            csp.push(`media-src ${this.options.media}`);
+        }
+
+        if (this.options?.object) {
+            csp.push(`object-src ${this.options.object}`);
+        }
+
+        if (this.options?.prefetch) {
+            csp.push(`prefetch-src ${this.options.prefetch}`);
+        }
+
+        if (this.options?.script) {
+            csp.push(`script-src ${this.options.script}`);
+        }
+
+        if (this.options?.scriptElem) {
+            csp.push(`script-src-elem ${this.options.scriptElem}`);
+        }
+
+        if (this.options?.scriptAttr) {
+            csp.push(`script-src-attr ${this.options.scriptAttr}`);
+        }
+
+        if (this.options?.style) {
+            csp.push(`style-src ${this.options.style}`);
+        }
+
+        if (this.options?.styleElem) {
+            csp.push(`style-src-elem ${this.options.styleElem}`);
+        }
+
+        if (this.options?.styleAttr) {
+            csp.push(`style-src-attr ${this.options.styleAttr}`);
+        }
+
+        if (this.options?.worker) {
+            csp.push(`worker-src ${this.options.worker}`);
+        }
+
+        const res = await next(req);
+
+        return res.withHeader('Content-Security-Policy', csp.join('; '));
+    }
 }
 
 /**
  * Provides a middleware for Content-Security-Policy setup.
  */
-export default function ContentSecurityPolicyMiddleware(
-    options?: {
-        connect?: string;
-        default?: string;
-        font?: string;
-        frame?: string;
-        img?: string;
-        manifest?: string;
-        media?: string;
-        object?: string;
-        prefetch?: string;
-        script?: string;
-        scriptElem?: string;
-        scriptAttr?: string;
-        style?: string;
-        styleElem?: string;
-        styleAttr?: string;
-        worker?: string;
-    }
-): Constructor<Middleware> {
-    const csp: string[] = [];
-
-    if (options?.connect) {
-        csp.push(`connect-src ${options.connect}`);
-    }
-
-    if (options?.default) {
-        csp.push(`default-src ${options.default}`);
-    }
-
-    if (options?.font) {
-        csp.push(`font-src ${options.font}`);
-    }
-
-    if (options?.frame) {
-        csp.push(`frame-src ${options.frame}`);
-    }
-
-    if (options?.img) {
-        csp.push(`img-src ${options.img}`);
-    }
-
-    if (options?.manifest) {
-        csp.push(`manifest-src ${options.manifest}`);
-    }
-
-    if (options?.media) {
-        csp.push(`media-src ${options.media}`);
-    }
-
-    if (options?.object) {
-        csp.push(`object-src ${options.object}`);
-    }
-
-    if (options?.prefetch) {
-        csp.push(`prefetch-src ${options.prefetch}`);
-    }
-
-    if (options?.script) {
-        csp.push(`script-src ${options.script}`);
-    }
-
-    if (options?.scriptElem) {
-        csp.push(`script-src-elem ${options.scriptElem}`);
-    }
-
-    if (options?.scriptAttr) {
-        csp.push(`script-src-attr ${options.scriptAttr}`);
-    }
-
-    if (options?.style) {
-        csp.push(`style-src ${options.style}`);
-    }
-
-    if (options?.styleElem) {
-        csp.push(`style-src-elem ${options.styleElem}`);
-    }
-
-    if (options?.styleAttr) {
-        csp.push(`style-src-attr ${options.styleAttr}`);
-    }
-
-    if (options?.worker) {
-        csp.push(`worker-src ${options.worker}`);
-    }
-
-    return class extends Middleware {
-        async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
-            const res = await next(req);
-
-            return res.withHeader('Content-Security-Policy', csp.join('; '));
+export default function ContentSecurityPolicyMiddlewareFactory(options: ContentSecurityPolicyConfig): typeof ContentSecurityPolicyMiddleware {
+    return class extends ContentSecurityPolicyMiddleware {
+        get options(): ContentSecurityPolicyConfig {
+            return options;
         }
     };
 }

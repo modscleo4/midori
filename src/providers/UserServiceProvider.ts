@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import Server from "../app/Server.js";
+import { Application } from "../app/Server.js";
 import ServiceProvider from "../app/ServiceProvider.js";
 import UserService from "../auth/UserService.js";
 import { Constructor } from "../util/types.js";
 
 export abstract class UserServiceProvider extends ServiceProvider<UserService> {
-    static service: string = 'UserService';
+    static service: string = 'midori::Auth.User';
 }
 
 export default function UserServiceProviderFactory(userService: UserService): Constructor<UserServiceProvider> & { [K in keyof typeof UserServiceProvider]: typeof UserServiceProvider[K] } {
     return class extends UserServiceProvider {
-        register(server: Server): UserService {
+        register(app: Application): UserService {
             return userService;
         }
-    }
+    };
 }

@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-import { ServerResponse, Server as HTTPServer } from "node:http";
+import { Server as HTTPServer, ServerResponse } from "node:http";
 
-import Request from "../http/Request.js";
-import Container from "./Container.js";
-import { Constructor } from "../util/types.js";
+import UnknownServiceError from "../errors/UnknownServiceError.js";
 import Middleware, { MiddlewareConstructor, MiddlewareFunction } from "../http/Middleware.js";
+import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import ContentLengthMiddleware from "../middlewares/ContentLengthMiddleware.js";
-import UnknownServiceError from "../errors/UnknownServiceError.js";
+import { Constructor } from "../util/types.js";
+import ConfigProvider from "./ConfigProvider.js";
+import Container from "./Container.js";
 import ServiceProvider from "./ServiceProvider.js";
 
 class ServiceContainer extends Container<string, any> {
@@ -36,37 +37,52 @@ class ServiceContainer extends Container<string, any> {
 }
 
 interface ReadonlyServiceContainer {
-    get<T>(service: typeof ServiceProvider<T>): T;
-    has(service: typeof ServiceProvider): boolean;
+    get<T>(provider: typeof ServiceProvider<T>): T;
+    has(provider: typeof ServiceProvider): boolean;
+}
+
+interface ReadonlyConfigContainer {
+    get<T>(provider: typeof ConfigProvider<T>): T | undefined;
+    has(provider: typeof ConfigProvider): boolean;
 }
 
 export interface Application {
     readonly services: ReadonlyServiceContainer;
+    readonly config: ReadonlyConfigContainer;
 
     readonly production: boolean;
 }
 
-export default class Server extends HTTPServer implements Application {
+type ServerConfig = {
+    production?: boolean;
+};
+
+export default class Server extends HTTPServer<typeof Request> implements Application {
+    #config = new Container<string, any>();
     #services = new ServiceContainer();
     #pipeline: (MiddlewareConstructor | MiddlewareFunction)[] = [ContentLengthMiddleware];
+
     #compiledPipeline: MiddlewareFunction[] = [];
-    #containerBuilder: () => Container<string, any>;
     #readonlyServices: ReadonlyServiceContainer = {
         get: provider => this.#services.get(provider.service),
         has: provider => this.#services.has(provider.service),
     };
+    #readonlyConfig: ReadonlyConfigContainer = {
+        get: provider => this.#config.get(provider.config),
+        has: provider => this.#config.has(provider.config),
+    };
+
     #production: boolean = false;
 
-    constructor(options?: { containerBuilder?: () => Container<string, any>; production?: boolean }) {
-        super({ IncomingMessage: Request }, async (req, res) => await this.process(<Request> req, res));
+    constructor(options?: ServerConfig) {
+        super({ IncomingMessage: Request }, async (req, res) => await this.process(req, res));
 
-        this.#containerBuilder = options?.containerBuilder ?? (() => new Container<string, any>());
         this.#production = options?.production ?? false;
     }
 
     /** @internal */
     async process(req: Request, res: ServerResponse): Promise<void> {
-        req.init(this.#containerBuilder());
+        req.init(this);
 
         try {
             const response = await this.processRequest(req);
@@ -76,12 +92,6 @@ export default class Server extends HTTPServer implements Application {
 
             for (const [header, value] of response.headers) {
                 res.setHeader(header, value);
-            }
-
-            // HEAD requests should not have a body
-            if (req.method === 'HEAD') {
-                res.end();
-                return;
             }
 
             response.body.pipe(res, { end: true });
@@ -128,7 +138,7 @@ export default class Server extends HTTPServer implements Application {
     /**
      * Applies a middleware before every Request.
      *
-     * ContentLengthMiddleware is applied by default before any other Middleware.
+     * `ContentLengthMiddleware` is applied by default before any other Middleware.
      */
     pipe(middleware: MiddlewareConstructor | MiddlewareFunction): Server {
         this.#pipeline.push(middleware);
@@ -170,8 +180,30 @@ export default class Server extends HTTPServer implements Application {
         return this;
     }
 
+    /**
+     * Injects a Config Provider into the Server.
+     *
+     * @throws {Error}
+     */
+    configure<T>(provider: Constructor<ConfigProvider<T>> & { [K in keyof typeof ConfigProvider<T>]: typeof ConfigProvider<T>[K] }): Server {
+        const name = provider.config;
+        if (this.#config.has(name)) {
+            throw new Error(`A Config Provider with the name '${name}' is already installed.`);
+        }
+
+        const instance = new provider(this);
+
+        this.#config.set(name, instance.register(this));
+
+        return this;
+    }
+
     get services() {
         return this.#readonlyServices;
+    }
+
+    get config() {
+        return this.#readonlyConfig;
     }
 
     get production() {

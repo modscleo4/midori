@@ -25,24 +25,24 @@ export default class Auth {
         this.#userService = userService;
     }
 
-    async authenticateById(request: Request, id: any): Promise<User> {
+    async authenticateById(req: Request, id: any): Promise<User> {
         const user = await this.#userService.getUserById(id);
         if (user === null) {
             throw new Error('Invalid User.');
         }
 
-        request.container.set('::user', user);
+        req.container.set('::user', user);
 
         return user;
     }
 
-    async authenticate(request: Request, username: string, password: string): Promise<User> {
+    async authenticate(req: Request, username: string, password: string): Promise<User> {
         const user = await this.attempt(username, password);
         if (user === null) {
             throw new Error('Invalid credentials.');
         }
 
-        request.container.set('::user', user);
+        req.container.set('::user', user);
 
         return user;
     }
@@ -51,15 +51,15 @@ export default class Auth {
         return await this.#userService.getUserByCredentials(username, password);
     }
 
-    check(request: Request): boolean {
-        return this.user(request) !== null;
+    check(req: Request): boolean {
+        return this.user(req) !== null;
     }
 
-    user(request: Request): User | null {
-        return request.container.get('::user') ?? null;
+    user(req: Request): User | null {
+        return req.container.get('::user') ?? null;
     }
 
-    id(request: Request): any | null {
-        return this.user(request)?.id ?? null;
+    id(req: Request): any | null {
+        return this.user(req)?.id ?? null;
     }
 }

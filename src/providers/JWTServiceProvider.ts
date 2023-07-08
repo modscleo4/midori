@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-import Server from "../app/Server.js";
+import { Application } from "../app/Server.js";
 import ServiceProvider from "../app/ServiceProvider.js";
 import JWT from "../jwt/JWT.js";
-import { Constructor } from "../util/types.js";
+import { JWTConfigProvider } from "./JWTConfigProvider.js";
 
-export abstract class JWTServiceProvider extends ServiceProvider<JWT> {
-    static service: string = 'JWT';
-}
+export default class JWTServiceProvider extends ServiceProvider<JWT> {
+    static service: string = 'midori::JWT';
 
-export default function JWTServiceProviderFactory(jwtService: JWT): Constructor<JWTServiceProvider> & { [K in keyof typeof JWTServiceProvider]: typeof ServiceProvider[K]; } {
-    return class extends JWTServiceProvider {
-        register(server: Server): JWT {
-            return jwtService;
-        }
-    };
+    register(app: Application): JWT {
+        return new JWT(app.config.get(JWTConfigProvider) ?? {});
+    }
 }

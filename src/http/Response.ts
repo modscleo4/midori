@@ -20,21 +20,35 @@ import { Readable, Transform } from "node:stream";
 import { lookup } from "mime-types";
 
 import { EStatusCode } from "./EStatusCode.js";
+import Request from "./Request.js";
+import HTTPError from "../errors/HTTPError.js";
 
 /**
  * Representation of a HTTP Response.
+ *
+ * When using the `auto()` method, you can ensure the data type with `T`.
+ *
+ * @template T The type of the data to be sent.
  */
-export default class Response {
+export default class Response<T = any> {
     #headers = new Map<string, OutgoingHttpHeader>();
     #status: number = EStatusCode.OK;
     #body: Buffer[] = [];
     #stream?: Readable;
     #pipeStreams: Transform[] = [];
 
+    static #transformers: Map<string, (data: any) => Buffer> = new Map();
+
+    static {
+        Response.installTransformer('application/json', (data: any): Buffer => {
+            return Buffer.from(JSON.stringify(data));
+        });
+    }
+
     /**
      * Add a header to the response.
      */
-    withHeader(key: string, value: OutgoingHttpHeader): Response {
+    withHeader(key: string, value: OutgoingHttpHeader): Response<T> {
         this.#headers.set(key, value);
 
         return this;
@@ -43,7 +57,7 @@ export default class Response {
     /**
      * Add multiple headers to the response.
      */
-    withHeaders(headers: Map<string, OutgoingHttpHeader>): Response {
+    withHeaders(headers: Map<string, OutgoingHttpHeader>): Response<T> {
         for (const [key, value] of headers) {
             this.withHeader(key, value);
         }
@@ -54,13 +68,16 @@ export default class Response {
     /**
      * Send pure data.
      */
-    send(data: Buffer): Response {
+    send(data: Buffer): Response<T> {
         this.#body.push(data);
 
         return this;
     }
 
-    stream(stream: Readable): Response {
+    /**
+     * Send a stream. Streams have priority over other data.
+     */
+    stream(stream: Readable): Response<T> {
         this.#stream = stream;
 
         return this;
@@ -69,17 +86,32 @@ export default class Response {
     /**
      * Send JSON data. The Content-Type header will be set to application/json and the data will automatically be converted to JSON string.
      */
-    json(data: any): Response {
+    json(data: T): Response<T> {
         this.withHeader('Content-Type', 'application/json')
-            .send(Buffer.from(JSON.stringify(data)));
+            .send(Response.#transformers.get('application/json')!(data));
 
         return this;
     }
 
+    auto(data: T, req: Request, order?: string[]): Response<T> {
+        const priority = req.acceptPriority;
+
+        for (const [type, transformer] of Response.#transformers) {
+            if (priority.includes(type) || priority.includes('*/*') || priority.includes(type.split('/')[0] + '/*')) {
+                this.withHeader('Content-Type', type)
+                    .send(Buffer.from(transformer(data)));
+
+                    return this;
+            }
+        }
+
+        throw new HTTPError('Not Acceptable', EStatusCode.NOT_ACCEPTABLE);
+    }
+
     /**
-     * Send a File. The Content-Type header will be set based on the filename.
+     * Send a File. The Content-Type header will be set based on the filename. The file will be streamed.
      */
-    file(filename: string): Response {
+    file(filename: string): Response<T> {
         this.withHeader('Content-Type', lookup(filename) || 'text/plain')
             .stream(createReadStream(filename));
 
@@ -89,19 +121,22 @@ export default class Response {
     /**
      * Set the status code of the response.
      */
-    withStatus(code: number): Response {
+    withStatus(code: number): Response<T> {
         this.#status = code;
 
         return this;
     }
 
-    empty(): Response {
+    empty(): Response<T> {
         this.#body = [];
 
         return this;
     }
 
-    pipe(stream: Transform): Response {
+    /**
+     * Pipe the response to a Transform stream.
+     */
+    pipe(stream: Transform): Response<T> {
         this.#pipeStreams.push(stream);
 
         return this;
@@ -127,7 +162,7 @@ export default class Response {
         return stream;
     }
 
-    get bodyLength() {
+    get length() {
         if (this.#stream || this.#pipeStreams.length > 0) {
             return -1;
         }
@@ -146,9 +181,17 @@ export default class Response {
     /**
      * Send JSON data. The Content-Type header will be set to application/json and the data will automatically be converted to JSON string.
      */
-    static json(data: any): Response {
-        return new Response()
+    static json<T = any>(data: T): Response<T> {
+        return new Response<T>()
             .json(data);
+    }
+
+    /**
+     * Send data based on the Accept header of the request. The Content-Type header will be set accordingly.
+     */
+    static auto<T = any>(data: T, req: Request, order?: string[]): Response<T> {
+        return new Response<T>()
+            .auto(data, req, order);
     }
 
     /**
@@ -175,9 +218,25 @@ export default class Response {
             .withStatus(EStatusCode.NO_CONTENT);
     }
 
+    /**
+     * Send a redirect (302) response.
+     */
     static redirect(to: string): Response {
         return new Response()
             .withStatus(EStatusCode.FOUND)
             .withHeader('Location', to);
+    }
+
+    /**
+     * Send a permanent redirect (301) response.
+     */
+    static redirectPermanent(to: string): Response {
+        return new Response()
+            .withStatus(EStatusCode.MOVED_PERMANENTLY)
+            .withHeader('Location', to);
+    }
+
+    static installTransformer(type: string, transformer: (data: any) => Buffer) {
+        Response.#transformers.set(type, transformer);
     }
 }
