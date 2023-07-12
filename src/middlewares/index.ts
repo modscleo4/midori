@@ -16,3 +16,4 @@ export { default as PublicPathMiddlewareFactory } from './PublicPathMiddleware.j
 export { default as RequestLoggerMiddleware } from './RequestLoggerMiddleware.js';
 export { default as ResponseCompressionMiddlewareFactory, ResponseCompressionMiddleware } from './ResponseCompressionMiddleware.js';
 export { default as RouterMiddleware } from './RouterMiddleware.js';
+export { default as ValidationMiddleware } from './ValidationMiddleware.js';

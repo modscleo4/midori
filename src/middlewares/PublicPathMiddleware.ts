@@ -52,8 +52,8 @@ export class PublicPathMiddleware extends Middleware {
 
         // If the request ends with a slash, try to find an index file
         if (req.path.endsWith('/')) {
-            for (const path of indexFiles) {
-                const res = await this.tryFile(req.path + path);
+            for (const file of indexFiles) {
+                const res = await this.tryFile(req.path + file);
 
                 if (res) {
                     return res;

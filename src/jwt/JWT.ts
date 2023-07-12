@@ -15,13 +15,13 @@
  */
 
 import { readFileSync } from "node:fs";
+import { createPrivateKey } from "node:crypto";
 
 import { Payload as JWKPayload, PayloadEC, PayloadRSA, PayloadSymmetric } from "../util/jwk.js";
 import { Payload as JWTPayload } from "../util/jwt.js";
 import { signJWT, verifyJWS, JWSAlgorithm } from "../util/jws.js";
 import { decryptJWE, encryptJWT, JWEAlgorithm, JWEEncryption } from "../util/jwe.js";
 import { generateUUID } from "../util/uuid.js";
-import { createPrivateKey } from "node:crypto";
 
 /**
  * JWT (JSON Web Token) Service.

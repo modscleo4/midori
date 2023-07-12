@@ -19,6 +19,8 @@ import { IncomingMessage } from "node:http";
 import Container from "../app/Container.js";
 import { Application } from "../app/Server.js";
 import { RequestConfig, RequestConfigProvider } from "../providers/RequestConfigProvider.js";
+import HTTPError from "../errors/HTTPError.js";
+import { EStatusCode } from "./EStatusCode.js";
 
 /**
  * Basic class representing a HTTP Request.
@@ -58,12 +60,17 @@ export default class Request<T = any> extends IncomingMessage {
     }
 
     async readBody(): Promise<Buffer> {
+        // If the body was already read, return it
+        if (this.#body.length > 0) {
+            return this.body;
+        }
+
         // Wait for the body to be fully read before processing the request
         let len = 0;
         for await (const chunk of this) {
             len += chunk.length;
             if (this.#config && len > this.#config.maxBodySize) {
-                throw new Error('Max body size exceeded.');
+                throw new HTTPError('Request body too large', EStatusCode.PAYLOAD_TOO_LARGE);
             }
 
             this.#body.push(chunk);
