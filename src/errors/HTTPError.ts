@@ -26,4 +26,11 @@ export default class HTTPError extends Error {
         super(message);
         this.status = status;
     }
+
+    toJSON(): object {
+        return {
+            name: this.name,
+            message: this.message,
+        };
+    }
 }

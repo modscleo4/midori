@@ -28,7 +28,7 @@ export default class HTTPErrorMiddleware extends Middleware {
             return await next(req);
         } catch (e) {
             if (e instanceof HTTPError) {
-                return Response.json({ message: e.message })
+                return Response.json(e.toJSON())
                     .withStatus(e.status);
             }
 
