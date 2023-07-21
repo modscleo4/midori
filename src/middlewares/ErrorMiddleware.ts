@@ -50,16 +50,19 @@ export class ErrorMiddleware extends Middleware {
     }
 
     parseStack(stack: string): { method: string, file: string, line: number, column: number; }[] {
-        return stack.split('\n').slice(1).map(l => l.trim()).map(l => {
-            const { method, file, line, column } = /at ?(?<method>[^ ]*) \(?(?<file>.*):(?<line>\d+):(?<column>\d+)\)?/g.exec(l)?.groups ?? {};
+        return stack.split('\n')
+            .filter(l => l.trim().startsWith('at '))
+            .map(l => l.trim())
+            .map(l => {
+                const { method, file, line, column } = /at ?(?<method>(async )?[^ ]*) \(?(?<file>.*):(?<line>\d+):(?<column>\d+)\)?/g.exec(l)?.groups ?? {};
 
-            return {
-                method,
-                file,
-                line: parseInt(line),
-                column: parseInt(column),
-            };
-        });
+                return {
+                    method,
+                    file,
+                    line: parseInt(line),
+                    column: parseInt(column),
+                };
+            });
     }
 }
 
