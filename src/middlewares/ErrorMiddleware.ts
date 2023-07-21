@@ -51,8 +51,8 @@ export class ErrorMiddleware extends Middleware {
 
     parseStack(stack: string): { method: string, file: string, line: number, column: number; }[] {
         return stack.split('\n')
-            .filter(l => l.trim().startsWith('at '))
             .map(l => l.trim())
+            .filter(l => l.startsWith('at '))
             .map(l => {
                 const { method, file, line, column } = /at ?(?<method>(async )?[^ ]*) \(?(?<file>.*):(?<line>\d+):(?<column>\d+)\)?/g.exec(l)?.groups ?? {};
 

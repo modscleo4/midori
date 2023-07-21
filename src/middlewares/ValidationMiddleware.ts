@@ -31,38 +31,48 @@ export default abstract class ValidationMiddleware extends Middleware {
     abstract get rules(): ValidatonRules;
 
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
-        const errors: string[] = [];
+        const errors: Record<string, string[]> = {};
 
         if (!req.parsedBody || typeof req.parsedBody !== 'object') {
-            errors.push(`Expected a JSON object as request body but got '${typeof req.parsedBody}'.`);
+            return Response.status(EStatusCode.BAD_REQUEST)
+                .json({
+                    message: "Invalid request body.",
+                    error: "Expected a JSON object as request body.",
+                });
         } else {
             for (const [key, rule] of Object.entries(this.rules)) {
+                const entryErrors: string[] = [];
+
                 if (rule.required && !(key in req.parsedBody)) {
-                    errors.push(`Missing required field '${key}'.`);
+                    entryErrors.push('This field is required.');
                 }
 
                 if (rule.nullable === false && req.parsedBody[key] == null) {
-                    errors.push(`Invalid '${key}' field (expected a non-null value).`);
+                    entryErrors.push('This field cannot be null.');
                 }
 
                 if (key in req.parsedBody && typeof req.parsedBody[key] !== rule.type) {
-                    errors.push(`Invalid '${key}' field (expected type '${rule.type}' but got '${typeof req.parsedBody[key]}').`);
+                    entryErrors.push(`expected type '${rule.type}' but got '${typeof req.parsedBody[key]}'.`);
                 }
 
                 if (key in req.parsedBody && rule.customValidations) {
                     for (const customValidation of rule.customValidations) {
                         if (!customValidation.validator(req.parsedBody[key])) {
-                            errors.push(`Invalid '${key}' field (${customValidation.message}).`);
+                            entryErrors.push(customValidation.message);
                         }
                     }
+                }
+
+                if (entryErrors.length > 0) {
+                    errors[key] = entryErrors;
                 }
             }
         }
 
-        if (errors.length > 0) {
+        if (Object.keys(errors).length > 0) {
             return Response.status(EStatusCode.BAD_REQUEST)
                 .json({
-                    message: "Invalid request body.",
+                    message: "Some fields are invalid.",
                     errors,
                 });
         }

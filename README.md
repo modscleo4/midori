@@ -1,7 +1,7 @@
 # Midori
 A Node.js Web API Framework WITHOUT Express
 
-Midori is new opinionated Web API Framework designed for Node.js, using Node.js's native HTTP module as basis and built with TypeScript and being inspired from PSR standards.
+Midori is an opinionated Web API Framework designed for Node.js, using Node.js's native HTTP module as basis, built with TypeScript and being inspired from PSR standards.
 
 ## Features
 - [x] Router
