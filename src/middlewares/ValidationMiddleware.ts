@@ -47,18 +47,20 @@ export default abstract class ValidationMiddleware extends Middleware {
                     entryErrors.push('This field is required.');
                 }
 
-                if (rule.nullable === false && req.parsedBody[key] == null) {
-                    entryErrors.push('This field cannot be null.');
-                }
+                if (key in req.parsedBody) {
+                    if (rule.nullable === false && req.parsedBody[key] == null) {
+                        entryErrors.push('This field cannot be null.');
+                    }
 
-                if (key in req.parsedBody && typeof req.parsedBody[key] !== rule.type) {
-                    entryErrors.push(`expected type '${rule.type}' but got '${typeof req.parsedBody[key]}'.`);
-                }
+                    if (typeof req.parsedBody[key] !== rule.type) {
+                        entryErrors.push(`expected type '${rule.type}' but got '${typeof req.parsedBody[key]}'.`);
+                    }
 
-                if (key in req.parsedBody && rule.customValidations) {
-                    for (const customValidation of rule.customValidations) {
-                        if (!customValidation.validator(req.parsedBody[key])) {
-                            entryErrors.push(customValidation.message);
+                    if (rule.customValidations) {
+                        for (const customValidation of rule.customValidations) {
+                            if (!customValidation.validator(req.parsedBody[key])) {
+                                entryErrors.push(customValidation.message);
+                            }
                         }
                     }
                 }

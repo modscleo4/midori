@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-export type ValidatonRules = Record<string, {
-    type: 'string' | 'number' | 'boolean' | 'object' | 'array' | 'undefined',
+type ValidationRule = {
+    type: 'string' | 'number' | 'boolean' | 'object' | 'symbol' | 'undefined',
     required: boolean,
     nullable?: boolean,
     customValidations?: {
         validator: (value: any) => boolean,
         message: string,
     }[],
-}>;
+};
+
+export type ValidatonRules = Record<string, ValidationRule>;

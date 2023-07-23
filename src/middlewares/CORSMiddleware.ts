@@ -36,11 +36,6 @@ export class CORSMiddleware extends Middleware {
     async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         const res = await next(req);
 
-        if (req.method !== 'OPTIONS') {
-            // CORS is only needed for preflight (OPTIONS) requests
-            return res;
-        }
-
         if (this.options?.origin) {
             res.withHeader('Access-Control-Allow-Origin', this.options.origin);
         }

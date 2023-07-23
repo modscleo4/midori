@@ -24,10 +24,10 @@ import Response from "../http/Response.js";
  * Middleware to parse the request body, returning a 415 if no recognized Content-Type is detected.
  *
  * The following Content-Types are recognized by default:
- * - application/json
- * - application/x-www-form-urlencoded
- * - text/plain
- * - multipart/form-data
+ * - `application/json`
+ * - `application/x-www-form-urlencoded`
+ * - `text/plain`
+ * - `multipart/form-data`
  *
  * Install a parser with the method `installParser()`.
  */
@@ -81,14 +81,16 @@ export default class ParseBodyMiddleware extends Middleware {
         try {
             if ('content-type' in req.headers) {
                 const contentType = req.headers['content-type']?.split(';')[0].trim().toLowerCase();
-                const encoding = <BufferEncoding> 'utf8';
+                const encoding = <BufferEncoding> req.headers['content-type']?.split(';')[1]?.trim().split('=')[1] ?? 'utf8';
 
                 if (contentType && this.#parsers.has(contentType)) {
                     req.parsedBody = await this.#parsers.get(contentType)!(req, encoding);
+                } else {
+                    return Response.status(EStatusCode.UNSUPPORTED_MEDIA_TYPE);
                 }
             }
         } catch (e) {
-            return Response.status(EStatusCode.UNSUPPORTED_MEDIA_TYPE);
+            return Response.status(EStatusCode.BAD_REQUEST);
         }
 
         return await next(req);
