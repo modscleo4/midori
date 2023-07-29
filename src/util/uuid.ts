@@ -22,3 +22,13 @@ import { randomUUID } from "node:crypto";
 export function generateUUID(): string {
     return randomUUID();
 }
+
+/**
+ * Validate a UUID
+ *
+ * @param uuid UUID to validate
+ * @param version UUID version
+ */
+export function validateUUID(uuid: string, version: number = 4): boolean {
+    return /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(uuid) && parseInt(uuid[14], 16) === version;
+}

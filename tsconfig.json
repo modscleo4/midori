@@ -14,7 +14,9 @@
         "pretty": true,
         "experimentalDecorators": true,
         "outDir": "./dist",
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "noImplicitReturns": true,
+        "noImplicitAny": true
     },
     "include": [
         "src/**/*"
