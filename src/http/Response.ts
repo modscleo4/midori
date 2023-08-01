@@ -94,15 +94,34 @@ export default class Response<T = any> {
     }
 
     auto(data: T, req: Request, order?: string[]): Response<T> {
-        const priority = req.acceptPriority;
+        const priority = order ?? req.acceptPriority;
 
-        for (const [type, transformer] of Response.#transformers) {
-            if (priority.includes(type) || priority.includes('*/*') || priority.includes(type.split('/')[0] + '/*')) {
-                this.withHeader('Content-Type', type)
-                    .send(Buffer.from(transformer(data)));
+        for (const type of priority) {
+            if (type.endsWith('/*')) {
+                const baseType = type.slice(0, -2);
+                const transformers = Array.from(Response.#transformers.keys()).filter(t => t.startsWith(baseType));
+
+                if (transformers.length > 0) {
+                    this.withHeader('Content-Type', transformers[0])
+                        .send(Response.#transformers.get(transformers[0])!(data));
 
                     return this;
+                }
+            } else if (Response.#transformers.has(type)) {
+                this.withHeader('Content-Type', type)
+                    .send(Response.#transformers.get(type)!(data));
+
+                return this;
             }
+        }
+
+        if (priority.includes('*/*')) {
+            const transformer = 'application/json';
+
+            this.withHeader('Content-Type', transformer)
+                .send(Response.#transformers.get(transformer)!(data));
+
+            return this;
         }
 
         throw new HTTPError('Not Acceptable', EStatusCode.NOT_ACCEPTABLE);
