@@ -16,6 +16,7 @@
 
 import { HandlerConstructor, HandlerFunction } from "../http/Handler.js";
 import { MiddlewareConstructor, MiddlewareFunction } from "../http/Middleware.js";
+import { validateUUID } from "../util/uuid.js";
 import Route from "./Route.js";
 
 /**
@@ -99,6 +100,8 @@ export default class Router {
 
     /** @internal */
     filter(path: string, method?: string): Route[] {
+        const paramRegex = /^([^\{]*)\{([^\}]+)\}(.*)$/;
+
         const routes = this.#routes.filter(r => {
             const parts = path.split('/');
             const routeParts = r.path.split('/');
@@ -109,7 +112,39 @@ export default class Router {
 
             for (let i = 0; i < parts.length; i++) {
                 if (parts[i] !== routeParts[i]) {
-                    if (routeParts[i].match(/^\{[^\}]+\}$/)) {
+                    if (paramRegex.test(routeParts[i])) {
+                        const [, before, param, after] = routeParts[i].match(paramRegex)!;
+                        const [paramName, paramType] = param.split(':');
+
+                        if (!parts[i].startsWith(before) || !parts[i].endsWith(after)) {
+                            return false;
+                        }
+
+                        const val = parts[i].substring(before.length, parts[i].length - after.length);
+
+                        switch (paramType) {
+                            case 'uuidv4':
+                                if (!validateUUID(val)) {
+                                    return false;
+                                }
+
+                                break;
+
+                            case 'uuid':
+                                if (!validateUUID(val, -1)) {
+                                    return false;
+                                }
+
+                                break;
+
+                            case 'number':
+                                if (isNaN(Number(val))) {
+                                    return false;
+                                }
+
+                                break;
+                        }
+
                         continue;
                     }
 

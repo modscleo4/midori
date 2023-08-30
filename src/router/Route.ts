@@ -37,7 +37,7 @@ export default class Route {
         this.#path = path + (path.endsWith('/') ? '' : '/');
         this.#handler = handler;
         this.#middlewares = middlewares;
-        this.#compiledMiddlewares = Array.from({length: middlewares.length}, () => new Map());
+        this.#compiledMiddlewares = Array.from({ length: middlewares.length }, () => new Map());
     }
 
     get method() {
@@ -124,9 +124,16 @@ export default class Route {
 
         const params = new Map();
 
+        const paramRegex = /^([^\{]*)\{([^\}]+)\}(.*)$/;
+
         for (let i = 0; i < parts.length; i++) {
-            if (routeParts[i].match(/^\{([^\}]+)\}$/)) {
-                params.set(/^\{([^\}]+)\}$/.exec(routeParts[i])?.[1] ?? '', parts[i]);
+            if (paramRegex.test(routeParts[i])) {
+                const [, before, param, after] = routeParts[i].match(paramRegex)!;
+                const [paramName, paramType] = param.split(':');
+
+                const val = parts[i].substring(before.length, parts[i].length - after.length);
+
+                params.set(paramName, val);
             }
         }
 

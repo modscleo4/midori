@@ -26,7 +26,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/modscleo4/apiframework.git"
+    "url": "https://github.com/modscleo4/midori.git"
   },
   "exports": {
     "./app": {

@@ -76,6 +76,7 @@ export class ResponseCompressionMiddleware extends Middleware {
         if (
             res.length === 0
             || res.headers.has('Content-Encoding')
+            || this.options?.enabled === false
         ) {
             return res;
         }

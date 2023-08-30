@@ -27,7 +27,8 @@ export enum CompressionAlgorithm {
 
 export type ResponseConfig = {
     compression?: {
-        contentTypes?: string[],
+        enabled?: boolean;
+        contentTypes?: string[];
         defaultAlgorithm?: CompressionAlgorithm;
         order?: CompressionAlgorithm[];
     };

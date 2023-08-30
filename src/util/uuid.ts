@@ -27,8 +27,8 @@ export function generateUUID(): string {
  * Validate a UUID
  *
  * @param uuid UUID to validate
- * @param version UUID version
+ * @param version UUID version to validate (-1 to ignore)
  */
 export function validateUUID(uuid: string, version: number = 4): boolean {
-    return /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(uuid) && parseInt(uuid[14], 16) === version;
+    return /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(uuid) && (version == -1 ? true : parseInt(uuid[14], 16) === version);
 }

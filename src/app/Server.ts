@@ -38,7 +38,7 @@ class ServiceContainer extends Container<string, any> {
 
 interface ReadonlyServiceContainer {
     get<T>(provider: typeof ServiceProvider<T>): T;
-    has(provider: typeof ServiceProvider): boolean;
+    has<T>(provider: typeof ServiceProvider<T>): boolean;
 }
 
 interface ReadonlyConfigContainer {
