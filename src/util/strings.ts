@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { randomBytes } from "node:crypto";
+
 /**
  * Check if a string matches a glob pattern.
  *
@@ -32,4 +34,10 @@ export function globMatch(pattern: string, search: string): boolean {
     );
 
     return regex.test(search);
+}
+
+export function generateRandomString(n: number): string {
+    const bytes = randomBytes(n);
+
+    return bytes.toString('hex').slice(0, n);
 }

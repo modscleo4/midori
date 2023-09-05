@@ -15,7 +15,7 @@
  */
 
 import { readFileSync } from "node:fs";
-import { createPrivateKey } from "node:crypto";
+import { createPrivateKey, createPublicKey } from "node:crypto";
 
 import { Payload as JWKPayload, PayloadEC, PayloadRSA, PayloadSymmetric } from "../util/jwk.js";
 import { Payload as JWTPayload } from "../util/jwt.js";
@@ -170,5 +170,23 @@ export default class JWT {
         } catch (e) {
             return null;
         }
+    }
+
+    getPublicKeys(): JWKPayload[] {
+        const keys: JWKPayload[] = [];
+
+        if (this.#sign?.key) {
+            const key = createPublicKey(createPrivateKey({ key: this.#sign.key, format: 'jwk' }));
+
+            keys.push({ ...key.export({ format: 'jwk' }), use: 'sig', kid: this.#sign.key.kid });
+        }
+
+        if (this.#encrypt?.key) {
+            const key = createPublicKey(createPrivateKey({ key: this.#encrypt.key, format: 'jwk' }));
+
+            keys.push({ ...key.export({ format: 'jwk' }), use: 'enc', kid: this.#encrypt.key.kid });
+        }
+
+        return keys;
     }
 }
