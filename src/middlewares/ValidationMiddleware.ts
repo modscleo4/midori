@@ -21,7 +21,7 @@ import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
-import { ValidatonRules } from "../util/validation.js";
+import { ValidatonRules, CustomValidation } from "../util/validation.js";
 
 export default abstract class ValidationMiddleware extends Middleware {
     constructor(app: Application) {
@@ -56,8 +56,30 @@ export default abstract class ValidationMiddleware extends Middleware {
                         entryErrors.push(`expected type '${rule.type}' but got '${typeof req.parsedBody[key]}'.`);
                     }
 
+                    if (rule.oneOf && !(rule.oneOf as any[]).includes(req.parsedBody[key])) {
+                        entryErrors.push(`expected one of [${rule.oneOf.join(', ')}] but got '${req.parsedBody[key]}'.`);
+                    }
+
+                    if (rule.type === 'string') {
+                        if (rule.min && req.parsedBody[key].length < rule.min) {
+                            entryErrors.push(`expected a minimum of ${rule.min} characters but got ${req.parsedBody[key].length}.`);
+                        }
+
+                        if (rule.max && req.parsedBody[key].length > rule.max) {
+                            entryErrors.push(`expected a maximum of ${rule.max} characters but got ${req.parsedBody[key].length}.`);
+                        }
+                    } else if (rule.type === 'number') {
+                        if (rule.min && req.parsedBody[key] < rule.min) {
+                            entryErrors.push(`expected a minimum of ${rule.min} but got ${req.parsedBody[key]}.`);
+                        }
+
+                        if (rule.max && req.parsedBody[key] > rule.max) {
+                            entryErrors.push(`expected a maximum of ${rule.max} but got ${req.parsedBody[key]}.`);
+                        }
+                    }
+
                     if (rule.customValidations) {
-                        for (const customValidation of rule.customValidations) {
+                        for (const customValidation of rule.customValidations as CustomValidation<any>[]) {
                             if (!customValidation.validator(req.parsedBody[key])) {
                                 entryErrors.push(customValidation.message);
                             }

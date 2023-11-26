@@ -48,7 +48,7 @@ export default class Request<T = any> extends IncomingMessage {
         const url = new URL(this.url ?? '', `http://${this.headers.host}`);
 
         this.#query = url.searchParams;
-        this.#path = url.pathname + (url.pathname.endsWith('/') ? '' : '/');
+        this.#path = url.pathname;
         this.#ip = this.socket.remoteAddress;
         if (this.headers['x-real-ip']) {
             this.#ip = Array.isArray(this.headers['x-real-ip']) ? this.headers['x-real-ip'][0] : this.headers['x-real-ip'];

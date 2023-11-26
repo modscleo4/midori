@@ -14,14 +14,54 @@
  * limitations under the License.
  */
 
-type ValidationRule = {
-    type: 'string' | 'number' | 'boolean' | 'object' | 'symbol' | 'undefined',
+export type CustomValidation<T> = {
+    validator: (value: T) => boolean,
+    message: string,
+};
+
+/**
+ * Base interface for validation rules.
+ */
+interface BaseValidationRule<T> {
     required: boolean,
     nullable?: boolean,
-    customValidations?: {
-        validator: (value: any) => boolean,
-        message: string,
-    }[],
+    oneOf?: T[],
+    customValidations?: CustomValidation<T>[],
+}
+
+type StringValidationRule = BaseValidationRule<string> & {
+    type: 'string',
+    min?: number,
+    max?: number,
 };
+
+type NumberValidationRule = BaseValidationRule<number> & {
+    type: 'number',
+    min?: number,
+    max?: number,
+};
+
+type BooleanValidationRule = BaseValidationRule<boolean> & {
+    type: 'boolean',
+};
+
+type ObjectValidationRule = BaseValidationRule<object> & {
+    type: 'object',
+};
+
+type SymbolValidationRule = BaseValidationRule<symbol> & {
+    type: 'symbol',
+};
+
+type UndefinedValidationRule = BaseValidationRule<undefined> & {
+    type: 'undefined',
+};
+
+type ValidationRule = StringValidationRule
+    | NumberValidationRule
+    | BooleanValidationRule
+    | ObjectValidationRule
+    | SymbolValidationRule
+    | UndefinedValidationRule;
 
 export type ValidatonRules = Record<string, ValidationRule>;
