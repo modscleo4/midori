@@ -34,7 +34,7 @@ export default class Route {
 
     constructor(method: string, path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[]) {
         this.#method = method;
-        this.#path = path + (path.endsWith('/') ? '' : '/');
+        this.#path = path === '/' ? '' : path;
         this.#handler = handler;
         this.#middlewares = middlewares;
         this.#compiledMiddlewares = Array.from({ length: middlewares.length }, () => new Map());
