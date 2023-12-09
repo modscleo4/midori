@@ -22,6 +22,7 @@ import { Payload as JWTPayload } from "../util/jwt.js";
 import { signJWT, verifyJWS, JWSAlgorithm } from "../util/jws.js";
 import { decryptJWE, encryptJWT, JWEAlgorithm, JWEEncryption } from "../util/jwe.js";
 import { generateUUID } from "../util/uuid.js";
+import { JWTConfig } from "../providers/JWTConfigProvider.js";
 
 /**
  * JWT (JSON Web Token) Service.
@@ -37,14 +38,11 @@ export default class JWT {
         key: JWKPayload;
     };
 
-    constructor({ sign, encrypt }: {
-        sign?: { alg: string; secret?: string; privateKeyFile?: string; },
-        encrypt?: { alg: string; enc: string; secret?: string; privateKeyFile?: string; };
-    }) {
-        if (sign) {
-            const alg = JWSAlgorithm[sign.alg as keyof typeof JWSAlgorithm];
-            const secret = sign.secret || null;
-            const privateKey = sign.privateKeyFile ? readFileSync(sign.privateKeyFile, { encoding: 'utf8' }) : null;
+    constructor(config: JWTConfig) {
+        if (config.sign) {
+            const alg = JWSAlgorithm[config.sign.alg as keyof typeof JWSAlgorithm];
+            const secret = config.sign.secret || null;
+            const privateKey = config.sign.privateKeyFile ? readFileSync(config.sign.privateKeyFile, { encoding: 'utf8' }) : null;
 
             if (![JWSAlgorithm.HS256, JWSAlgorithm.HS384, JWSAlgorithm.HS512].includes(alg) && !privateKey) {
                 throw new Error('Private key is required for this algorithm');
@@ -82,17 +80,25 @@ export default class JWT {
             };
         }
 
-        if (encrypt) {
-            const alg = JWEAlgorithm[encrypt.alg as keyof typeof JWEAlgorithm];
-            const enc = JWEEncryption[encrypt.enc as keyof typeof JWEEncryption];
-            const secret = encrypt.secret || null;
-            const privateKey = encrypt.privateKeyFile ? readFileSync(encrypt.privateKeyFile, { encoding: 'utf8' }) : null;
+        if (config.encrypt) {
+            const alg = JWEAlgorithm[config.encrypt.alg as keyof typeof JWEAlgorithm];
+            const enc = JWEEncryption[config.encrypt.enc as keyof typeof JWEEncryption];
+            const secret = config.encrypt.secret || null;
+            const privateKey = config.encrypt.privateKeyFile ? readFileSync(config.encrypt.privateKeyFile, { encoding: 'utf8' }) : null;
+            const ephemeralPrivateKey = config.encrypt.ephemeralPrivateKeyFile ? readFileSync(config.encrypt.ephemeralPrivateKeyFile, { encoding: 'utf8' }) : null;
 
             if (
-                [JWEAlgorithm.RSA1_5, JWEAlgorithm['RSA-OAEP'], JWEAlgorithm['RSA-OAEP-256'], JWEAlgorithm['ECDH-ES'], JWEAlgorithm['ECDH-ES+A128KW'], JWEAlgorithm['ECDH-ES+A192KW'], JWEAlgorithm['ECDH-ES+A256KW']].includes(alg)
+                [JWEAlgorithm.RSA1_5, JWEAlgorithm['RSA-OAEP'], JWEAlgorithm['RSA-OAEP-256']].includes(alg)
                 && !privateKey
             ) {
                 throw new Error('Private key is required for this algorithm');
+            }
+
+            if (
+                [JWEAlgorithm['ECDH-ES'], JWEAlgorithm['ECDH-ES+A128KW'], JWEAlgorithm['ECDH-ES+A192KW'], JWEAlgorithm['ECDH-ES+A256KW']].includes(alg)
+                && !ephemeralPrivateKey
+            ) {
+                throw new Error('Ephemeral private key is required for this algorithm');
             }
 
             if (
@@ -113,7 +119,7 @@ export default class JWT {
             const key: JWKPayload = ([JWEAlgorithm.A128KW, JWEAlgorithm.A192KW, JWEAlgorithm.A256KW, JWEAlgorithm.dir].includes(alg) ? <PayloadSymmetric> {
                 ...baseKey,
 
-                k: secret,
+                k: Buffer.from(secret!, 'utf8').toString('base64url'),
             } : [JWEAlgorithm.RSA1_5, JWEAlgorithm['RSA-OAEP'], JWEAlgorithm['RSA-OAEP-256']].includes(alg) ? <PayloadRSA> {
                 ...baseKey,
 
@@ -121,7 +127,7 @@ export default class JWT {
             } : [JWEAlgorithm['ECDH-ES'], JWEAlgorithm['ECDH-ES+A128KW'], JWEAlgorithm['ECDH-ES+A192KW'], JWEAlgorithm['ECDH-ES+A256KW']].includes(alg) ? <PayloadEC> {
                 ...baseKey,
 
-                ...createPrivateKey(privateKey!).export({ format: 'jwk' })
+                ...createPrivateKey(ephemeralPrivateKey!).export({ format: 'jwk' })
             } : baseKey);
 
             this.#encrypt = {

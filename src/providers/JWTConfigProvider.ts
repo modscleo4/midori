@@ -29,6 +29,7 @@ export type JWTConfig = {
         enc: string;
         secret?: string;
         privateKeyFile?: string;
+        ephemeralPrivateKeyFile?: string;
     };
 };
 

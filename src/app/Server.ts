@@ -25,6 +25,8 @@ import { Constructor } from "../util/types.js";
 import ConfigProvider from "./ConfigProvider.js";
 import Container from "./Container.js";
 import ServiceProvider from "./ServiceProvider.js";
+import Task, { TaskConstructor, TaskFunction } from "../scheduler/Task.js";
+import { CronExpression, canRunTask, parseCronString, validateCronString } from "../util/cron.js";
 
 class ServiceContainer extends Container<string, any> {
     get(key: string): any {
@@ -32,7 +34,7 @@ class ServiceContainer extends Container<string, any> {
             throw new UnknownServiceError(key);
         }
 
-        return super.get(key);
+        return super.get(key)!;
     }
 }
 
@@ -61,6 +63,7 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
     #config = new Container<string, any>();
     #services = new ServiceContainer();
     #pipeline: (MiddlewareConstructor | MiddlewareFunction)[] = [ContentLengthMiddleware];
+    #tasks: { cronExpression: CronExpression; runner: TaskFunction; lastRun?: Date }[] = [];
 
     #compiledPipeline: MiddlewareFunction[] = [];
     #readonlyServices: ReadonlyServiceContainer = {
@@ -73,11 +76,13 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
     };
 
     #production: boolean = false;
+    #taskInterval: NodeJS.Timeout;
 
     constructor(options?: ServerConfig) {
         super({ IncomingMessage: Request }, async (req, res) => await this.process(req, res));
 
         this.#production = options?.production ?? false;
+        this.#taskInterval = setInterval(() => this.runAllTasks(), 1000);
     }
 
     /** @internal */
@@ -117,6 +122,16 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
         }
 
         return this.#compiledPipeline[i];
+    }
+
+    #compileTask(task: TaskConstructor | TaskFunction): TaskFunction {
+        if (task.prototype instanceof Task) {
+            const instance = new (task as TaskConstructor)(this);
+
+            return instance.run.bind(instance);
+        }
+
+        return task as TaskFunction;
     }
 
     /** @internal */
@@ -196,6 +211,36 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
         this.#config.set(name, instance.register(this));
 
         return this;
+    }
+
+    schedule(cronString: string, task: TaskConstructor | TaskFunction): Server {
+        if (!validateCronString(cronString)) {
+            throw new Error("Invalid cron string");
+        }
+
+        const cronExpression = parseCronString(cronString);
+
+        this.#tasks.push({ cronExpression, runner: this.#compileTask(task) });
+
+        return this;
+    }
+
+    async runAllTasks(): Promise<void> {
+        const now = new Date();
+
+        for (let i = 0; i < this.#tasks.length; i++) {
+            const task = this.#tasks[i];
+
+            if (!task.lastRun) {
+                task.lastRun = now;
+            }
+
+            if (!canRunTask(task.cronExpression, task.lastRun, now)) {
+                continue;
+            }
+
+            await task.runner(this);
+        }
     }
 
     get services() {

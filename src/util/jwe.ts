@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { constants, createPrivateKey, createPublicKey, privateDecrypt, publicEncrypt, randomBytes } from "node:crypto";
+import { constants, createPrivateKey, createPublicKey, privateDecrypt, publicEncrypt, randomBytes, CipherKey } from "node:crypto";
 
-import { Payload as JWKPayload, PayloadEC, PayloadRSA } from "./jwk.js";
+import { Payload as JWKPayload, PayloadEC, PayloadRSA, PayloadSymmetric } from "./jwk.js";
 import JWTError from "../errors/JWTError.js";
 import AESGCM from "./crypt/aesgcm.js";
 import AESHMAC from "./crypt/aeshmac.js";
+import AESKW from "./crypt/aeskw.js";
 
 /**
  * JWE Algorithms
@@ -86,7 +87,7 @@ export function encryptJWT(
     enc: JWEEncryption,
     key: JWKPayload,
 ): string {
-    const cek = randomBytes(cekLength(enc) / 8);
+    const cek = alg === JWEAlgorithm.dir ? deserializeSymmetricKey(<PayloadSymmetric> key) : randomBytes(cekLength(enc) / 8);
     const encryptedKey = encryptCEK(cek, alg, key);
     const iv = randomBytes(ivLength(enc) / 8);
     const header: Header = {
@@ -170,6 +171,10 @@ function ivLength(enc: JWEEncryption): number {
     }
 }
 
+function deserializeSymmetricKey(key: PayloadSymmetric): Buffer {
+    return Buffer.from(key.k!, 'base64url');
+}
+
 function encryptCEK(cek: Buffer, alg: JWEAlgorithm, key: JWKPayload): Buffer {
     switch (alg) {
         case JWEAlgorithm.RSA1_5:
@@ -179,7 +184,7 @@ function encryptCEK(cek: Buffer, alg: JWEAlgorithm, key: JWKPayload): Buffer {
                     padding: constants.RSA_PKCS1_PADDING,
                 },
                 cek,
-            )
+            );
 
         case JWEAlgorithm["RSA-OAEP"]:
             return publicEncrypt(
@@ -199,6 +204,18 @@ function encryptCEK(cek: Buffer, alg: JWEAlgorithm, key: JWKPayload): Buffer {
                 },
                 cek
             );
+
+        case JWEAlgorithm.A128KW:
+            return AESKW.encrypt(128, cek, deserializeSymmetricKey(<PayloadSymmetric> key));
+
+        case JWEAlgorithm.A192KW:
+            return AESKW.encrypt(192, cek, deserializeSymmetricKey(<PayloadSymmetric> key));
+
+        case JWEAlgorithm.A256KW:
+            return AESKW.encrypt(256, cek, deserializeSymmetricKey(<PayloadSymmetric> key));
+
+        case JWEAlgorithm.dir:
+            return Buffer.alloc(0);
     }
 
     throw new JWTError(`Unsupported algorithm: ${alg}`);
@@ -233,6 +250,18 @@ function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, key: JWKPayload): B
                 },
                 encryptedKey
             );
+
+        case JWEAlgorithm.A128KW:
+            return AESKW.decrypt(128, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key));
+
+        case JWEAlgorithm.A192KW:
+            return AESKW.decrypt(192, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key));
+
+        case JWEAlgorithm.A256KW:
+            return AESKW.decrypt(256, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key));
+
+        case JWEAlgorithm.dir:
+            return deserializeSymmetricKey(<PayloadSymmetric> key);
     }
 
     throw new JWTError(`Unsupported algorithm: ${alg}`);
