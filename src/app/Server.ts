@@ -82,7 +82,7 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
         super({ IncomingMessage: Request }, async (req, res) => await this.process(req, res));
 
         this.#production = options?.production ?? false;
-        this.#taskInterval = setInterval(() => this.runAllTasks(), 1000);
+        this.#taskInterval = setInterval(() => this.runAllTasks(), 500);
     }
 
     /** @internal */
@@ -213,6 +213,13 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
         return this;
     }
 
+    /**
+     * Schedules a task to be executed periodically.
+     *
+     * @param cronString A cron string that defines when the task will be executed. Be aware that the seconds field is supported and required.
+     * @param task The task to be executed.
+     * @throws {Error}
+     */
     schedule(cronString: string, task: TaskConstructor | TaskFunction): Server {
         if (!validateCronString(cronString)) {
             throw new Error("Invalid cron string");
@@ -231,13 +238,11 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
         for (let i = 0; i < this.#tasks.length; i++) {
             const task = this.#tasks[i];
 
-            if (!task.lastRun) {
-                task.lastRun = now;
-            }
-
-            if (!canRunTask(task.cronExpression, task.lastRun, now)) {
+            if (!canRunTask(task.cronExpression, now, task.lastRun)) {
                 continue;
             }
+
+            task.lastRun = now;
 
             await task.runner(this);
         }

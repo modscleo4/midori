@@ -15,6 +15,7 @@
  */
 
 export type CronExpression = {
+    second: number[];
     minute: number[];
     hour: number[];
     dayOfMonth: number[];
@@ -23,36 +24,43 @@ export type CronExpression = {
 };
 
 export function validateCronString(cronString: string): boolean {
-    const [minute, hour, dayOfMonth, month, dayOfWeek] = cronString.split(" ", 5);
+    const [second, minute, hour, dayOfMonth, month, dayOfWeek] = cronString.split(" ", 6);
 
     function validateCronPart(part: string, min: number, max: number): boolean {
-        if (part === "*") {
+        if (!part) {
+            return false;
+        }
+
+        // Any
+        if (part === '*') {
             return true;
         }
 
-        if (part.includes(",")) {
-            return part.split(",").every(p => validateCronPart(p, min, max));
+        // List
+        if (part.includes(',')) {
+            return part.split(',').every(p => validateCronPart(p, min, max));
         }
 
-        if (part.includes("-")) {
-            const [start, end] = part.split("-", 2).map(Number);
+        // Range
+        if (part.includes('-')) {
+            const [start, end] = part.split('-', 2).map(parseInt);
             return start >= min
                 && end <= max;
         }
 
-        if (part.includes("/")) {
-            const [start, step] = part.split("/", 2).map(Number);
-            return start >= min
-                && start <= max
-                && step >= 1
-                && step <= max - min + 1;
+        // Step
+        if (part.includes('/')) {
+            const [start, step] = part.split('/', 2);
+            return (start === '*' || parseInt(start) >= min)
+                && parseInt(step) >= min
         }
 
         const n = Number(part);
         return n >= min && n <= max;
     }
 
-    return validateCronPart(minute, 0, 59)
+    return validateCronPart(second, 0, 59)
+        && validateCronPart(minute, 0, 59)
         && validateCronPart(hour, 0, 23)
         && validateCronPart(dayOfMonth, 1, 31)
         && validateCronPart(month, 1, 12)
@@ -60,31 +68,40 @@ export function validateCronString(cronString: string): boolean {
 }
 
 export function parseCronString(cronString: string): CronExpression {
-    const [minute, hour, dayOfMonth, month, dayOfWeek] = cronString.split(" ", 5);
+    const [second, minute, hour, dayOfMonth, month, dayOfWeek] = cronString.split(" ", 6);
 
     function parseCronPart(part: string, min: number, max: number): number[] {
-        if (part === "*") {
+        // Any
+        if (part === '*') {
             return Array.from({ length: max - min + 1 }, (_, i) => i + min);
         }
 
-        if (part.includes(",")) {
-            return part.split(",").flatMap(p => parseCronPart(p, min, max));
+        // List
+        if (part.includes(',')) {
+            return part.split(',').flatMap(p => parseCronPart(p, min, max));
         }
 
-        if (part.includes("-")) {
-            const [start, end] = part.split("-", 2).map(Number);
+        // Range
+        if (part.includes('-')) {
+            const [start, end] = part.split('-', 2).map(parseInt);
             return Array.from({ length: end - start + 1 }, (_, i) => i + start);
         }
 
-        if (part.includes("/")) {
-            const [start, step] = part.split("/", 2).map(Number);
-            return Array.from({ length: max - min + 1 }, (_, i) => i + min).filter(n => (n - start) % step === 0);
+        // Step
+        // Only works with */n format
+        if (part.includes('/')) {
+            const [start, step] = part.split('/', 2);
+            const s = start === '*' ? min : parseInt(start);
+            const st = parseInt(step);
+
+            return Array.from({ length: Math.floor((max - s) / st) + 1 }, (_, i) => i * st + s);
         }
 
         return [Number(part)];
     }
 
     return {
+        second: parseCronPart(second, 0, 59),
         minute: parseCronPart(minute, 0, 59),
         hour: parseCronPart(hour, 0, 23),
         dayOfMonth: parseCronPart(dayOfMonth, 1, 31),
@@ -93,12 +110,12 @@ export function parseCronString(cronString: string): CronExpression {
     };
 }
 
-export function canRunTask(cronExpression: CronExpression, lastRun: Date, now: Date): boolean {
-    if (!lastRun) {
-        lastRun = now;
+export function canRunTask(cronExpression: CronExpression, now: Date, lastRun?: Date): boolean {
+    if (lastRun && now.getSeconds() === lastRun.getSeconds()) {
+        return false;
     }
 
-    if (now.getMinutes() == lastRun.getMinutes()) {
+    if (!cronExpression.second.includes(now.getSeconds())) {
         return false;
     }
 

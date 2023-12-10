@@ -115,5 +115,15 @@ The Router module is responsible for routing requests to handlers.
 - `Route` - Class representing a route, containing the path, method, handler and middlewares.
 - `Router` - Class responsible for storing routes and finding the correct handler for a request.
 
+### midori/scheduler
+The Scheduler module is responsible for scheduling tasks.
+- `Task` - Abstract class for all tasks. You can also implement a task as a function.
+```ts
+const task = async (app: Application): Promise<void> {
+    // ...
+}
+```
+Install on the app using `app.schedule(cronString, DerivedTask)`. `cronString` is a string representing the schedule of the task using the cron format WITH seconds. For example, `* * * * * *` will run the task every second.
+
 ### midori/util
 The Util module is responsible for providing utility functions used by the framework.
