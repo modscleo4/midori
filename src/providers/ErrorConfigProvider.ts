@@ -19,16 +19,17 @@ import { Application } from "../app/Server.js";
 import { Constructor } from "../util/types.js";
 
 export type ErrorConfig = {
+    /** Whether to expose errors to the client. */
     exposeErrors?: boolean;
 };
 
 export abstract class ErrorConfigProvider extends ConfigProvider<ErrorConfig> {
-    static config = 'midori::Error';
+    static config: symbol = Symbol('midori::Error');
 }
 
 export default function ErrorConfigProviderFactory(options: ErrorConfig): Constructor<ErrorConfigProvider> & { [K in keyof typeof ErrorConfigProvider]: typeof ErrorConfigProvider[K] } {
     return class extends ErrorConfigProvider {
-        register(app: Application): ErrorConfig {
+        override register(app: Application): ErrorConfig {
             return options;
         }
     };

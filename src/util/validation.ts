@@ -23,22 +23,42 @@ export type CustomValidation<T> = {
  * Base interface for validation rules.
  */
 interface BaseValidationRule<T> {
+    /** If the field is required. */
     required: boolean,
+    /** If the field can be null. */
     nullable?: boolean,
+    /** Enum containing the allowed values. */
     oneOf?: T[],
+    /** Custom validations. */
     customValidations?: CustomValidation<T>[],
 }
 
 type StringValidationRule = BaseValidationRule<string> & {
     type: 'string',
+    /** Minimum length. */
     min?: number,
+    /** Maximum length. */
     max?: number,
+    /** Regex to match. */
+    regex?: RegExp,
 };
 
 type NumberValidationRule = BaseValidationRule<number> & {
     type: 'number',
+    /** Minimum value. */
     min?: number,
+    /** Maximum value. */
     max?: number,
+    /** If the number must be an integer. */
+    integer?: boolean,
+};
+
+type BigIntValidationRule = BaseValidationRule<bigint> & {
+    type: 'bigint',
+    /** Minimum value. */
+    min?: bigint,
+    /** Maximum value. */
+    max?: bigint,
 };
 
 type BooleanValidationRule = BaseValidationRule<boolean> & {
@@ -47,6 +67,8 @@ type BooleanValidationRule = BaseValidationRule<boolean> & {
 
 type ObjectValidationRule = BaseValidationRule<object> & {
     type: 'object',
+    /** Validation rules for the object properties. */
+    properties?: ValidatonRules,
 };
 
 type SymbolValidationRule = BaseValidationRule<symbol> & {
@@ -57,11 +79,27 @@ type UndefinedValidationRule = BaseValidationRule<undefined> & {
     type: 'undefined',
 };
 
+type ArrayValidationRule = BaseValidationRule<any[]> & {
+    type: 'array',
+    /** Minimum length. */
+    min?: number,
+    /** Maximum length. */
+    max?: number,
+    /** Validation rules for the array items. */
+    items?: ValidationRule[],
+    /** Validation rule for all array items. */
+    all?: ValidationRule,
+    /** If the array items must be unique. */
+    unique?: boolean,
+};
+
 type ValidationRule = StringValidationRule
     | NumberValidationRule
+    | BigIntValidationRule
     | BooleanValidationRule
     | ObjectValidationRule
     | SymbolValidationRule
-    | UndefinedValidationRule;
+    | UndefinedValidationRule
+    | ArrayValidationRule;
 
 export type ValidatonRules = Record<string, ValidationRule>;

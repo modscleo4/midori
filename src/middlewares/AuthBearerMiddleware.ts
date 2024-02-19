@@ -33,6 +33,8 @@ export default class AuthBearerMiddleware extends Middleware {
     #jwt: JWT;
     #auth: Auth;
 
+    static TokenKey: symbol = Symbol('::jwt');
+
     constructor(app: Application) {
         super(app);
 
@@ -40,7 +42,7 @@ export default class AuthBearerMiddleware extends Middleware {
         this.#auth = app.services.get(AuthServiceProvider);
     }
 
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         if (!req.headers['authorization']) {
             return Response.json({ message: 'Invalid Authorization header.' })
                 .withHeader('WWW-Authenticate', 'Bearer')
@@ -71,7 +73,7 @@ export default class AuthBearerMiddleware extends Middleware {
                 .withStatus(EStatusCode.UNAUTHORIZED);
         }
 
-        req.container.set('::jwt', payload);
+        req.container.set(AuthBearerMiddleware.TokenKey, payload);
 
         return await next(req);
     }

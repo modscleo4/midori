@@ -20,12 +20,12 @@ import Logger from "../log/Logger.js";
 import { Constructor } from "../util/types.js";
 
 export abstract class LoggerServiceProvider extends ServiceProvider<Logger> {
-    static service: string = 'midori::Logger';
+    static service: symbol = Symbol('midori::Logger');
 }
 
 export default function LoggerServiceProviderFactory(loggerService: Logger): Constructor<LoggerServiceProvider> & { [K in keyof typeof LoggerServiceProvider]: typeof LoggerServiceProvider[K] } {
     return class extends LoggerServiceProvider {
-        register(app: Application): Logger {
+        override register(app: Application): Logger {
             return loggerService;
         }
     };

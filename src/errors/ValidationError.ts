@@ -17,12 +17,12 @@
 import HTTPError from './HTTPError.js';
 
 export default class ValidationError extends HTTPError {
-    errors: Record<string, string[]>;
-
-    constructor(errors: Record<string, string[]>, message: string = 'Some fields are invalid', status: number = 400) {
+    constructor(
+        public errors: Record<string, string[]>,
+        message: string = 'Some fields are invalid',
+        status: number = 400,
+    ) {
         super(message, status);
-
-        this.errors = errors;
     }
 
     override toJSON(): object {

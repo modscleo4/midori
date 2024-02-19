@@ -19,27 +19,35 @@ import { Application } from "../app/Server.js";
 import { Constructor } from "../util/types.js";
 
 export type JWTConfig = {
+    /** Configuration for signing JWTs (JWS). */
     sign?: {
+        /** Algorithm to be used. Possible values: HS256, HS384, HS512, RS256, RS384, RS512, ES256, ES384, ES512, PS256, PS384, PS512. */
         alg: string;
+        /** Secret to be used for HS* algorithms. */
         secret?: string;
+        /** Private key file to be used for RS* and PS* algorithms. */
         privateKeyFile?: string;
     };
+    /** Configuration for encrypting JWTs (JWE). */
     encrypt?: {
+        /** Algorithm to be used. Possible values: RSA1_5, RSA-OAEP, RSA-OAEP-256, A128KW, A192KW, A256KW, dir, ECDH-ES, ECDH-ES+A128KW, ECDH-ES+A192KW, ECDH-ES+A256KW. */
         alg: string;
+        /** Encryption algorithm to be used. Possible values: A128CBC-HS256, A192CBC-HS384, A256CBC-HS512, A128GCM, A192GCM, A256GCM. */
         enc: string;
+        /** Key to be used for A*KW and dir algorithms. Must be hex-encoded. */
         secret?: string;
+        /** Private key file to be used for RSA* and ECDH* algorithms. */
         privateKeyFile?: string;
-        ephemeralPrivateKeyFile?: string;
     };
 };
 
 export abstract class JWTConfigProvider extends ConfigProvider<JWTConfig> {
-    static config = 'midori::JWT';
+    static config: symbol = Symbol('midori::JWT');
 }
 
 export default function JWTConfigProviderFactory(options: JWTConfig): Constructor<JWTConfigProvider> & { [K in keyof typeof JWTConfigProvider]: typeof JWTConfigProvider[K] } {
     return class extends JWTConfigProvider {
-        register(app: Application): JWTConfig {
+        override register(app: Application): JWTConfig {
             return options;
         }
     };

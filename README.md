@@ -10,11 +10,92 @@ Midori is an opinionated Web API Framework designed for Node.js, using Node.js's
 - [x] Error Handling
 - [x] Service Providers
 - [x] Config Providers
+- [x] Logger
+- [x] Scheduler
 - [x] JWT
+ - [x] JWS
+ - [x] JWE
+ - [x] JWK
 - [x] CORS
 - [x] Static Files
 - [x] Body Parser
+  - [x] JSON BigInt support
 - [x] Hashing (Scrypt, PBKDF2) using native Node.js `node:crypto` module
+- [x] Basic Validation
+
+## Roadmap
+- [ ] Tests
+- [ ] Documentation
+- [ ] Rate Limiting
+
+## Installation
+```bash
+npm install modscleo4/midori
+```
+
+## Usage
+See [HTTP Bin](https://github.com/modscleo4/httpbin) for an example project.
+
+### Basic
+```ts
+// Import the node:http wrapper
+import { Server } from 'midori/app';
+// Import the HTTP utilities
+import { Request, Response } from 'midori/http';
+
+// Create the Server
+const server = new Server();
+
+// Install a basic Middleware
+server.pipe(async (req: Request, next: (req: Request) => Promise<Response>): Promise<Response> => {
+    // Return a response for all requests
+    return Response.json({
+        message: 'Hello World!'
+    });
+});
+
+// Start the server
+server.listen(8080);
+```
+
+### Using the included Router
+```ts
+// Import the node:http wrapper
+import { Server } from 'midori/app';
+// Import the HTTP utilities
+import { Handler, Request, Response } from 'midori/http';
+// Import the Route creator utility
+import { Router } from 'midori/router';
+// Import the required middlewares to support Router in the pipeline
+import { RouterMiddleware, DispatchMiddleware, NotFoundMiddleware } from 'midori/middlewares';
+// Import the Router Service Provider factory
+import { RouterServiceProviderFactory } from 'midori/providers';
+
+// Create a Router instance
+const router = new Router();
+
+// Create a GET route
+router.get('/', async (req: Request): Promise<Response> => {
+    // Return a response
+    return Response.json({
+        message: 'Hello World!'
+    });
+});
+
+// Create the Server
+const server = new Server();
+
+// Install the Router Service Provider with the Router instance
+server.install(RouterServiceProviderFactory(router));
+
+// Install the middlewares
+server.pipe(RouterMiddleware);
+server.pipe(DispatchMiddleware);
+server.pipe(NotFoundMiddleware);
+
+// Start the server
+server.listen(8080);
+```
 
 ## Structure
 The framework is designed to be as simple as possible, while still being powerful and flexible. As such, it is distributed in the following modules:
@@ -34,13 +115,19 @@ The Auth module is responsible for handling authentication and authorization.
 ### midori/errors
 The Errors module is responsible for handling errors.
 - `AuthError` - Base class for authentication/authorization errors.
-- `HttpError` - Base class for HTTP errors. It is designed to be caught and treated by `ErrorMiddleware`.
+- `HTTPError` - Base class for HTTP errors (any 4xx or 5xx response). It is designed to be caught and treated by `HTTPErrorMiddleware`.
 - `JWTError` - Base class for JWT errors, thrown by `JWT`.
 - `UnknownServiceError` - Error thrown when a service is not found in the Service Container.
 
 ### midori/hash
 The Hash module is responsible for generating secure hashes and verifying them.
-- `Hash` - Abstract Hash Service class responsible for generating and verifying hashes.
+- `Hash` - Abstract Hash Service class responsible for generating and verifying hashes. Use `Hash.hash` to generate a hash and `Hash.verify` to verify a hash.
+```ts
+import { Scrypt } from 'midori/hash'; // Or any other Hash Service you want to use
+
+const hash = await Scrypt.hash('password'); // Can also pass a Buffer
+const isTheSame = await Scrypt.verify(hash, 'password');
+```
 - `PBKDF2` - Hash Service class using PBKDF2 algorithm.
 - `Scrypt` - Hash Service class using Scrypt algorithm.
 
@@ -49,12 +136,18 @@ The HTTP module is responsible for handling HTTP requests and responses.
 - `EStatusCode` - Enum for all HTTP status codes.
 - `Handler` - Abstract class for all handlers. You can also implement a handler as a function.
 ```ts
+import { Application } from 'midori/app';
+import { Request, Response } from 'midori/http';
+
 const handler = async (req: Request, app: Application): Promise<Response> {
     // ...
 }
 ```
 - `Middleware` - Abstract class for all middlewares. You can also implement a middleware as a function.
 ```ts
+import { Application } from 'midori/app';
+import { Request, Response } from 'midori/http';
+
 const middleware = async (req: Request, next: (req: Request) => Promise<Response>, app: Application): Promise<Response> {
     // ...
 }
@@ -82,7 +175,7 @@ The Middlewares module is responsible for providing basic middlewares to be used
 - `DispatchMiddleware` - Middleware to dispatch the request to the handler. It uses the `Router` to find the handler for the request.
 - `ErrorLoggerMiddleware` - Middleware to log errors thrown anywhere in the pipeline using the `Logger` installed on the app.
 - `ErrorMiddleware` - Middleware to handle any errors thrown anywhere in the pipeline. It should be one of the first middlewares installed on the app. Can be configured using `app.configure(ErrorConfigProviderFactory({ ... }))`.
-- `HTTPErrorMiddleware` - Middleware to handle `HttpError`s thrown anywhere in the pipeline.
+- `HTTPErrorMiddleware` - Middleware to handle `HTTPError`s thrown anywhere in the pipeline.
 - `ImplicitHeadMiddleware` - Middleware to handle implicit HEAD requests, returning the same response as the corresponding GET request but without the body.
 - `ImplicitOptionsMiddleware` - Middleware to handle implicit OPTIONS requests, returning the allowed methods for the requested path using the `Router`.
 - `MethodNotAllowedMiddleware` - Middleware to handle requests with matching path but not matching method, returning a `405 Method Not Allowed` response.
@@ -92,7 +185,48 @@ The Middlewares module is responsible for providing basic middlewares to be used
 - `RequestLoggerMiddleware` - Middleware to log requests using the `Logger` installed on the app.
 - `ResponseCompressionMiddleware` - Middleware to compress responses using `node:zlib` module. Can be configured using `app.configure(ResponseConfigProviderFactory({ compression: { ... } }))`.
 - `RouterMiddleware` - Middleware to find the handler for the request using the `Router`.
-- `ValidationMiddleware` - Abstract class for validation middlewares.
+- `ValidationMiddleware` - Abstract class for validation middlewares. The `validate` method is internally used to validate an object against a `ValidationRules` object. Define your `ValidationRules` object by extending the `ValidationMiddleware.rules` property.
+```ts
+import { ValidationMiddleware } from 'midori/middlewares';
+import { ValidationRules } from 'midori/util/validation.js';
+
+class MyValidationMiddleware extends ValidationMiddleware {
+    override get rules(): ValidationRules {
+        return {
+            fieldA: {
+                type: 'string',
+                required: true
+            },
+            fieldB: {
+                type: 'number',
+                required: false,
+                min: 15,
+            },
+            fieldC: {
+                type: 'boolean',
+                required: false,
+            },
+            fieldD: {
+                type: 'array',
+                required: false,
+                all: {
+                    type: 'string',
+                }
+            },
+            fieldE: {
+                type: 'object',
+                required: false,
+                properties: {
+                    fieldA: {
+                        type: 'string',
+                        required: true
+                    },
+                }
+            }
+        };
+    }
+}
+```
 
 ### midori/providers
 The Providers module is responsible for providing basic providers to be used by the application.
@@ -119,6 +253,8 @@ The Router module is responsible for routing requests to handlers.
 The Scheduler module is responsible for scheduling tasks.
 - `Task` - Abstract class for all tasks. You can also implement a task as a function.
 ```ts
+import { Application } from 'midori/app';
+
 const task = async (app: Application): Promise<void> {
     // ...
 }

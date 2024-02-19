@@ -15,7 +15,7 @@
  */
 
 import { createReadStream } from "node:fs";
-import { OutgoingHttpHeader } from "node:http";
+import { OutgoingHttpHeader, OutgoingHttpHeaders } from "node:http";
 import { Readable, Transform } from "node:stream";
 import { lookup } from "mime-types";
 
@@ -26,8 +26,6 @@ import HTTPError from "../errors/HTTPError.js";
 /**
  * Representation of a HTTP Response.
  *
- * When using the `auto()` method, you can ensure the data type with `T`.
- *
  * @template T The type of the data to be sent.
  */
 export default class Response<T = any> {
@@ -36,12 +34,17 @@ export default class Response<T = any> {
     #body: Buffer[] = [];
     #stream?: Readable;
     #pipeStreams: Transform[] = [];
+    #earlyHints: Map<string, string[]> = new Map();
 
-    static #transformers: Map<string, (data: any) => Buffer> = new Map();
+    static #transformers: Map<string, (data: unknown) => Buffer> = new Map();
 
     static {
-        Response.installTransformer('application/json', (data: any): Buffer => {
+        Response.installTransformer('application/json', (data: unknown): Buffer => {
             return Buffer.from(JSON.stringify(data));
+        });
+
+        Response.installTransformer('application/json-bigint', (data: unknown): Buffer => {
+            return Buffer.from(JSON.stringify(data, (_, v) => typeof v === 'bigint' ? v.toString() + 'n' : v));
         });
     }
 
@@ -49,6 +52,7 @@ export default class Response<T = any> {
      * Add a header to the response.
      */
     withHeader(key: string, value: OutgoingHttpHeader): Response<T> {
+        // TODO: Add autocomplete for key.
         this.#headers.set(key, value);
 
         return this;
@@ -57,10 +61,78 @@ export default class Response<T = any> {
     /**
      * Add multiple headers to the response.
      */
-    withHeaders(headers: Map<string, OutgoingHttpHeader>): Response<T> {
-        for (const [key, value] of headers) {
-            this.withHeader(key, value);
+    withHeaders(headers: OutgoingHttpHeaders): Response<T> {
+        for (const key in headers) {
+            const value = headers[key]!;
+            this.#headers.set(key, value);
         }
+
+        return this;
+    }
+
+    /**
+     * Add a cookie to the response. The Set-Cookie header will be set and automatically appended.
+     */
+    withCookie(key: string, value: string, options?: {
+        domain?: string;
+        path?: string;
+        expires?: Date;
+        maxAge?: number;
+        secure?: boolean;
+        httpOnly?: boolean;
+        sameSite?: 'strict' | 'lax' | 'none';
+    }): Response<T> {
+        let cookie = `${key}=${value};`;
+
+        if (options?.domain) {
+            cookie += ` Domain=${options.domain};`;
+        }
+
+        if (options?.path) {
+            cookie += ` Path=${options.path};`;
+        }
+
+        if (options?.expires) {
+            cookie += ` Expires=${options.expires.toUTCString()};`;
+        }
+
+        if (options?.maxAge) {
+            cookie += ` Max-Age=${options.maxAge};`;
+        }
+
+        if (options?.secure) {
+            cookie += ' Secure;';
+        }
+
+        if (options?.httpOnly) {
+            cookie += ' HttpOnly;';
+        }
+
+        if (options?.sameSite) {
+            cookie += ` SameSite=${options.sameSite};`;
+        }
+
+        if (this.#headers.has('Set-Cookie')) {
+            const setCookie = this.#headers.get('Set-Cookie')!;
+            if (Array.isArray(setCookie)) {
+                setCookie.push(cookie);
+            } else {
+                this.#headers.set('Set-Cookie', [setCookie as string, cookie]);
+            }
+        }
+
+        return this;
+    }
+
+    /**
+     * Add an early hint to the response. It uses the `res.writeEarlyHints` method.
+     */
+    withEarlyHint(key: string, value: string): Response<T> {
+        if (!this.#earlyHints.has(key)) {
+            this.#earlyHints.set(key, []);
+        }
+
+        this.#earlyHints.get(key)!.push(value);
 
         return this;
     }
@@ -89,6 +161,16 @@ export default class Response<T = any> {
     json(data: T): Response<T> {
         this.withHeader('Content-Type', 'application/json')
             .send(Response.#transformers.get('application/json')!(data));
+
+        return this;
+    }
+
+    /**
+     * Send JSON data with BigInt support. The Content-Type header will be set to application/json-bigint and the data will automatically be converted to JSON string.
+     */
+    jsonBigint(data: T): Response<T> {
+        this.withHeader('Content-Type', 'application/json-bigint')
+            .send(Response.#transformers.get('application/json-bigint')!(data));
 
         return this;
     }
@@ -124,7 +206,7 @@ export default class Response<T = any> {
             return this;
         }
 
-        throw new HTTPError('Not Acceptable', EStatusCode.NOT_ACCEPTABLE);
+        throw new HTTPError('This server cannot process the requested Content-Type.', EStatusCode.NOT_ACCEPTABLE);
     }
 
     /**
@@ -182,11 +264,29 @@ export default class Response<T = any> {
     }
 
     get length() {
-        if (this.#stream || this.#pipeStreams.length > 0) {
+        if (this.isStream) {
             return -1;
         }
 
         return this.#body.reduce((acc, chunk) => acc + chunk.length, 0);
+    }
+
+    get isStream() {
+        return this.#stream !== undefined || this.#pipeStreams.length > 0;
+    }
+
+    get earlyHints(): Record<string, string | string[]> | null {
+        if (this.#earlyHints.size == 0) {
+            return null;
+        }
+
+        const hints: Record<string, string | string[]> = {};
+
+        for (const [key, value] of this.#earlyHints) {
+            hints[key] = value;
+        }
+
+        return hints;
     }
 
     /**
@@ -203,6 +303,14 @@ export default class Response<T = any> {
     static json<T = any>(data: T): Response<T> {
         return new Response<T>()
             .json(data);
+    }
+
+    /**
+     * Send JSON data with BigInt support. The Content-Type header will be set to application/json-bigint and the data will automatically be converted to JSON string.
+     */
+    static jsonBigint<T = any>(data: T): Response<T> {
+        return new Response<T>()
+            .jsonBigint(data);
     }
 
     /**
@@ -255,7 +363,15 @@ export default class Response<T = any> {
             .withHeader('Location', to);
     }
 
-    static installTransformer(type: string, transformer: (data: any) => Buffer) {
+    /**
+     * Send an early hint (103) response.
+     */
+    static earlyHint(key: string, value: string): Response {
+        return new Response()
+            .withEarlyHint(key, value);
+    }
+
+    static installTransformer(type: string, transformer: (data: unknown) => Buffer) {
         Response.#transformers.set(type, transformer);
     }
 }

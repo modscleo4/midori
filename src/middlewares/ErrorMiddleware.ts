@@ -23,7 +23,7 @@ import { ErrorConfig, ErrorConfigProvider } from "../providers/ErrorConfigProvid
 import { Constructor } from "../util/types.js";
 
 export class ErrorMiddleware extends Middleware {
-    #options?: ErrorConfig;
+    #options: ErrorConfig | undefined;
 
     constructor(app: Application) {
         super(app);
@@ -35,7 +35,7 @@ export class ErrorMiddleware extends Middleware {
         return this.#options;
     }
 
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         try {
             return await next(req);
         } catch (e) {
@@ -71,7 +71,7 @@ export class ErrorMiddleware extends Middleware {
  */
 export default function ErrorMiddlewareFactory(options: ErrorConfig): typeof ErrorMiddleware {
     return class extends ErrorMiddleware {
-        get options(): ErrorConfig {
+        override get options(): ErrorConfig {
             return options;
         }
     };

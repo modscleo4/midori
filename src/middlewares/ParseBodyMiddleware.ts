@@ -25,6 +25,7 @@ import Response from "../http/Response.js";
  *
  * The following Content-Types are recognized by default:
  * - `application/json`
+ * - `application/json-bigint`
  * - `application/x-www-form-urlencoded`
  * - `text/plain`
  * - `multipart/form-data`
@@ -32,13 +33,24 @@ import Response from "../http/Response.js";
  * Install a parser with the method `installParser()`.
  */
 export default class ParseBodyMiddleware extends Middleware {
-    #parsers: Map<string, (req: Request, encoding: BufferEncoding) => Promise<any>> = new Map();
+    #parsers: Map<string, (req: Request, encoding: BufferEncoding) => Promise<unknown>> = new Map();
 
     constructor(app: Application) {
         super(app);
 
-        this.installParser('application/json', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<any> => {
+        this.installParser('application/json', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<unknown> => {
             return JSON.parse((await req.readBody()).toString(enc));
+        });
+
+        this.installParser('application/json-bigint', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<unknown> => {
+            return JSON.parse((await req.readBody()).toString(enc), (key, value) => {
+                // Convert strings with the format '123n' to BigInt
+                if (typeof value === 'string' && /^\d+n$/.test(value)) {
+                    return BigInt(value.slice(0, -1));
+                }
+
+                return value;
+            });
         });
 
         this.installParser('application/x-www-form-urlencoded', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<Record<string, string>> => {
@@ -49,12 +61,12 @@ export default class ParseBodyMiddleware extends Middleware {
             return (await req.readBody()).toString(enc);
         });
 
-        this.installParser('multipart/form-data', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<Record<string, any>> => {
+        this.installParser('multipart/form-data', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<Record<string, unknown>> => {
             const boundary = req.headers['content-type']?.split(';')[1].trim().split('=')[1];
             const body = (await req.readBody()).toString(enc);
 
             const parts = body.split(`--${boundary}`);
-            const data: { [key: string]: any; } = {};
+            const data: { [key: string]: unknown; } = {};
 
             for (const part of parts) {
                 const lines = part.split('\r\n', 5);
@@ -77,7 +89,7 @@ export default class ParseBodyMiddleware extends Middleware {
         this.#parsers.set(contentType, parser);
     }
 
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         try {
             if ('content-type' in req.headers) {
                 const contentType = req.headers['content-type']?.split(';')[0].trim().toLowerCase();

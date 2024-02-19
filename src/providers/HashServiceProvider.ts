@@ -20,12 +20,12 @@ import Hash from "../hash/Hash.js";
 import { Constructor } from "../util/types.js";
 
 export abstract class HashServiceProvider extends ServiceProvider<Hash> {
-    static service: string = 'midori::Hash';
+    static override service: symbol = Symbol('midori::Hash');
 }
 
 export default function HashServiceProviderFactory(hashService: Hash): Constructor<HashServiceProvider> & { [K in keyof typeof HashServiceProvider]: typeof HashServiceProvider[K] } {
     return class extends HashServiceProvider {
-        register(app: Application): Hash {
+        override register(app: Application): Hash {
             return hashService;
         }
     };

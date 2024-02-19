@@ -22,12 +22,12 @@ import Response from "../http/Response.js";
  * Middleware to set the Content-Length header of the response.
  */
 export default class ContentLengthMiddleware extends Middleware {
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         const res = await next(req);
 
         // A server MUST NOT send a Content-Length header field in any response with a status code of 1xx (Informational) or 204 (No Content).
         if (res.status >= 200 && res.status !== 204 && !res.headers.has('Content-Length')) {
-            if (res.length > -1) { // The bodyLength is -1 if the body is a stream
+            if (!res.isStream) { // Calculate Content-Length for non-stream responses
                 res.headers.set('Content-Length', res.length);
             } else if (req.method === 'HEAD') { // Calculate Content-Length for HEAD requests
                 await new Promise<void>((resolve, reject) => {

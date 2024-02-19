@@ -20,7 +20,9 @@ import { validateUUID } from "../util/uuid.js";
 import Route from "./Route.js";
 
 /**
- * Router Helper
+ * Router Helper.
+ *
+ * Instantiate a new Router instance and use it to define your routes for each Application instance.
  */
 export default class Router {
     #prefix: string = '';
@@ -30,10 +32,10 @@ export default class Router {
     /**
      * Handles a custom method request.
      */
-    route(method: string, path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): Route {
+    route(method: string, path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
         Router.validatePath(path);
 
-        const route = new Route(method, this.#prefix + path, handler, this.#middlewares.concat(middlewares));
+        const route = new Route(method, this.#prefix + path, handler, this.#middlewares.concat(middlewares), name);
         this.#routes.push(route);
 
         return route;
@@ -42,43 +44,43 @@ export default class Router {
     /**
      * Handle a GET (List) request.
      */
-    get(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): Route {
-        return this.route('GET', path, handler, middlewares);
+    get(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
+        return this.route('GET', path, handler, middlewares, name);
     }
 
     /**
      * Handle a HEAD (Body-less GET) request.
      */
-    head(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): Route {
-        return this.route('HEAD', path, handler, middlewares);
+    head(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
+        return this.route('HEAD', path, handler, middlewares, name);
     }
 
     /**
      * Handles a POST (Create) request.
      */
-    post(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): Route {
-        return this.route('POST', path, handler, middlewares);
+    post(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
+        return this.route('POST', path, handler, middlewares, name);
     }
 
     /**
      * Handles a PUT (Full Update) request.
      */
-    put(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): Route {
-        return this.route('PUT', path, handler, middlewares);
+    put(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
+        return this.route('PUT', path, handler, middlewares, name);
     }
 
     /**
      * Handles a PATCH (Partial Update) request.
      */
-    patch(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): Route {
-        return this.route('PATCH', path, handler, middlewares);
+    patch(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
+        return this.route('PATCH', path, handler, middlewares, name);
     }
 
     /**
      * Handles a DELETE request.
      */
-    delete(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): Route {
-        return this.route('DELETE', path, handler, middlewares);
+    delete(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
+        return this.route('DELETE', path, handler, middlewares, name);
     }
 
     /**
@@ -168,11 +170,49 @@ export default class Router {
     }
 
     /** @internal */
+    findByName(name: string): Route | null {
+        return this.#routes.find(r => r.name === name) ?? null;
+    }
+
+    /** @internal */
     static validatePath(path: string): boolean {
-        if (!path.startsWith('/')) {
-            // throw new Error('Path must start with "/".');
+        if (path.includes('//')) {
+            throw new Error('Path cannot contain double slashes.');
+        }
+
+        if (path.includes(' ')) {
+            throw new Error('Path cannot contain spaces.');
+        }
+
+        if (path.includes('?')) {
+            throw new Error('Path cannot contain query strings.');
         }
 
         return true;
+    }
+
+    /**
+     * Clone a Router instance and all its routes.
+     */
+    static clone(router: Router): Router {
+        const newRouter = new Router();
+
+        newRouter.#prefix = router.#prefix;
+        newRouter.#middlewares = router.#middlewares;
+        newRouter.#routes = Array.from({ length: router.#routes.length });
+
+        for (let i = 0; i < router.#routes.length; i++) {
+            const route = router.#routes[i];
+
+            newRouter.#routes[i] = new Route(
+                route.method,
+                route.path,
+                route.handler,
+                route.middlewares,
+                route.name
+            );
+        }
+
+        return newRouter;
     }
 }

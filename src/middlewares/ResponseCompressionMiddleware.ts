@@ -69,7 +69,7 @@ export class ResponseCompressionMiddleware extends Middleware {
         return this.#options;
     }
 
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         const res = await next(req);
 
         // If the response is empty or has a Content-Encoding header, do not compress.
@@ -101,15 +101,15 @@ export class ResponseCompressionMiddleware extends Middleware {
 
             switch (algorithm) {
                 case CompressionAlgorithm.GZIP:
-                    res.pipe(Gzip.compressStream());
+                    res.pipe(Gzip.compressStream(this.options?.levels?.[CompressionAlgorithm.GZIP]));
                     break;
 
                 case CompressionAlgorithm.DEFLATE:
-                    res.pipe(Deflate.compressStream());
+                    res.pipe(Deflate.compressStream(this.options?.levels?.[CompressionAlgorithm.DEFLATE]));
                     break;
 
                 case CompressionAlgorithm.BROTLI:
-                    res.pipe(Brotli.compressStream());
+                    res.pipe(Brotli.compressStream(this.options?.levels?.[CompressionAlgorithm.BROTLI]));
                     break;
             }
         }
@@ -123,7 +123,7 @@ export class ResponseCompressionMiddleware extends Middleware {
  */
 export default function ResponseCompressionMiddlewareFactory(options: ResponseCompressionConfig): typeof ResponseCompressionMiddleware {
     return class extends ResponseCompressionMiddleware {
-        get options(): ResponseCompressionConfig {
+        override get options(): ResponseCompressionConfig {
             return options;
         }
     };

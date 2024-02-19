@@ -28,10 +28,10 @@ import ServiceProvider from "./ServiceProvider.js";
 import Task, { TaskConstructor, TaskFunction } from "../scheduler/Task.js";
 import { CronExpression, canRunTask, parseCronString, validateCronString } from "../util/cron.js";
 
-class ServiceContainer extends Container<string, any> {
-    get(key: string): any {
+class ServiceContainer extends Container<symbol, unknown> {
+    override get(key: symbol): unknown {
         if (!this.has(key)) {
-            throw new UnknownServiceError(key);
+            throw new UnknownServiceError(key.description ?? '');
         }
 
         return super.get(key)!;
@@ -39,39 +39,68 @@ class ServiceContainer extends Container<string, any> {
 }
 
 interface ReadonlyServiceContainer {
+    /**
+     * Returns the service instance registered with the given provider.
+     *
+     * @throws {UnknownServiceError} If the service is not registered.
+     */
     get<T>(provider: typeof ServiceProvider<T>): T;
+
+    /**
+     * Whether the service is registered with the given provider.
+     */
     has<T>(provider: typeof ServiceProvider<T>): boolean;
 }
 
 interface ReadonlyConfigContainer {
+    /**
+     * Returns the config registered with the given provider.
+     */
     get<T>(provider: typeof ConfigProvider<T>): T | undefined;
-    has(provider: typeof ConfigProvider): boolean;
+
+    /**
+     * Whether the config is registered with the given provider.
+     */
+    has<T>(provider: typeof ConfigProvider<T>): boolean;
 }
 
 export interface Application {
+    /**
+     * All services registered in the application.
+     */
     readonly services: ReadonlyServiceContainer;
+
+    /**
+     * All configs registered in the application.
+     */
     readonly config: ReadonlyConfigContainer;
 
+    /**
+     * Whether the application is in production mode.
+     */
     readonly production: boolean;
 }
 
 type ServerConfig = {
+    /**
+     * Whether the application is in production mode.
+     */
     production?: boolean;
 };
 
 export default class Server extends HTTPServer<typeof Request> implements Application {
-    #config = new Container<string, any>();
+    #config = new Container<symbol, unknown>();
     #services = new ServiceContainer();
     #pipeline: (MiddlewareConstructor | MiddlewareFunction)[] = [ContentLengthMiddleware];
     #tasks: { cronExpression: CronExpression; runner: TaskFunction; lastRun?: Date }[] = [];
 
-    #compiledPipeline: MiddlewareFunction[] = [];
+    #cachedPipeline: MiddlewareFunction[] = [];
     #readonlyServices: ReadonlyServiceContainer = {
-        get: provider => this.#services.get(provider.service),
+        get: <T>(provider: typeof ServiceProvider<T>) => this.#services.get(provider.service) as T,
         has: provider => this.#services.has(provider.service),
     };
     #readonlyConfig: ReadonlyConfigContainer = {
-        get: provider => this.#config.get(provider.config),
+        get: <T>(provider: typeof ConfigProvider<T>) => this.#config.get(provider.config) as T,
         has: provider => this.#config.has(provider.config),
     };
 
@@ -92,6 +121,12 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
         try {
             const response = await this.processRequest(req);
 
+            if (response.earlyHints) {
+                await new Promise<void>((resolve, reject) => {
+                    res.writeEarlyHints(response.earlyHints!, resolve);
+                });
+            }
+
             // Send the returning response status code, headers and body to the response
             res.statusCode = response.status;
 
@@ -110,28 +145,12 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
     }
 
     /** @internal */
-    compilePipeline(i: number): MiddlewareFunction {
-        if (!this.#compiledPipeline[i]) {
-            if (this.#pipeline[i].prototype instanceof Middleware) {
-                const middleware = new (this.#pipeline[i] as MiddlewareConstructor)(this);
-
-                this.#compiledPipeline[i] = middleware.process.bind(middleware);
-            } else {
-                this.#compiledPipeline[i] = this.#pipeline[i] as MiddlewareFunction;
-            }
+    cachePipeline(i: number): MiddlewareFunction {
+        if (!this.#cachedPipeline[i]) {
+            this.#cachedPipeline[i] = Middleware.asFunction(this.#pipeline[i], this);
         }
 
-        return this.#compiledPipeline[i];
-    }
-
-    #compileTask(task: TaskConstructor | TaskFunction): TaskFunction {
-        if (task.prototype instanceof Task) {
-            const instance = new (task as TaskConstructor)(this);
-
-            return instance.run.bind(instance);
-        }
-
-        return task as TaskFunction;
+        return this.#cachedPipeline[i];
     }
 
     /** @internal */
@@ -144,7 +163,7 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
                 throw new Error('No more middlewares to process the request.');
             }
 
-            return await this.compilePipeline(index++)(req, next, this);
+            return await this.cachePipeline(index++)(req, next, this);
         };
 
         return await next(request);
@@ -169,7 +188,7 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
     install<T>(provider: Constructor<ServiceProvider<T>> & { [K in keyof typeof ServiceProvider<T>]: typeof ServiceProvider<T>[K] }): Server {
         const name = provider.service;
         if (this.#services.has(name)) {
-            throw new Error(`A Service Provider with the name '${name}' is already installed.`);
+            throw new Error(`A Service Provider with the name '${name.description}' is already installed.`);
         }
 
         const instance = new provider(this);
@@ -187,7 +206,7 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
     uninstall<T>(provider: Constructor<ServiceProvider<T>> & { [K in keyof typeof ServiceProvider<T>]: typeof ServiceProvider<T>[K] }): Server {
         const name = provider.service;
         if (!this.#services.has(name)) {
-            throw new Error(`A Service Provider with the name '${name}' is not installed.`);
+            throw new Error(`A Service Provider with the name '${name.description}' is not installed.`);
         }
 
         this.#services.delete(name);
@@ -203,7 +222,7 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
     configure<T>(provider: Constructor<ConfigProvider<T>> & { [K in keyof typeof ConfigProvider<T>]: typeof ConfigProvider<T>[K] }): Server {
         const name = provider.config;
         if (this.#config.has(name)) {
-            throw new Error(`A Config Provider with the name '${name}' is already installed.`);
+            throw new Error(`A Config Provider with the name '${name.description}' is already installed.`);
         }
 
         const instance = new provider(this);
@@ -227,7 +246,7 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
 
         const cronExpression = parseCronString(cronString);
 
-        this.#tasks.push({ cronExpression, runner: this.#compileTask(task) });
+        this.#tasks.push({ cronExpression, runner: Task.asFunction(task, this) });
 
         return this;
     }

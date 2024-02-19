@@ -15,7 +15,7 @@
  */
 
 export default class UnknownServiceError extends Error {
-    name: string = 'UnknownServiceError';
+    override name: string = 'UnknownServiceError';
 
     constructor(serviceName: string) {
         super(`Unknown service: ${serviceName}`);

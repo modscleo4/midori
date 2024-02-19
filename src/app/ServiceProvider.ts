@@ -17,7 +17,7 @@
 import { Application } from "./Server.js";
 
 export default abstract class ServiceProvider<T> {
-    static service: string;
+    static service: symbol;
 
     constructor(app: Application) {
         //

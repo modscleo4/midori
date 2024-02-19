@@ -15,14 +15,10 @@
  */
 
 export class ReadonlyContainer<K, V> {
-    #data = new Map<K, V>();
+    #data: Map<K, V>;
 
-    constructor(data?: Container<K, V>) {
-        if (data) {
-            for (const [key, value] of data) {
-                this.#data.set(key, value);
-            }
-        }
+    constructor(data?: Iterable<readonly [K, V]>) {
+        this.#data = new Map<K, V>(data);
     }
 
     /**
@@ -49,7 +45,11 @@ export class ReadonlyContainer<K, V> {
  * It is designed to be used on the request object.
  */
 export default class Container<K, V> {
-    #data = new Map<K, V>();
+    #data: Map<K, V>;
+
+    constructor(data?: Iterable<readonly [K, V]>) {
+        this.#data = new Map<K, V>(data);
+    }
 
     /**
      * Get a value from the container.

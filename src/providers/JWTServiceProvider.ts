@@ -20,9 +20,9 @@ import JWT from "../jwt/JWT.js";
 import { JWTConfigProvider } from "./JWTConfigProvider.js";
 
 export default class JWTServiceProvider extends ServiceProvider<JWT> {
-    static service: string = 'midori::JWT';
+    static service: symbol = Symbol('midori::JWT');
 
-    register(app: Application): JWT {
+    override register(app: Application): JWT {
         return new JWT(app.config.get(JWTConfigProvider) ?? {});
     }
 }

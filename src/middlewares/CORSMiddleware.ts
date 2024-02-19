@@ -21,7 +21,7 @@ import Response from "../http/Response.js";
 import { CORSConfig, CORSConfigProvider } from "../providers/CORSConfigProvider.js";
 
 export class CORSMiddleware extends Middleware {
-    #options?: CORSConfig;
+    #options: CORSConfig | undefined;
 
     constructor(app: Application) {
         super(app);
@@ -33,7 +33,7 @@ export class CORSMiddleware extends Middleware {
         return this.#options;
     }
 
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         const res = await next(req);
 
         if (this.options?.origin) {
@@ -41,11 +41,11 @@ export class CORSMiddleware extends Middleware {
         }
 
         if (this.options?.methods) {
-            res.withHeader('Access-Control-Allow-Methods', this.options.methods);
+            res.withHeader('Access-Control-Allow-Methods', Array.isArray(this.options.methods) ? this.options.methods.join(', ') : this.options.methods);
         }
 
         if (this.options?.headers) {
-            res.withHeader('Access-Control-Allow-Headers', this.options.headers);
+            res.withHeader('Access-Control-Allow-Headers', Array.isArray(this.options.headers) ? this.options.headers.join(', ') : this.options.headers);
         }
 
         if (this.options?.maxAge) {
@@ -69,7 +69,7 @@ export class CORSMiddleware extends Middleware {
  */
 export default function CORSMiddlewareFactory(options: CORSConfig): typeof CORSMiddleware {
     return class extends CORSMiddleware {
-        get options(): CORSConfig {
+        override get options(): CORSConfig {
             return options;
         }
     };

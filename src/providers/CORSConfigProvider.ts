@@ -19,21 +19,27 @@ import { Application } from "../app/Server.js";
 import { Constructor } from "../util/types.js";
 
 export type CORSConfig = {
+    /** Access-Control-Allow-Origin header. */
     origin?: string;
-    methods?: string;
-    headers?: string;
+    /** Access-Control-Allow-Methods header. */
+    methods?: string | string[];
+    /** Access-Control-Allow-Headers header. */
+    headers?: string | string[];
+    /** Access-Control-Max-Age header. */
     maxAge?: number;
+    /** Cross-Origin-Opener-Policy header. */
     openerPolicy?: 'unsafe-none' | 'same-origin-allow-popups' | 'same-origin';
+    /** Cross-Origin-Embedder-Policy header. */
     embedderPolicy?: 'unsafe-none' | 'require-corp';
 };
 
 export abstract class CORSConfigProvider extends ConfigProvider<CORSConfig> {
-    static config = 'midori::CORS';
+    static config: symbol = Symbol('midori::CORS');
 }
 
 export default function CORSConfigProviderFactory(options: CORSConfig): Constructor<CORSConfigProvider> & { [K in keyof typeof CORSConfigProvider]: typeof CORSConfigProvider[K] } {
     return class extends CORSConfigProvider {
-        register(app: Application): CORSConfig {
+        override register(app: Application): CORSConfig {
             return options;
         }
     };

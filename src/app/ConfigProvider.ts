@@ -17,7 +17,7 @@
 import { Application } from "./Server.js";
 
 export default abstract class ConfigProvider<T> {
-    static config: string;
+    static config: symbol;
 
     constructor(app: Application) {
         //

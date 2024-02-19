@@ -20,12 +20,12 @@ import Router from "../router/Router.js";
 import { Constructor } from "../util/types.js";
 
 export abstract class RouterServiceProvider extends ServiceProvider<Router> {
-    static service: string = 'midori::Router';
+    static service: symbol = Symbol('midori::Router');
 }
 
 export default function RouterServiceProviderFactory(routerService: Router): Constructor<RouterServiceProvider> & { [K in keyof typeof RouterServiceProvider]: typeof RouterServiceProvider[K] } {
     return class extends RouterServiceProvider {
-        register(app: Application): Router {
+        override register(app: Application): Router {
             return routerService;
         }
     };

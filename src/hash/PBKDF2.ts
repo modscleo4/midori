@@ -27,7 +27,7 @@ import Hash from "./Hash.js";
 export default class PBKDF2 extends Hash {
     static version: string = 'pbkdf2';
 
-    hash(data: string | Buffer, options?: { salt?: Buffer; cost?: number; iterations?: number; digest?: string }): string {
+    override hash(data: string | Buffer, options?: { salt?: Buffer; cost?: number; iterations?: number; digest?: string }): string {
         const salt       = options?.salt ?? randomBytes(16);
         const cost       = options?.cost || 10;
         const iterations = options?.iterations || 100000;
@@ -37,7 +37,7 @@ export default class PBKDF2 extends Hash {
         return ['', PBKDF2.version, digest, iterations, cost, salt.toString('base64'), hashData].join('$');
     }
 
-    verify(hash: string, data: string | Buffer): boolean {
+    override verify(hash: string, data: string | Buffer): boolean {
         const [, version, digest, iterations, cost, salt] = hash.split('$', 7);
         if (version !== PBKDF2.version) {
             return false;

@@ -15,5 +15,5 @@
  */
 
 export default class JWTError extends Error {
-    name: string = 'JWTError';
+    override name: string = 'JWTError';
 }

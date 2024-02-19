@@ -85,7 +85,6 @@ export default class JWT {
             const enc = JWEEncryption[config.encrypt.enc as keyof typeof JWEEncryption];
             const secret = config.encrypt.secret || null;
             const privateKey = config.encrypt.privateKeyFile ? readFileSync(config.encrypt.privateKeyFile, { encoding: 'utf8' }) : null;
-            const ephemeralPrivateKey = config.encrypt.ephemeralPrivateKeyFile ? readFileSync(config.encrypt.ephemeralPrivateKeyFile, { encoding: 'utf8' }) : null;
 
             if (
                 [JWEAlgorithm.RSA1_5, JWEAlgorithm['RSA-OAEP'], JWEAlgorithm['RSA-OAEP-256']].includes(alg)
@@ -96,9 +95,9 @@ export default class JWT {
 
             if (
                 [JWEAlgorithm['ECDH-ES'], JWEAlgorithm['ECDH-ES+A128KW'], JWEAlgorithm['ECDH-ES+A192KW'], JWEAlgorithm['ECDH-ES+A256KW']].includes(alg)
-                && !ephemeralPrivateKey
+                && !privateKey
             ) {
-                throw new Error('Ephemeral private key is required for this algorithm');
+                throw new Error('Private key is required for this algorithm');
             }
 
             if (
@@ -106,6 +105,10 @@ export default class JWT {
                 && !secret
             ) {
                 throw new Error('Secret is required for this algorithm');
+            }
+
+            if (alg === JWEAlgorithm.dir && secret!.length !== 32) {
+                throw new Error('Secret must be 32 bytes long for this algorithm');
             }
 
             const baseKey: JWKPayload = {
@@ -127,7 +130,7 @@ export default class JWT {
             } : [JWEAlgorithm['ECDH-ES'], JWEAlgorithm['ECDH-ES+A128KW'], JWEAlgorithm['ECDH-ES+A192KW'], JWEAlgorithm['ECDH-ES+A256KW']].includes(alg) ? <PayloadEC> {
                 ...baseKey,
 
-                ...createPrivateKey(ephemeralPrivateKey!).export({ format: 'jwk' })
+                ...createPrivateKey(privateKey!).export({ format: 'jwk' })
             } : baseKey);
 
             this.#encrypt = {

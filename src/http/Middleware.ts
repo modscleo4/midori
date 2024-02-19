@@ -42,4 +42,17 @@ export default abstract class Middleware {
          */
         next: (req: Request) => Promise<Response>
     ): Promise<Response>;
+
+    /**
+     * Converts a Middleware class to a Middleware function.
+     */
+    static asFunction(middleware: MiddlewareConstructor | MiddlewareFunction, app: Application): MiddlewareFunction {
+        if (middleware.prototype instanceof Middleware) {
+            const instance = new (middleware as MiddlewareConstructor)(app);
+
+            return instance.process.bind(instance);
+        }
+
+        return middleware as MiddlewareFunction;
+    }
 }

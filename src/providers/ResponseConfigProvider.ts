@@ -26,21 +26,28 @@ export enum CompressionAlgorithm {
 };
 
 export type ResponseConfig = {
+    /** Response compression configuration. */
     compression?: {
+        /** Whether the compression is enabled. */
         enabled?: boolean;
+        /** Whether the compression is enabled for the given content types. Use `*​/*` to enable for all content types or `<type>/*` to enable for all subtypes of the given type. */
         contentTypes?: string[];
+        /** Default compression algorithm to be used when the client does not specify one. */
         defaultAlgorithm?: CompressionAlgorithm;
+        /** Internal compression algorithm priority order (from highest to lowest). Used when the client does not specify a preferred algorithm by the priority order. */
         order?: CompressionAlgorithm[];
+        /** Compression level for each algorithm. */
+        levels?: Partial<Record<CompressionAlgorithm, number>>;
     };
 };
 
 export abstract class ResponseConfigProvider extends ConfigProvider<ResponseConfig> {
-    static config = 'midori::Response';
+    static config: symbol = Symbol('midori::Response');
 }
 
 export default function ResponseConfigProviderFactory(options: ResponseConfig): Constructor<ResponseConfigProvider> & { [K in keyof typeof ResponseConfigProvider]: typeof ResponseConfigProvider[K] } {
     return class extends ResponseConfigProvider {
-        register(app: Application): ResponseConfig {
+        override register(app: Application): ResponseConfig {
             return options;
         }
     };

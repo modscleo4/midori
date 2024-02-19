@@ -20,9 +20,9 @@ import Auth from "../auth/Auth.js";
 import { UserServiceProvider } from "./UserServiceProvider.js";
 
 export default class AuthServiceProvider extends ServiceProvider<Auth> {
-    static service: string = 'midori::Auth';
+    static service: symbol = Symbol('midori::Auth');
 
-    register(app: Application): Auth {
+    override register(app: Application): Auth {
         const userProvider = app.services.get(UserServiceProvider);
 
         return new Auth(userProvider);

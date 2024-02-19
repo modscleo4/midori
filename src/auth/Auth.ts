@@ -21,17 +21,19 @@ import UserService from "./UserService.js";
 export default class Auth {
     #userService: UserService;
 
+    static UserKey: symbol = Symbol('::user');
+
     constructor(userService: UserService) {
         this.#userService = userService;
     }
 
-    async authenticateById(req: Request, id: any): Promise<User> {
+    async authenticateById(req: Request, id: unknown): Promise<User> {
         const user = await this.#userService.getUserById(id);
         if (user === null) {
             throw new Error('Invalid User.');
         }
 
-        req.container.set('::user', user);
+        req.container.set(Auth.UserKey, user);
 
         return user;
     }
@@ -42,7 +44,7 @@ export default class Auth {
             throw new Error('Invalid credentials.');
         }
 
-        req.container.set('::user', user);
+        req.container.set(Auth.UserKey, user);
 
         return user;
     }
@@ -56,10 +58,10 @@ export default class Auth {
     }
 
     user(req: Request): User | null {
-        return req.container.get('::user') ?? null;
+        return req.container.get(Auth.UserKey) as User ?? null;
     }
 
-    id(req: Request): any | null {
+    id(req: Request): unknown | null {
         return this.user(req)?.id ?? null;
     }
 }

@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-import { constants, createPrivateKey, createPublicKey, privateDecrypt, publicEncrypt, randomBytes, CipherKey } from "node:crypto";
+import { constants, createPrivateKey, createPublicKey, privateDecrypt, publicEncrypt, randomBytes, CipherKey, createECDH } from "node:crypto";
 
 import { Payload as JWKPayload, PayloadEC, PayloadRSA, PayloadSymmetric } from "./jwk.js";
+import { encodeBufferWithLength, encodeUInt32BE } from "./buffer.js";
 import JWTError from "../errors/JWTError.js";
 import AESGCM from "./crypt/aesgcm.js";
 import AESHMAC from "./crypt/aeshmac.js";
 import AESKW from "./crypt/aeskw.js";
+import ConcatKDF from "./crypt/concatkdf.js";
+import ECDH from "./crypt/ecdh.js";
 
 /**
  * JWE Algorithms
@@ -78,6 +81,27 @@ export type Header = {
 
     /** Compression */
     zip?: 'DEF',
+
+    /** Ephemeral Public Key */
+    epk?: {
+        /** Key Type */
+        kty: 'EC',
+
+        /** Curve */
+        crv: string,
+
+        /** X Coordinate */
+        x: string,
+
+        /** Y Coordinate */
+        y: string,
+    },
+
+    /** Agreement PartyUInfo */
+    apu?: string,
+
+    /** Agreement PartyVInfo */
+    apv?: string,
 };
 
 export function encryptJWT(
@@ -86,25 +110,28 @@ export function encryptJWT(
     alg: JWEAlgorithm,
     enc: JWEEncryption,
     key: JWKPayload,
+    extraHeader?: Partial<Header>,
 ): string {
-    const cek = alg === JWEAlgorithm.dir ? deserializeSymmetricKey(<PayloadSymmetric> key) : randomBytes(cekLength(enc) / 8);
-    const encryptedKey = encryptCEK(cek, alg, key);
-    const iv = randomBytes(ivLength(enc) / 8);
     const header: Header = {
         alg,
         enc,
         typ: 'JWT',
         cty,
+        ...generateHeaderParams(alg, enc, key),
+        ...(extraHeader ?? {}),
     };
+    const [cek, altKey]  = generateCEK(alg, enc, header, key);
+    const encryptedKey   = encryptCEK(cek, alg, altKey ?? key);
+    const iv             = randomBytes(ivLength(enc) / 8);
 
     const protectedHeaderBase64 = Buffer.from(JSON.stringify(header)).toString('base64url');
-    const encryptedKeyBase64 = Buffer.from(encryptedKey).toString('base64url');
-    const ivBase64 = iv.toString('base64url');
-    const aad = Buffer.from(protectedHeaderBase64, 'ascii');
+    const encryptedKeyBase64    = Buffer.from(encryptedKey).toString('base64url');
+    const ivBase64              = iv.toString('base64url');
+    const aad                   = Buffer.from(protectedHeaderBase64, 'ascii');
 
     const { cipherText, authenticationTag } = encrypt(plainText, cek, iv, aad, enc);
 
-    const cipherTextBase64 = cipherText.toString('base64url');
+    const cipherTextBase64        = cipherText.toString('base64url');
     const authenticationTagBase64 = authenticationTag.toString('base64url');
 
     return `${protectedHeaderBase64}.${encryptedKeyBase64}.${ivBase64}.${cipherTextBase64}.${authenticationTagBase64}`;
@@ -130,12 +157,13 @@ export function decryptJWE(
         throw new JWTError(`Invalid enc: ${_enc}`);
     }
 
-    const encryptedKey = Buffer.from(encryptedKeyBase64, 'base64url');
-    const cek = decryptCEK(encryptedKey, alg, key);
-    const iv = Buffer.from(ivBase64, 'base64url');
-    const aad = Buffer.from(protectedHeaderBase64, 'ascii');
+    const [, altKey]        = generateCEK(alg, enc, protectedHeader, key);
+    const encryptedKey      = Buffer.from(encryptedKeyBase64, 'base64url');
+    const cek               = decryptCEK(encryptedKey, alg, enc, altKey ?? key, protectedHeader);
+    const iv                = Buffer.from(ivBase64, 'base64url');
+    const aad               = Buffer.from(protectedHeaderBase64, 'ascii');
     const authenticationTag = Buffer.from(authenticationTagBase64, 'base64url');
-    const cipherText = Buffer.from(cipherTextBase64, 'base64url');
+    const cipherText        = Buffer.from(cipherTextBase64, 'base64url');
 
     return decrypt(cipherText, cek, iv, aad, authenticationTag, enc);
 }
@@ -156,6 +184,48 @@ function cekLength(enc: JWEEncryption): number {
         case JWEEncryption["A256CBC-HS512"]:
             return 512;
     }
+
+    throw new JWTError(`Unsupported encryption: ${enc}`);
+}
+
+//function generateCEK(alg: JWEAlgorithm, enc: JWEEncryption, header: Header, key: JWKPayload): [Buffer, JWKPayload];
+function generateCEK(alg: JWEAlgorithm, enc: JWEEncryption, header: Header, key: JWKPayload): [Buffer, JWKPayload | null] {
+    if (alg === JWEAlgorithm.dir) {
+        // Direct encryption uses the key as the CEK
+        return [deserializeSymmetricKey(<PayloadSymmetric> key), null];
+    }
+
+    if (alg === JWEAlgorithm["ECDH-ES"] || alg === JWEAlgorithm["ECDH-ES+A128KW"] || alg === JWEAlgorithm["ECDH-ES+A192KW"] || alg === JWEAlgorithm["ECDH-ES+A256KW"]) {
+        const keyLengthBits = alg === JWEAlgorithm["ECDH-ES"] ? cekLength(enc) :
+            alg === JWEAlgorithm["ECDH-ES+A128KW"] ? 128 :
+            alg === JWEAlgorithm["ECDH-ES+A192KW"] ? 192 :
+            256;
+
+        // AlgorithmID should be the encryption algorithm if ECDH-ES is used, otherwise it should be the key agreement algorithm
+        const AlgorithmID = encodeBufferWithLength(Buffer.from(alg === JWEAlgorithm["ECDH-ES"] ? enc : alg, 'utf8'));
+        const PartyUInfo = encodeBufferWithLength(Buffer.from(header.apu || '', 'base64url'));
+        const PartyVInfo = encodeBufferWithLength(Buffer.from(header.apv || '', 'base64url'));
+        const SuppPubInfo = encodeUInt32BE(keyLengthBits);
+        const SuppPrivInfo = Buffer.from('', 'utf8');
+        const otherInfo = Buffer.concat([AlgorithmID, PartyUInfo, PartyVInfo, SuppPubInfo, SuppPrivInfo]);
+
+        const sharedSecret = ECDH.deriveSharedSecret(key, header.epk!);
+
+        // ECDH-ES uses the shared secret as the CEK
+        // ECDH-ES+A128KW, ECDH-ES+A192KW and ECDH-ES+A256KW use the shared secret to derive the CEK
+        const derivedKey = ConcatKDF.deriveKey(256, sharedSecret, keyLengthBits, otherInfo);
+
+        if (alg === JWEAlgorithm["ECDH-ES"]) {
+            return [derivedKey, null];
+        } else {
+            return [randomBytes(cekLength(enc) / 8), <PayloadSymmetric> {
+                kty: 'oct',
+                k: derivedKey.toString('base64url'),
+            }];
+        }
+    }
+
+    return [randomBytes(cekLength(enc) / 8), null];
 }
 
 function ivLength(enc: JWEEncryption): number {
@@ -169,6 +239,38 @@ function ivLength(enc: JWEEncryption): number {
         case JWEEncryption["A256CBC-HS512"]:
             return 128;
     }
+}
+
+function generateHeaderParams(alg: JWEAlgorithm, enc: JWEEncryption, key: JWKPayload): Partial<Header> {
+    switch (alg) {
+        case JWEAlgorithm['ECDH-ES']: {
+            const ephemeralKey = ECDH.generateEphemeralKey((<PayloadEC> key).crv!);
+            return {
+                epk: {
+                    kty: 'EC',
+                    crv: ephemeralKey.crv!,
+                    x: ephemeralKey.x!,
+                    y: ephemeralKey.y!,
+                },
+            };
+        }
+
+        case JWEAlgorithm["ECDH-ES+A128KW"]:
+        case JWEAlgorithm["ECDH-ES+A192KW"]:
+        case JWEAlgorithm["ECDH-ES+A256KW"]: {
+            const ephemeralKey = ECDH.generateEphemeralKey((<PayloadEC> key).crv!);
+            return {
+                epk: {
+                    kty: 'EC',
+                    crv: ephemeralKey.crv!,
+                    x: ephemeralKey.x!,
+                    y: ephemeralKey.y!,
+                },
+            };
+        }
+    }
+
+    return {};
 }
 
 function deserializeSymmetricKey(key: PayloadSymmetric): Buffer {
@@ -216,12 +318,24 @@ function encryptCEK(cek: Buffer, alg: JWEAlgorithm, key: JWKPayload): Buffer {
 
         case JWEAlgorithm.dir:
             return Buffer.alloc(0);
+
+        case JWEAlgorithm["ECDH-ES"]:
+            return Buffer.alloc(0);
+
+        case JWEAlgorithm["ECDH-ES+A128KW"]:
+            return AESKW.encrypt(128, cek, deserializeSymmetricKey(<PayloadSymmetric> key));
+
+        case JWEAlgorithm["ECDH-ES+A192KW"]:
+            return AESKW.encrypt(192, cek, deserializeSymmetricKey(<PayloadSymmetric> key));
+
+        case JWEAlgorithm["ECDH-ES+A256KW"]:
+            return AESKW.encrypt(256, cek, deserializeSymmetricKey(<PayloadSymmetric> key));
     }
 
     throw new JWTError(`Unsupported algorithm: ${alg}`);
 }
 
-function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, key: JWKPayload): Buffer {
+function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, enc: JWEEncryption, key: JWKPayload, header: Header): Buffer {
     switch (alg) {
         case JWEAlgorithm.RSA1_5:
             return privateDecrypt(
@@ -261,7 +375,21 @@ function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, key: JWKPayload): B
             return AESKW.decrypt(256, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key));
 
         case JWEAlgorithm.dir:
+            // Direct encryption uses the key as the CEK
             return deserializeSymmetricKey(<PayloadSymmetric> key);
+
+        case JWEAlgorithm["ECDH-ES"]:
+            // Ephemeral key is used to derive the CEK
+            return generateCEK(alg, enc, header, key)[0];
+
+        case JWEAlgorithm["ECDH-ES+A128KW"]:
+            return AESKW.decrypt(128, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key));
+
+        case JWEAlgorithm["ECDH-ES+A192KW"]:
+            return AESKW.decrypt(192, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key));
+
+        case JWEAlgorithm["ECDH-ES+A256KW"]:
+            return AESKW.decrypt(256, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key));
     }
 
     throw new JWTError(`Unsupported algorithm: ${alg}`);

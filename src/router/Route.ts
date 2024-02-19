@@ -21,23 +21,27 @@ import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 
 /**
- * Route representation
+ * Route representation.
+ *
+ * This class is used internally by the Router and is instantiated by the Router itself.
  */
 export default class Route {
     #method: string;
     #path: string;
     #handler: HandlerConstructor | HandlerFunction;
     #middlewares: (MiddlewareConstructor | MiddlewareFunction)[];
-    #compiledHandler: Map<Application, HandlerFunction> = new Map();
-    #compiledMiddlewares: Map<Application, MiddlewareFunction>[];
-    #name?: string;
+    #cachedHandler?: HandlerFunction;
+    #cachedMiddlewares: MiddlewareFunction[];
+    #name: string | undefined;
 
-    constructor(method: string, path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[]) {
+    constructor(method: string, path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[], name?: string) {
         this.#method = method;
         this.#path = path;
         this.#handler = handler;
         this.#middlewares = middlewares;
-        this.#compiledMiddlewares = Array.from({ length: middlewares.length }, () => new Map());
+        this.#name = name;
+
+        this.#cachedMiddlewares = Array.from({ length: this.#middlewares.length });
     }
 
     get method() {
@@ -61,43 +65,21 @@ export default class Route {
     }
 
     /** @internal */
-    compileHandler(app: Application): HandlerFunction {
-        if (!this.#compiledHandler.has(app)) {
-            let compiledHandler: HandlerFunction | undefined;
-            if (this.#handler.prototype instanceof Handler) {
-                const handler = new (this.#handler as HandlerConstructor)(app);
-
-                compiledHandler = handler.handle.bind(handler);
-            } else {
-                compiledHandler = this.#handler as HandlerFunction;
-            }
-
-            this.#compiledHandler.set(app, compiledHandler);
-
-            return compiledHandler;
+    cacheHandler(app: Application): HandlerFunction {
+        if (!this.#cachedHandler) {
+            this.#cachedHandler = Handler.asFunction(this.#handler, app);
         }
 
-        return this.#compiledHandler.get(app)!;
+        return this.#cachedHandler;
     }
 
     /** @internal */
-    compileMiddleware(i: number, app: Application): MiddlewareFunction {
-        if (!this.#compiledMiddlewares[i].has(app)) {
-            let compiledMiddleware: MiddlewareFunction | undefined;
-            if (this.#middlewares[i].prototype instanceof Middleware) {
-                const middleware = new (this.#middlewares[i] as MiddlewareConstructor)(app);
-
-                compiledMiddleware = middleware.process.bind(middleware);
-            } else {
-                compiledMiddleware = this.#middlewares[i] as MiddlewareFunction;
-            }
-
-            this.#compiledMiddlewares[i].set(app, compiledMiddleware);
-
-            return compiledMiddleware;
+    cacheMiddleware(i: number, app: Application): MiddlewareFunction {
+        if (!this.#cachedMiddlewares[i]) {
+            this.#cachedMiddlewares[i] = Middleware.asFunction(this.#middlewares[i], app);
         }
 
-        return this.#compiledMiddlewares[i].get(app)!;
+        return this.#cachedMiddlewares[i];
     }
 
     /** @internal */
@@ -108,10 +90,10 @@ export default class Route {
             if (index == this.#middlewares.length) {
                 // No more middlewares to process
 
-                return await this.compileHandler(app)(req, app);
+                return await this.cacheHandler(app)(req, app);
             }
 
-            return await this.compileMiddleware(index++, app)(req, next, app);
+            return await this.cacheMiddleware(index++, app)(req, next, app);
         };
 
         return await next(req);
@@ -122,7 +104,7 @@ export default class Route {
         const parts = path.split('/');
         const routeParts = this.path.split('/');
 
-        const params = new Map();
+        const params = new Map<string, string>();
 
         const paramRegex = /^([^\{]*)\{([^\}]+)\}(.*)$/;
 

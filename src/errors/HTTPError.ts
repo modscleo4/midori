@@ -19,12 +19,13 @@
  * The HTTPErrorMiddleware will catch this error and send the status code and message to the client.
  */
 export default class HTTPError extends Error {
-    name: string = 'HTTPError';
-    status: number;
+    override name: string = 'HTTPError';
 
-    constructor(message: string, status: number = 500) {
+    constructor(
+        message: string,
+        public status: number = 500
+    ) {
         super(message);
-        this.status = status;
     }
 
     toJSON(): object {

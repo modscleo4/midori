@@ -19,20 +19,24 @@ import { Application } from "../app/Server.js";
 import { Constructor } from "../util/types.js";
 
 export type PublicPathConfig = {
+    /** Local path to the public directory. */
     path: string;
+    /** Index files to be served when a directory is requested. */
     indexFiles?: string[];
+    /** Cache configuration */
     cache?: {
+        /** Max age in seconds. */
         maxAge?: number;
     };
 };
 
 export abstract class PublicPathConfigProvider extends ConfigProvider<PublicPathConfig> {
-    static config = 'midori::PublicPath';
+    static config: symbol = Symbol('midori::PublicPath');
 }
 
 export default function PublicPathConfigProviderFactory(options: PublicPathConfig): Constructor<PublicPathConfigProvider> & { [K in keyof typeof PublicPathConfigProvider]: typeof PublicPathConfigProvider[K] } {
     return class extends PublicPathConfigProvider {
-        register(app: Application): PublicPathConfig {
+        override register(app: Application): PublicPathConfig {
             return options;
         }
     };

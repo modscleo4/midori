@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { ANSIOptions, Color } from "../util/ansi.js";
+
 /**
  * Log levels.
  */
@@ -29,39 +31,21 @@ export enum LogLevel {
 };
 
 /**
- * Color codes for the console.
- */
-export enum LogColor {
-    BLACK = 0,
-    RED,
-    GREEN,
-    YELLOW,
-    BLUE,
-    MAGENTA,
-    CYAN,
-    WHITE,
-    GRAY = 100,
-    LIGHT_RED,
-    LIGHT_GREEN,
-    LIGHT_YELLOW,
-    LIGHT_BLUE,
-    LIGHT_MAGENTA,
-    LIGHT_CYAN,
-    LIGHT_WHITE
-};
-
-/**
  * Logger options.
  */
 export type LogOptions = {
-    context?: any;
+    /** Context to be appended to the log message. */
+    context?: unknown;
+    /** Separator to be used between the log message and the context. */
     separator?: string;
-    bgColor?: LogColor;
-    fgColor?: LogColor;
+    /** ANSI options to be used in the message part of the log. */
+    format?: ANSIOptions;
 };
 
 export type LoggerOptions = {
-    colorsEnabled?: boolean;
+    /** Whether to enable ANSI formatting. */
+    formattingEnabled?: boolean;
+    /** Minimum log level to be logged. */
     minLevel?: LogLevel;
 };
 
@@ -69,11 +53,11 @@ export type LoggerOptions = {
  * Basic Logger Service Provider.
  */
 export default abstract class Logger {
-    #colorsEnabled: boolean;
+    #formattingEnabled: boolean;
     #minLevel: LogLevel;
 
     constructor(options?: LoggerOptions) {
-        this.#colorsEnabled = options?.colorsEnabled ?? false;
+        this.#formattingEnabled = options?.formattingEnabled ?? false;
         this.#minLevel = options?.minLevel ?? LogLevel.INFO;
     }
 
@@ -118,28 +102,65 @@ export default abstract class Logger {
         return this.#minLevel;
     }
 
-    get colorsEnabled(): boolean {
-        return this.#colorsEnabled;
+    get formattingEnabled(): boolean {
+        return this.#formattingEnabled;
     }
 
-    static levelToColor(level: LogLevel): LogColor {
+    static levelToFormat(level: LogLevel): ANSIOptions {
         switch (level) {
             case LogLevel.DEBUG:
-                return LogColor.GRAY;
+                return {
+                    color: {
+                        fg: Color.BLACK,
+                    },
+                    bold: true,
+                };
             case LogLevel.INFO:
-                return LogColor.LIGHT_GREEN;
+                return {
+                    color: {
+                        fg: Color.GREEN,
+                    },
+                    bold: true,
+                };
             case LogLevel.NOTICE:
-                return LogColor.LIGHT_BLUE;
+                return {
+                    color: {
+                        fg: Color.BLUE,
+                    },
+                    bold: true,
+                };
             case LogLevel.WARNING:
-                return LogColor.YELLOW;
+                return {
+                    color: {
+                        fg: Color.YELLOW,
+                    },
+                };
             case LogLevel.ERROR:
-                return LogColor.RED;
+                return {
+                    color: {
+                        fg: Color.RED,
+                    },
+                };
             case LogLevel.CRITICAL:
-                return LogColor.MAGENTA;
+                return {
+                    color: {
+                        fg: Color.MAGENTA,
+                    },
+                };
             case LogLevel.ALERT:
-                return LogColor.LIGHT_YELLOW;
+                return {
+                    color: {
+                        fg: Color.YELLOW,
+                    },
+                    bold: true,
+                };
             case LogLevel.EMERGENCY:
-                return LogColor.LIGHT_RED;
+                return {
+                    color: {
+                        fg: Color.RED,
+                    },
+                    bold: true,
+                };
         }
     }
 }

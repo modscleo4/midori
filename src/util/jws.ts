@@ -71,9 +71,9 @@ export function signJWT(
         typ: 'JWT'
     };
 
-    const headerBase64 = Buffer.from(JSON.stringify(header)).toString('base64url');
+    const headerBase64  = Buffer.from(JSON.stringify(header)).toString('base64url');
     const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
-    const signature = sign(headerBase64, payloadBase64, alg, key);
+    const signature     = sign(headerBase64, payloadBase64, alg, key);
 
     return `${headerBase64}.${payloadBase64}.${signature}`;
 }

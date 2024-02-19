@@ -29,7 +29,7 @@ export default class ConsoleLogger extends Logger {
         this.#file = options.file;
     }
 
-    log(level: LogLevel, message: string, options?: LogOptions): void {
+    override log(level: LogLevel, message: string, options?: LogOptions): void {
         if (level < this.minLevel) {
             return;
         }

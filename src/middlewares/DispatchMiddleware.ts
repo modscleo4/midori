@@ -19,6 +19,7 @@ import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import Route from "../router/Route.js";
+import RouterMiddleware from "./RouterMiddleware.js";
 
 /**
  * Dispatches the Request to the Handler from the Router.
@@ -28,8 +29,8 @@ export default class DispatchMiddleware extends Middleware {
         super(app);
     }
 
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
-        const route: Route = req.container.get('::route');
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+        const route = req.container.get(RouterMiddleware.RouteKey) as Route | null;
 
         if (!route) {
             return await next(req);

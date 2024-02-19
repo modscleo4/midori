@@ -17,11 +17,15 @@
 
 import { Application } from "../app/Server.js";
 import HTTPError from "../errors/HTTPError.js";
+import ValidationError from "../errors/ValidationError.js";
 import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import { ValidatonRules, CustomValidation } from "../util/validation.js";
+
+
+type Errors = Record<string, string[]>;
 
 export default abstract class ValidationMiddleware extends Middleware {
     constructor(app: Application) {
@@ -30,75 +34,136 @@ export default abstract class ValidationMiddleware extends Middleware {
 
     abstract get rules(): ValidatonRules;
 
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
-        const errors: Record<string, string[]> = {};
+    validate(body: Record<string, any>, rules: ValidatonRules): Errors {
+        const errors: Errors = {};
 
+        for (const [key, rule] of Object.entries(rules)) {
+            const entryErrors: string[] = [];
+
+            if (rule.required && !(key in body)) {
+                entryErrors.push('This field is required.');
+            }
+
+            if (key in body) {
+                if (rule.nullable === false && body[key] == null) {
+                    entryErrors.push('This field cannot be null.');
+                }
+
+                if (
+                    rule.type === 'array' && !Array.isArray(body[key])
+                    || typeof body[key] !== rule.type
+                ) {
+                    entryErrors.push(`expected type '${rule.type}' but got '${typeof body[key]}'.`);
+                }
+
+                if (rule.oneOf && !(rule.oneOf as any[]).includes(body[key])) {
+                    entryErrors.push(`expected one of [${rule.oneOf.join(', ')}] but got '${body[key]}'.`);
+                }
+
+                if (rule.type === 'string') {
+                    if (rule.min && body[key].length < rule.min) {
+                        entryErrors.push(`expected a minimum of ${rule.min} characters but got ${body[key].length}.`);
+                    }
+
+                    if (rule.max && body[key].length > rule.max) {
+                        entryErrors.push(`expected a maximum of ${rule.max} characters but got ${body[key].length}.`);
+                    }
+
+                    if (rule.regex && !rule.regex.test(body[key])) {
+                        entryErrors.push(`expected to match '${rule.regex}' but got '${body[key]}'.`);
+                    }
+                } else if (rule.type === 'number') {
+                    if (rule.min && body[key] < rule.min) {
+                        entryErrors.push(`expected a minimum of ${rule.min} but got ${body[key]}.`);
+                    }
+
+                    if (rule.max && body[key] > rule.max) {
+                        entryErrors.push(`expected a maximum of ${rule.max} but got ${body[key]}.`);
+                    }
+
+                    if (rule.integer && !Number.isInteger(body[key])) {
+                        entryErrors.push(`expected an integer but got ${body[key]}.`);
+                    }
+                } else if (rule.type === 'bigint') {
+                    if (rule.min && body[key] < rule.min) {
+                        entryErrors.push(`expected a minimum of ${rule.min} but got ${body[key]}.`);
+                    }
+
+                    if (rule.max && body[key] > rule.max) {
+                        entryErrors.push(`expected a maximum of ${rule.max} but got ${body[key]}.`);
+                    }
+                } else if (rule.type === 'object') {
+                    if (rule.properties) {
+                        const objectErrors = this.validate(body[key], rule.properties);
+
+                        if (Object.keys(objectErrors).length > 0) {
+                            entryErrors.push(...Object.values(objectErrors).flat());
+                        }
+                    }
+                } else if (rule.type === 'array') {
+                    if (rule.min && body[key].length < rule.min) {
+                        entryErrors.push(`expected a minimum of ${rule.min} items but got ${body[key].length}.`);
+                    }
+
+                    if (rule.max && body[key].length > rule.max) {
+                        entryErrors.push(`expected a maximum of ${rule.max} items but got ${body[key].length}.`);
+                    }
+
+                    if (rule.unique && new Set(body[key]).size !== body[key].length) {
+                        entryErrors.push('expected all items to be unique.');
+                    }
+
+                    if (rule.all) {
+                        for (const item of body[key]) {
+                            const itemErrors = this.validate({ item }, { item: rule.all });
+
+                            if (Object.keys(itemErrors).length > 0) {
+                                entryErrors.push(...Object.values(itemErrors).flat());
+                            }
+                        }
+                    }
+
+                    if (rule.items) {
+                        for (let i = 0; i < Math.min(body[key].length, rule.items.length); i++) {
+                            const itemErrors = this.validate({ item: body[key][i] }, { item: rule.items[i] });
+
+                            if (Object.keys(itemErrors).length > 0) {
+                                entryErrors.push(...Object.values(itemErrors).flat());
+                            }
+                        }
+                    }
+                }
+
+                if (rule.customValidations) {
+                    for (const customValidation of rule.customValidations as CustomValidation<any>[]) {
+                        if (!customValidation.validator(body[key])) {
+                            entryErrors.push(customValidation.message);
+                        }
+                    }
+                }
+            }
+
+            if (entryErrors.length > 0) {
+                errors[key] = entryErrors;
+            }
+        }
+
+        return errors;
+    }
+
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         if (!req.parsedBody || typeof req.parsedBody !== 'object') {
             return Response.status(EStatusCode.BAD_REQUEST)
                 .json({
                     message: "Invalid request body.",
                     error: "Expected a JSON object as request body.",
                 });
-        } else {
-            for (const [key, rule] of Object.entries(this.rules)) {
-                const entryErrors: string[] = [];
-
-                if (rule.required && !(key in req.parsedBody)) {
-                    entryErrors.push('This field is required.');
-                }
-
-                if (key in req.parsedBody) {
-                    if (rule.nullable === false && req.parsedBody[key] == null) {
-                        entryErrors.push('This field cannot be null.');
-                    }
-
-                    if (typeof req.parsedBody[key] !== rule.type) {
-                        entryErrors.push(`expected type '${rule.type}' but got '${typeof req.parsedBody[key]}'.`);
-                    }
-
-                    if (rule.oneOf && !(rule.oneOf as any[]).includes(req.parsedBody[key])) {
-                        entryErrors.push(`expected one of [${rule.oneOf.join(', ')}] but got '${req.parsedBody[key]}'.`);
-                    }
-
-                    if (rule.type === 'string') {
-                        if (rule.min && req.parsedBody[key].length < rule.min) {
-                            entryErrors.push(`expected a minimum of ${rule.min} characters but got ${req.parsedBody[key].length}.`);
-                        }
-
-                        if (rule.max && req.parsedBody[key].length > rule.max) {
-                            entryErrors.push(`expected a maximum of ${rule.max} characters but got ${req.parsedBody[key].length}.`);
-                        }
-                    } else if (rule.type === 'number') {
-                        if (rule.min && req.parsedBody[key] < rule.min) {
-                            entryErrors.push(`expected a minimum of ${rule.min} but got ${req.parsedBody[key]}.`);
-                        }
-
-                        if (rule.max && req.parsedBody[key] > rule.max) {
-                            entryErrors.push(`expected a maximum of ${rule.max} but got ${req.parsedBody[key]}.`);
-                        }
-                    }
-
-                    if (rule.customValidations) {
-                        for (const customValidation of rule.customValidations as CustomValidation<any>[]) {
-                            if (!customValidation.validator(req.parsedBody[key])) {
-                                entryErrors.push(customValidation.message);
-                            }
-                        }
-                    }
-                }
-
-                if (entryErrors.length > 0) {
-                    errors[key] = entryErrors;
-                }
-            }
         }
 
+        const errors = this.validate(req.parsedBody, this.rules);
+
         if (Object.keys(errors).length > 0) {
-            return Response.status(EStatusCode.BAD_REQUEST)
-                .json({
-                    message: "Some fields are invalid.",
-                    errors,
-                });
+            throw new ValidationError(errors);
         }
 
         return await next(req);

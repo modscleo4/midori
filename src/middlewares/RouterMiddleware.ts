@@ -27,19 +27,22 @@ import Router from "../router/Router.js";
 export default class RouterMiddleware extends Middleware {
     #router: Router;
 
+    static RoutesKey: symbol = Symbol('::routes');
+    static RouteKey: symbol = Symbol('::route');
+
     constructor(app: Application) {
         super(app);
 
         this.#router = app.services.get(RouterServiceProvider);
     }
 
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         const routes = this.#router.filter(req.path);
 
         const route = routes.find(r => r.method === req.method);
 
-        req.container.set('::routes', routes);
-        req.container.set('::route', route);
+        req.container.set(RouterMiddleware.RoutesKey, routes);
+        req.container.set(RouterMiddleware.RouteKey, route);
 
         return await next(req);
     }

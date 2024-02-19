@@ -18,8 +18,9 @@ import { Application } from "../app/Server.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
-import Logger, { LogColor } from "../log/Logger.js";
+import Logger from "../log/Logger.js";
 import { LoggerServiceProvider } from "../providers/LoggerServiceProvider.js";
+import { Color } from "../util/ansi.js";
 
 /**
  * Log every unhandled error to the Logger Service.
@@ -33,13 +34,13 @@ export default class ErrorLoggerMiddleware extends Middleware {
         this.#logger = app.services.get(LoggerServiceProvider);
     }
 
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         try {
             return await next(req);
         } catch (e) {
-            this.#logger.error('An uncaught error occurred while handling a request.', { context: e, fgColor: LogColor.RED });
+            this.#logger.error('An uncaught error occurred while handling a request.', { context: e, format: { color: { fg: Color.RED } } });
             if (e instanceof Error) {
-                this.#logger.debug('Stack trace:', { context: e.stack, fgColor: LogColor.RED });
+                this.#logger.debug('Stack trace:', { context: e.stack, format: { color: { fg: Color.RED } } });
             }
 
             throw e;

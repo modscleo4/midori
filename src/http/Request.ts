@@ -29,16 +29,17 @@ import { EStatusCode } from "./EStatusCode.js";
  *
  * @template T Type of the request body.
  */
-export default class Request<T = any> extends IncomingMessage {
-    #config?: RequestConfig;
+export default class Request<T = unknown> extends IncomingMessage {
+    #config: RequestConfig | undefined;
 
     #query?: URLSearchParams;
-    #params: Map<string, string> = new Map<string, string>();
+    #params: Map<string, string> = new Map();
+    #cookies: Map<string, string> = new Map();
     #path?: string;
     #body: Buffer[] = [];
     #parsedBody?: T = undefined;
-    #container?: Container<string, any> = new Container<string, any>();
-    #ip?: string;
+    #container?: Container<string | symbol, unknown> = new Container();
+    #ip: string | undefined;
     #acceptPriority: string[] = [];
 
     /** @internal */
@@ -56,6 +57,7 @@ export default class Request<T = any> extends IncomingMessage {
             this.#ip = Array.isArray(this.headers['x-forwarded-for']) ? this.headers['x-forwarded-for'][0] : this.headers['x-forwarded-for'].split(', ')[0];
         }
 
+        this.#parseCookies();
         this.#parseAcceptPriority();
     }
 
@@ -77,6 +79,17 @@ export default class Request<T = any> extends IncomingMessage {
         }
 
         return this.body;
+    }
+
+    #parseCookies() {
+        if (this.headers.cookie === undefined) {
+            return;
+        }
+
+        this.headers.cookie.split(';').forEach((cookie) => {
+            const [key, value] = cookie.split('=');
+            this.#cookies.set(key.trim(), value.trim());
+        });
     }
 
     #parseAcceptPriority() {
@@ -102,6 +115,10 @@ export default class Request<T = any> extends IncomingMessage {
 
     get params() {
         return this.#params;
+    }
+
+    get cookies() {
+        return this.#cookies;
     }
 
     get path() {
@@ -136,7 +153,7 @@ export default class Request<T = any> extends IncomingMessage {
         return this.#acceptPriority;
     }
 
-    [Symbol.asyncIterator](): AsyncIterableIterator<Buffer> {
+    override [Symbol.asyncIterator](): AsyncIterableIterator<Buffer> {
         return super[Symbol.asyncIterator]();
     }
 }

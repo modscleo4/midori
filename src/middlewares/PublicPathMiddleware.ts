@@ -25,7 +25,7 @@ import { Application } from "../app/Server.js";
 import { PublicPathConfig, PublicPathConfigProvider } from "../providers/PublicPathConfigProvider.js";
 
 export class PublicPathMiddleware extends Middleware {
-    #options?: PublicPathConfig;
+    #options: PublicPathConfig | undefined;
 
     constructor(app: Application) {
         super(app);
@@ -37,7 +37,7 @@ export class PublicPathMiddleware extends Middleware {
         return this.#options;
     }
 
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         // Only GET and HEAD requests are allowed
         if (req.method !== 'GET' && req.method !== 'HEAD') {
             return await next(req);
@@ -51,7 +51,7 @@ export class PublicPathMiddleware extends Middleware {
         const indexFiles = this.options?.indexFiles ?? ['index.html'];
 
         // If the request ends with a slash, try to find an index file
-        if (req.path.endsWith('/')) {
+        if (req.path.endsWith('/') || req.path === '') {
             for (const file of indexFiles) {
                 const res = await this.tryFile(req.path + file);
 
@@ -95,7 +95,7 @@ export class PublicPathMiddleware extends Middleware {
  */
 export default function PublicPathMiddlewareFactory(options: PublicPathConfig): Constructor<Middleware> {
     return class extends PublicPathMiddleware {
-        get options(): PublicPathConfig {
+        override get options(): PublicPathConfig {
             return options;
         }
     };

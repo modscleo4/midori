@@ -21,7 +21,7 @@ import Response from "../http/Response.js";
 import { ContentSecurityPolicyConfig, ContentSecurityPolicyValue, ContentSecurityPolicyConfigProvider } from "../providers/ContentSecurityPolicyConfigProvider.js";
 
 export class ContentSecurityPolicyMiddleware extends Middleware {
-    #options?: ContentSecurityPolicyConfig;
+    #options: ContentSecurityPolicyConfig | undefined;
 
     constructor(app: Application) {
         super(app);
@@ -33,7 +33,7 @@ export class ContentSecurityPolicyMiddleware extends Middleware {
         return this.#options;
     }
 
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         const csp: string[] = [];
 
         if (this.options?.connect) {
@@ -111,7 +111,7 @@ export class ContentSecurityPolicyMiddleware extends Middleware {
  */
 export default function ContentSecurityPolicyMiddlewareFactory(options: ContentSecurityPolicyConfig): typeof ContentSecurityPolicyMiddleware {
     return class extends ContentSecurityPolicyMiddleware {
-        get options(): ContentSecurityPolicyConfig {
+        override get options(): ContentSecurityPolicyConfig {
             return options;
         }
     };

@@ -15,5 +15,5 @@
  */
 
 export default class AuthError extends Error {
-    name: string = 'AuthError';
+    override name: string = 'AuthError';
 }

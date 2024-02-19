@@ -19,16 +19,17 @@ import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import Route from "../router/Route.js";
+import RouterMiddleware from "./RouterMiddleware.js";
 
 /**
  * Middleware to handle any request path that does match a route, but does not match any allowed method.
  */
 export default class MethodNotAllowedMiddleware extends Middleware {
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
-        const routes: Route[] = req.container.get('::routes');
-        const route: Route = req.container.get('::route');
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+        const routes = req.container.get(RouterMiddleware.RoutesKey) as Route[] | null;
+        const route = req.container.get(RouterMiddleware.RouteKey) as Route | null;
 
-        if (routes.length > 0 && !route) {
+        if (routes && routes.length > 0 && !route) {
             return Response.status(EStatusCode.METHOD_NOT_ALLOWED);
         }
 

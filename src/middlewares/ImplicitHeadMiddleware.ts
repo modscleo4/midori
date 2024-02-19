@@ -18,17 +18,18 @@ import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import Route from "../router/Route.js";
+import RouterMiddleware from "./RouterMiddleware.js";
 
 /**
  * Middleware to handle the HEAD method, returning as a body-less GET request.
  */
 export default class ImplicitHeadMiddleware extends Middleware {
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         if (req.method === 'HEAD') {
-            const routes: Route[] = req.container.get('::routes');
-            const route = routes.find(r => r.method === 'GET');
+            const routes = req.container.get(RouterMiddleware.RoutesKey) as Route[] | null;
+            const route = routes?.find(r => r.method === 'GET');
 
-            req.container.set('::route', route);
+            req.container.set(RouterMiddleware.RouteKey, route);
 
             return await next(req);
         }

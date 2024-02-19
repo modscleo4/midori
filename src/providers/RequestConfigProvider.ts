@@ -19,16 +19,17 @@ import { Application } from "../app/Server.js";
 import { Constructor } from "../util/types.js";
 
 export type RequestConfig = {
+    /** Max body size in bytes. */
     maxBodySize: number;
 };
 
 export abstract class RequestConfigProvider extends ConfigProvider<RequestConfig> {
-    static config: string = 'midori::Request';
+    static config: symbol = Symbol('midori::Request');
 }
 
 export default function RequestConfigProviderFactory(options: RequestConfig): Constructor<RequestConfigProvider> & { [K in keyof typeof RequestConfigProvider]: typeof RequestConfigProvider[K] } {
     return class extends RequestConfigProvider {
-        register(app: Application): RequestConfig {
+        override register(app: Application): RequestConfig {
             return options;
         }
     };

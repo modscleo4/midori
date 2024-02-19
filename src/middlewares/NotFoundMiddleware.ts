@@ -23,7 +23,7 @@ import Response from "../http/Response.js";
  * Always return a 404 Not Found response.
  */
 export default class NotFoundMiddleware extends Middleware {
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         return Response.status(EStatusCode.NOT_FOUND);
     }
 }

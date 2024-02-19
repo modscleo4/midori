@@ -33,4 +33,17 @@ export default abstract class Handler {
      * Handle a request.
      */
     abstract handle(req: Request): Promise<Response>;
+
+    /**
+     * Converts a Handler class to a Handler function.
+     */
+    static asFunction(handler: HandlerConstructor | HandlerFunction, app: Application): HandlerFunction {
+        if (handler.prototype instanceof Handler) {
+            const instance = new (handler as HandlerConstructor)(app);
+
+            return instance.handle.bind(instance);
+        }
+
+        return handler as HandlerFunction;
+    }
 }

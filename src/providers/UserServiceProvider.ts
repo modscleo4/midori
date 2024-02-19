@@ -20,12 +20,12 @@ import UserService from "../auth/UserService.js";
 import { Constructor } from "../util/types.js";
 
 export abstract class UserServiceProvider extends ServiceProvider<UserService> {
-    static service: string = 'midori::Auth.User';
+    static service: symbol = Symbol('midori::Auth.User');
 }
 
 export default function UserServiceProviderFactory(userService: UserService): Constructor<UserServiceProvider> & { [K in keyof typeof UserServiceProvider]: typeof UserServiceProvider[K] } {
     return class extends UserServiceProvider {
-        register(app: Application): UserService {
+        override register(app: Application): UserService {
             return userService;
         }
     };

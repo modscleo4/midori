@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-export function colorizeForeground(text: string, color: number): string {
-    return `\x1b[${color + 30}${color >= 100 ? ';1' : ''}m${text}\x1b[0m`;
+export function encodeUInt32BE(value: number): Buffer {
+    const buffer = Buffer.alloc(4);
+    buffer.writeUInt32BE(value, 0);
+
+    return buffer;
 }
 
-export function colorizeBackground(text: string, color: number): string {
-    return `\x1b[${color + 40}${color >= 100 ? ';1' : ''}m${text}\x1b[0m`;
+export function encodeBufferWithLength(data: Buffer): Buffer {
+    const length = encodeUInt32BE(data.length);
+    return Buffer.concat([length, data]);
 }

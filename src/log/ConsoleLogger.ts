@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-import { colorizeBackground, colorizeForeground } from "../util/ascii.js";
+import { format } from "../util/ansi.js";
 import Logger, { LogLevel, LogOptions } from "./Logger.js";
 
 /**
  * Provides a logger that prints to the console.
  */
 export default class ConsoleLogger extends Logger {
-    log(level: LogLevel, message: string, options?: LogOptions): void {
+    override log(level: LogLevel, message: string, options?: LogOptions): void {
         if (level < this.minLevel) {
             return;
         }
@@ -31,16 +31,11 @@ export default class ConsoleLogger extends Logger {
         let logMessage = `${message}`;
         const fn = level < LogLevel.WARNING ? console.log : console.error;
 
-        if (this.colorsEnabled) {
-            const logLevelColor = Logger.levelToColor(level);
-            logLevel = colorizeForeground(logLevel, logLevelColor);
+        if (this.formattingEnabled) {
+            logLevel = format(logLevel, Logger.levelToFormat(level));
 
-            if (options?.bgColor) {
-                logMessage = colorizeBackground(logMessage, options.bgColor);
-            }
-
-            if (options?.fgColor) {
-                logMessage = colorizeForeground(logMessage, options.fgColor);
+            if (options?.format) {
+                logMessage = format(logMessage, options.format);
             }
         }
 

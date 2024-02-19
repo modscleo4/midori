@@ -15,12 +15,12 @@
  */
 
 export type CronExpression = {
-    second: number[];
-    minute: number[];
-    hour: number[];
-    dayOfMonth: number[];
-    month: number[];
-    dayOfWeek: number[];
+    seconds: number[];
+    minutes: number[];
+    hours: number[];
+    daysOfMonth: number[];
+    months: number[];
+    daysOfWeek: number[];
 };
 
 export function validateCronString(cronString: string): boolean {
@@ -55,7 +55,7 @@ export function validateCronString(cronString: string): boolean {
                 && parseInt(step) >= min
         }
 
-        const n = Number(part);
+        const n = parseInt(part, 10);
         return n >= min && n <= max;
     }
 
@@ -88,7 +88,6 @@ export function parseCronString(cronString: string): CronExpression {
         }
 
         // Step
-        // Only works with */n format
         if (part.includes('/')) {
             const [start, step] = part.split('/', 2);
             const s = start === '*' ? min : parseInt(start);
@@ -101,12 +100,12 @@ export function parseCronString(cronString: string): CronExpression {
     }
 
     return {
-        second: parseCronPart(second, 0, 59),
-        minute: parseCronPart(minute, 0, 59),
-        hour: parseCronPart(hour, 0, 23),
-        dayOfMonth: parseCronPart(dayOfMonth, 1, 31),
-        month: parseCronPart(month, 1, 12),
-        dayOfWeek: parseCronPart(dayOfWeek, 0, 6),
+        seconds: parseCronPart(second, 0, 59),
+        minutes: parseCronPart(minute, 0, 59),
+        hours: parseCronPart(hour, 0, 23),
+        daysOfMonth: parseCronPart(dayOfMonth, 1, 31),
+        months: parseCronPart(month, 1, 12),
+        daysOfWeek: parseCronPart(dayOfWeek, 0, 6),
     };
 }
 
@@ -115,27 +114,27 @@ export function canRunTask(cronExpression: CronExpression, now: Date, lastRun?: 
         return false;
     }
 
-    if (!cronExpression.second.includes(now.getSeconds())) {
+    if (!cronExpression.seconds.includes(now.getSeconds())) {
         return false;
     }
 
-    if (!cronExpression.minute.includes(now.getMinutes())) {
+    if (!cronExpression.minutes.includes(now.getMinutes())) {
         return false;
     }
 
-    if (!cronExpression.hour.includes(now.getHours())) {
+    if (!cronExpression.hours.includes(now.getHours())) {
         return false;
     }
 
-    if (!cronExpression.dayOfMonth.includes(now.getDate())) {
+    if (!cronExpression.daysOfMonth.includes(now.getDate())) {
         return false;
     }
 
-    if (!cronExpression.month.includes(now.getMonth() + 1)) {
+    if (!cronExpression.months.includes(now.getMonth() + 1)) {
         return false;
     }
 
-    if (!cronExpression.dayOfWeek.includes(now.getDay())) {
+    if (!cronExpression.daysOfWeek.includes(now.getDay())) {
         return false;
     }
 

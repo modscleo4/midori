@@ -25,4 +25,17 @@ export default abstract class Task {
     }
 
     abstract run(): Promise<void>;
+
+    /**
+     * Converts a Task class to a Task function.
+     */
+    static asFunction(task: TaskConstructor | TaskFunction, app: Application): TaskFunction {
+        if (task.prototype instanceof Task) {
+            const instance = new (task as TaskConstructor)(app);
+
+            return instance.run.bind(instance);
+        }
+
+        return task as TaskFunction;
+    }
 }

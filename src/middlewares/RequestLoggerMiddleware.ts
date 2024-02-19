@@ -4,8 +4,9 @@ import { Application } from "../app/Server.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
-import Logger, { LogColor } from "../log/Logger.js";
+import Logger from "../log/Logger.js";
 import { LoggerServiceProvider } from "../providers/LoggerServiceProvider.js";
+import { Color } from "../util/ansi.js";
 
 /**
  * Log any request to the Logger Service.
@@ -19,7 +20,7 @@ export default class RequestLoggerMiddleware extends Middleware {
         this.#logger = app.services.get(LoggerServiceProvider);
     }
 
-    async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
+    override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         const startTime = performance.now();
 
         const res = await next(req);
@@ -30,6 +31,6 @@ export default class RequestLoggerMiddleware extends Middleware {
     }
 
     logRequest(req: Request, res: Response, time: number) {
-        this.#logger.info(`<${req.ip ?? 'unknown IP'}> ${req.method} ${req.path} ${res.status} (${time.toFixed(2)}ms)`, { fgColor: res.status < 400 ? LogColor.GREEN : res.status < 500 ? LogColor.YELLOW : LogColor.RED });
+        this.#logger.info(`<${req.ip ?? 'unknown IP'}> ${req.method} ${req.path} ${res.status} (${time.toFixed(2)}ms)`, { format: { color: { fg: res.status < 400 ? Color.GREEN : res.status < 500 ? Color.YELLOW : Color.RED } } });
     }
 }
