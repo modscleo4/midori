@@ -20,8 +20,8 @@ import { createCipheriv, createDecipheriv } from "node:crypto";
  * Advanced Encryption Standard (Galois/Counter Mode), as used by JWE.
  */
 export default class AESGCM {
-    static encrypt(aesVersion: 128 | 192 | 256, cek: Buffer, iv: Buffer, aad: Buffer, plainText: Buffer): { cipherText: Buffer; authenticationTag: Buffer; } {
-        const cipher = createCipheriv(`aes-${aesVersion}-gcm`, cek, iv, { authTagLength: 16 });
+    static encrypt(aesVersion: 128 | 192 | 256, cek: Buffer, iv: Buffer, aad: Buffer, plainText: Buffer, authTagLength: number): { cipherText: Buffer; authenticationTag: Buffer; } {
+        const cipher = createCipheriv(`aes-${aesVersion}-gcm`, cek, iv, { authTagLength });
         cipher.setAAD(aad);
         const cipherText = cipher.update(plainText);
         cipher.final(); // GCM mode is a counter mode, so no output here
@@ -30,8 +30,8 @@ export default class AESGCM {
         return { cipherText, authenticationTag };
     }
 
-    static decrypt(aesVersion: 128 | 192 | 256, cek: Buffer, iv: Buffer, aad: Buffer, cipherText: Buffer, authenticationTag: Buffer): Buffer {
-        const decipher = createDecipheriv(`aes-${aesVersion}-gcm`, cek, iv, { authTagLength: 16 });
+    static decrypt(aesVersion: 128 | 192 | 256, cek: Buffer, iv: Buffer, aad: Buffer, cipherText: Buffer, authenticationTag: Buffer, authTagLength: number): Buffer {
+        const decipher = createDecipheriv(`aes-${aesVersion}-gcm`, cek, iv, { authTagLength });
         decipher.setAAD(aad);
         decipher.setAuthTag(authenticationTag);
         const plainText = decipher.update(cipherText);

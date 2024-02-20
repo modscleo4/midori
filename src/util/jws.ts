@@ -73,6 +73,11 @@ export type Header = {
 
 /**
  * Sign a JWT Payload with the given algorithm and secret or private key
+ *
+ * @param payload JWT Payload
+ * @param alg Algorithm
+ * @param key Private Key (for RSA and ECDSA) or Secret (for HMAC)
+ * @returns Signed JWT in JWS Compact Serialization format
  */
 export function signJWT(
     payload: Payload,
@@ -93,6 +98,11 @@ export function signJWT(
 
 /**
  * Validate a signed JWT against provided secret or private key
+ *
+ * @param token JWT Token in JWS Compact Serialization format
+ * @param alg Algorithm
+ * @param key Private Key (for RSA and ECDSA) or Secret (for HMAC)
+ * @returns Whether the token is valid
  */
 export function verifyJWS(
     token: string,
@@ -112,7 +122,6 @@ export function verifyJWS(
         throw new JWTError(`Invalid alg: ${_alg}`);
     }
 
-
     return verify(headerBase64, payloadBase64, signature, alg, key);
 }
 
@@ -130,7 +139,7 @@ function sign(
 
             return HMAC.sign(
                 256,
-                (<PayloadSymmetric> key).k!,
+                Buffer.from((<PayloadSymmetric> key).k!, 'base64url'),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
@@ -141,7 +150,7 @@ function sign(
 
             return HMAC.sign(
                 384,
-                (<PayloadSymmetric> key).k!,
+                Buffer.from((<PayloadSymmetric> key).k!, 'base64url'),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
@@ -152,7 +161,7 @@ function sign(
 
             return HMAC.sign(
                 512,
-                (<PayloadSymmetric> key).k!,
+                Buffer.from((<PayloadSymmetric> key).k!, 'base64url'),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
@@ -275,7 +284,7 @@ function verify(
 
             return HMAC.verify(
                 256,
-                (<PayloadSymmetric> key).k!,
+                Buffer.from((<PayloadSymmetric> key).k!, 'base64url'),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -287,7 +296,7 @@ function verify(
 
             return HMAC.verify(
                 384,
-                (<PayloadSymmetric> key).k!,
+                Buffer.from((<PayloadSymmetric> key).k!, 'base64url'),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -299,7 +308,7 @@ function verify(
 
             return HMAC.verify(
                 512,
-                (<PayloadSymmetric> key).k!,
+                Buffer.from((<PayloadSymmetric> key).k!, 'base64url'),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );

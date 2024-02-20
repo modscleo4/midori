@@ -126,9 +126,16 @@ export type Header = {
 
     /** Agreement PartyVInfo */
     apv?: string,
+
+    /** Initialization Vector */
+    iv?: string,
+
+    /** Authentication Tag */
+    tag?: string,
 };
 
 /**
+ * Encrypts a token using JWE Compact Serialization
  *
  * @param plainText Content to be encrypted
  * @param cty Content-Type of plainText
@@ -156,7 +163,7 @@ export function encryptJWT(
         ...(extraParams ?? {}),
     };
     const [cek, altKey]  = generateCEK(alg, enc, header, key, ephemeralKey);
-    const encryptedKey   = encryptCEK(cek, alg, altKey ?? key);
+    const encryptedKey   = encryptCEK(cek, alg, altKey ?? key, header);
     const iv             = randomBytes(ivLength(enc) / 8);
 
     const protectedHeaderBase64 = Buffer.from(JSON.stringify(header)).toString('base64url');
@@ -177,6 +184,7 @@ export function encryptJWT(
 }
 
 /**
+ * Decrypts a token using JWE Compact Serialization
  *
  * @param token Encrypted token serialized in JWE Compact Serialization
  * @param alg Algorithm
@@ -293,6 +301,8 @@ function ivLength(enc: JWEEncryption): number {
         case JWEEncryption["A256CBC-HS512"]:
             return 128;
     }
+
+    throw new JWTError(`Unsupported encryption: ${enc}`);
 }
 
 function generateEphemeralKey(alg: JWEAlgorithm, key: JWKPayload): JWKPayload | null {
@@ -321,6 +331,14 @@ function generateHeaderParams(alg: JWEAlgorithm, enc: JWEEncryption, ephemeralKe
                     y: (<PayloadEC> ephemeralKey).y!,
                 },
             };
+
+        case JWEAlgorithm.A128GCMKW:
+        case JWEAlgorithm.A192GCMKW:
+        case JWEAlgorithm.A256GCMKW:
+            return {
+                iv: randomBytes(96 / 8).toString('base64url'),
+                tag: '', // This will be generated later
+            };
     }
 
     return {};
@@ -330,7 +348,7 @@ function deserializeSymmetricKey(key: PayloadSymmetric): Buffer {
     return Buffer.from(key.k!, 'base64url');
 }
 
-function encryptCEK(cek: Buffer, alg: JWEAlgorithm, key: JWKPayload): Buffer {
+function encryptCEK(cek: Buffer, alg: JWEAlgorithm, key: JWKPayload, header: Header): Buffer {
     switch (alg) {
         case JWEAlgorithm.RSA1_5:
             return publicEncrypt(
@@ -361,13 +379,13 @@ function encryptCEK(cek: Buffer, alg: JWEAlgorithm, key: JWKPayload): Buffer {
             );
 
         case JWEAlgorithm.A128KW:
-            return AESKW.encrypt(128, cek, deserializeSymmetricKey(<PayloadSymmetric> key));
+            return AESKW.encrypt(128, cek, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.alloc(8, 0xa6));
 
         case JWEAlgorithm.A192KW:
-            return AESKW.encrypt(192, cek, deserializeSymmetricKey(<PayloadSymmetric> key));
+            return AESKW.encrypt(192, cek, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.alloc(8, 0xa6));
 
         case JWEAlgorithm.A256KW:
-            return AESKW.encrypt(256, cek, deserializeSymmetricKey(<PayloadSymmetric> key));
+            return AESKW.encrypt(256, cek, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.alloc(8, 0xa6));
 
         case JWEAlgorithm.dir:
             return Buffer.alloc(0);
@@ -376,13 +394,31 @@ function encryptCEK(cek: Buffer, alg: JWEAlgorithm, key: JWKPayload): Buffer {
             return Buffer.alloc(0);
 
         case JWEAlgorithm["ECDH-ES+A128KW"]:
-            return AESKW.encrypt(128, cek, deserializeSymmetricKey(<PayloadSymmetric> key));
+            return AESKW.encrypt(128, cek, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.alloc(8, 0xa6));
 
         case JWEAlgorithm["ECDH-ES+A192KW"]:
-            return AESKW.encrypt(192, cek, deserializeSymmetricKey(<PayloadSymmetric> key));
+            return AESKW.encrypt(192, cek, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.alloc(8, 0xa6));
 
         case JWEAlgorithm["ECDH-ES+A256KW"]:
-            return AESKW.encrypt(256, cek, deserializeSymmetricKey(<PayloadSymmetric> key));
+            return AESKW.encrypt(256, cek, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.alloc(8, 0xa6));
+
+        case JWEAlgorithm.A128GCMKW: {
+            const { cipherText, authenticationTag } = AESGCM.encrypt(128, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.from(header.iv!, 'base64url'), Buffer.alloc(0), cek, 16);
+            header.tag = authenticationTag.toString('base64url');
+            return cipherText;
+        }
+
+        case JWEAlgorithm.A192GCMKW: {
+            const { cipherText, authenticationTag } = AESGCM.encrypt(192, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.from(header.iv!, 'base64url'), Buffer.alloc(0), cek, 16);
+            header.tag = authenticationTag.toString('base64url');
+            return cipherText;
+        }
+
+        case JWEAlgorithm.A256GCMKW: {
+            const { cipherText, authenticationTag } = AESGCM.encrypt(256, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.from(header.iv!, 'base64url'), Buffer.alloc(0), cek, 16);
+            header.tag = authenticationTag.toString('base64url');
+            return cipherText;
+        }
     }
 
     throw new JWTError(`Unsupported algorithm: ${alg}`);
@@ -419,13 +455,13 @@ function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, enc: JWEEncryption,
             );
 
         case JWEAlgorithm.A128KW:
-            return AESKW.decrypt(128, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key));
+            return AESKW.decrypt(128, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.alloc(8, 0xa6));
 
         case JWEAlgorithm.A192KW:
-            return AESKW.decrypt(192, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key));
+            return AESKW.decrypt(192, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.alloc(8, 0xa6));
 
         case JWEAlgorithm.A256KW:
-            return AESKW.decrypt(256, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key));
+            return AESKW.decrypt(256, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.alloc(8, 0xa6));
 
         case JWEAlgorithm.dir:
             // Direct encryption uses the key as the CEK (trim the key to the appropriate length)
@@ -436,13 +472,34 @@ function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, enc: JWEEncryption,
             return generateCEK(alg, enc, header, key, header.epk ?? null)[0];
 
         case JWEAlgorithm["ECDH-ES+A128KW"]:
-            return AESKW.decrypt(128, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key));
+            return AESKW.decrypt(128, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.alloc(8, 0xa6));
 
         case JWEAlgorithm["ECDH-ES+A192KW"]:
-            return AESKW.decrypt(192, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key));
+            return AESKW.decrypt(192, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.alloc(8, 0xa6));
 
         case JWEAlgorithm["ECDH-ES+A256KW"]:
-            return AESKW.decrypt(256, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key));
+            return AESKW.decrypt(256, encryptedKey, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.alloc(8, 0xa6));
+
+        case JWEAlgorithm.A128GCMKW:
+            if (!header.tag || !header.iv) {
+                throw new JWTError('Invalid header');
+            }
+
+            return AESGCM.decrypt(128, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.from(header.iv!, 'base64url'), Buffer.alloc(0), encryptedKey, Buffer.from(header.tag!, 'base64url'), 16);
+
+        case JWEAlgorithm.A192GCMKW:
+            if (!header.tag || !header.iv) {
+                throw new JWTError('Invalid header');
+            }
+
+            return AESGCM.decrypt(192, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.from(header.iv!, 'base64url'), Buffer.alloc(0), encryptedKey, Buffer.from(header.tag!, 'base64url'), 16);
+
+        case JWEAlgorithm.A256GCMKW:
+            if (!header.tag || !header.iv) {
+                throw new JWTError('Invalid header');
+            }
+
+            return AESGCM.decrypt(256, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.from(header.iv!, 'base64url'), Buffer.alloc(0), encryptedKey, Buffer.from(header.tag!, 'base64url'), 16);
     }
 
     throw new JWTError(`Unsupported algorithm: ${alg}`);
@@ -451,13 +508,13 @@ function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, enc: JWEEncryption,
 function encrypt(plainText: Buffer, cek: Buffer, iv: Buffer, aad: Buffer, enc: JWEEncryption): { cipherText: Buffer; authenticationTag: Buffer; } {
     switch (enc) {
         case JWEEncryption.A128GCM:
-            return AESGCM.encrypt(128, cek, iv, aad, plainText);
+            return AESGCM.encrypt(128, cek, iv, aad, plainText, 16);
 
         case JWEEncryption.A192GCM:
-            return AESGCM.encrypt(192, cek, iv, aad, plainText);
+            return AESGCM.encrypt(192, cek, iv, aad, plainText, 16);
 
         case JWEEncryption.A256GCM:
-            return AESGCM.encrypt(256, cek, iv, aad, plainText);
+            return AESGCM.encrypt(256, cek, iv, aad, plainText, 16);
 
         case JWEEncryption["A128CBC-HS256"]:
             return AESHMAC.encrypt(128, 256, cek, iv, aad, plainText);
@@ -475,13 +532,13 @@ function encrypt(plainText: Buffer, cek: Buffer, iv: Buffer, aad: Buffer, enc: J
 function decrypt(cipherText: Buffer, cek: Buffer, iv: Buffer, aad: Buffer, authenticationTag: Buffer, enc: JWEEncryption): Buffer {
     switch (enc) {
         case JWEEncryption.A128GCM:
-            return AESGCM.decrypt(128, cek, iv, aad, cipherText, authenticationTag);
+            return AESGCM.decrypt(128, cek, iv, aad, cipherText, authenticationTag, 16);
 
         case JWEEncryption.A192GCM:
-            return AESGCM.decrypt(192, cek, iv, aad, cipherText, authenticationTag);
+            return AESGCM.decrypt(192, cek, iv, aad, cipherText, authenticationTag, 16);
 
         case JWEEncryption.A256GCM:
-            return AESGCM.decrypt(256, cek, iv, aad, cipherText, authenticationTag);
+            return AESGCM.decrypt(256, cek, iv, aad, cipherText, authenticationTag, 16);
 
         case JWEEncryption["A128CBC-HS256"]:
             return AESHMAC.decrypt(128, 256, cek, iv, aad, cipherText, authenticationTag);

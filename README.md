@@ -11,20 +11,28 @@ Midori is an opinionated Web API Framework designed for Node.js, using Node.js's
 - [x] Service Providers
 - [x] Config Providers
 - [x] Logger
-- [x] Scheduler
+    - [x] Console
+    - [x] File
+- [x] Task Scheduler
 - [x] JWT
- - [x] JWS
- - [x] JWE
- - [x] JWK
+    - [x] JWS
+    - [x] JWE
+    - [x] JWK
 - [x] CORS
 - [x] Static Files
 - [x] Body Parser
-  - [x] JSON BigInt support
-- [x] Hashing (Scrypt, PBKDF2) using native Node.js `node:crypto` module
+    - [x] JSON BigInt support
+- [x] Hashing using native Node.js `node:crypto` module
+    - [x] PBKDF2
+    - [x] Scrypt
+    - [x] SHA-256
+    - [x] SHA-512
 - [x] Basic Validation
 
 ## Roadmap
 - [ ] Tests
+    - [x] JWE
+    - [x] JWS
 - [ ] Documentation
 - [ ] Rate Limiting
 
@@ -130,6 +138,8 @@ const isTheSame = await Scrypt.verify(hash, 'password');
 ```
 - `PBKDF2` - Hash Service class using PBKDF2 algorithm.
 - `Scrypt` - Hash Service class using Scrypt algorithm.
+- `SHA256` - Hash Service class using SHA-256 algorithm.
+- `SHA512` - Hash Service class using SHA-512 algorithm.
 
 ### midori/http
 The HTTP module is responsible for handling HTTP requests and responses.

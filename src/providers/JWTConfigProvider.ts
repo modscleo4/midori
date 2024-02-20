@@ -23,7 +23,7 @@ export type JWTConfig = {
     sign?: {
         /** Algorithm to be used. Possible values: HS256, HS384, HS512, RS256, RS384, RS512, ES256, ES384, ES512, PS256, PS384, PS512. */
         alg: string;
-        /** Secret to be used for HS* algorithms. */
+        /** Secret to be used for HS* algorithms. Read as hex-encoded. */
         secret?: string;
         /** Private key file to be used for RS* and PS* algorithms. */
         privateKeyFile?: string;

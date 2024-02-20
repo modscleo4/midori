@@ -67,7 +67,7 @@ export default class JWT {
             const key: JWKPayload = ([JWSAlgorithm.HS256, JWSAlgorithm.HS384, JWSAlgorithm.HS512].includes(alg) ? <PayloadSymmetric> {
                 ...baseKey,
 
-                k: secret,
+                k: Buffer.from(secret!, 'hex').toString('base64url'),
             } : [JWSAlgorithm.RS256, JWSAlgorithm.RS384, JWSAlgorithm.RS512, JWSAlgorithm.PS256, JWSAlgorithm.PS384, JWSAlgorithm.PS512].includes(alg) ? <PayloadRSA> {
                 ...baseKey,
 
@@ -105,7 +105,7 @@ export default class JWT {
             }
 
             if (
-                [JWEAlgorithm.A128KW, JWEAlgorithm.A192KW, JWEAlgorithm.A256KW, JWEAlgorithm.dir].includes(alg)
+                [JWEAlgorithm.A128KW, JWEAlgorithm.A192KW, JWEAlgorithm.A256KW, JWEAlgorithm.dir, JWEAlgorithm.A128GCMKW, JWEAlgorithm.A192GCMKW, JWEAlgorithm.A256GCMKW].includes(alg)
                 && !secret
             ) {
                 throw new Error('Secret is required for this algorithm');
@@ -126,7 +126,7 @@ export default class JWT {
             const key: JWKPayload = ([JWEAlgorithm.A128KW, JWEAlgorithm.A192KW, JWEAlgorithm.A256KW, JWEAlgorithm.dir].includes(alg) ? <PayloadSymmetric> {
                 ...baseKey,
 
-                k: Buffer.from(secret!, 'utf8').toString('base64url'),
+                k: Buffer.from(secret!, 'hex').toString('base64url'),
             } : [JWEAlgorithm.RSA1_5, JWEAlgorithm['RSA-OAEP'], JWEAlgorithm['RSA-OAEP-256']].includes(alg) ? <PayloadRSA> {
                 ...baseKey,
 
