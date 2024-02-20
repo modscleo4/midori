@@ -25,7 +25,7 @@ export default class AESHMAC {
         const encKey = cek.subarray(aesVersion / 8, cek.length);
 
         const cipher = createCipheriv(`aes-${aesVersion}-cbc`, encKey, iv);
-        const cipherText = cipher.update(plainText);
+        const cipherText = Buffer.concat([cipher.update(plainText), cipher.final()]);
 
         const al = Buffer.alloc(8);
         al.writeBigUInt64BE(BigInt(aad.length * 8), 0);
@@ -52,12 +52,12 @@ export default class AESHMAC {
         hmac.update(hmacInput);
         const expectedAuthenticationTag = hmac.digest();
 
-        if (!expectedAuthenticationTag.subarray(0, hmac.digest().length / 2).equals(authenticationTag)) {
+        if (!expectedAuthenticationTag.subarray(0, expectedAuthenticationTag.length / 2).equals(authenticationTag)) {
             throw new Error('Invalid authentication tag');
         }
 
         const decipher = createDecipheriv(`aes-${aesVersion}-cbc`, encKey, iv);
-        const plainText = decipher.update(cipherText);
+        const plainText = Buffer.concat([decipher.update(cipherText), decipher.final()]);
 
         return plainText;
     }

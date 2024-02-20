@@ -16,33 +16,33 @@
 
 import { Transform } from "node:stream";
 import { promisify } from "node:util";
-import { createGzip, createGunzip, gzip, gunzip, gzipSync, gunzipSync } from "node:zlib";
+import { createDeflateRaw, createInflateRaw, deflateRaw, deflateRawSync, inflateRaw, inflateRawSync } from "node:zlib";
 
-export default class Gzip {
+export default class DeflateRaw {
     static async compress(data: Buffer, level: number = 5): Promise<Buffer> {
-        return await promisify(gzip)(data, { level });
+        return await promisify(deflateRaw)(data, { level });
     }
 
     static async decompress(data: Buffer): Promise<Buffer> {
-        return await promisify(gunzip)(data);
+        return await promisify(inflateRaw)(data);
     }
 
     static compressSync(data: Buffer, level: number = 5): Buffer {
-        return gzipSync(data, { level });
+        return deflateRawSync(data, { level });
     }
 
     static decompressSync(data: Buffer): Buffer {
-        return gunzipSync(data);
+        return inflateRawSync(data);
     }
 
     static compressStream(level: number = 5): Transform {
-        const stream = createGzip({ level });
+        const stream = createDeflateRaw({ level });
 
         return stream;
     }
 
     static decompressStream(): Transform {
-        const stream = createGunzip();
+        const stream = createInflateRaw();
 
         return stream;
     }

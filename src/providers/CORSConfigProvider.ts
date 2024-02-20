@@ -34,7 +34,7 @@ export type CORSConfig = {
 };
 
 export abstract class CORSConfigProvider extends ConfigProvider<CORSConfig> {
-    static config: symbol = Symbol('midori::CORS');
+    static override config: symbol = Symbol('midori::CORS');
 }
 
 export default function CORSConfigProviderFactory(options: CORSConfig): Constructor<CORSConfigProvider> & { [K in keyof typeof CORSConfigProvider]: typeof CORSConfigProvider[K] } {

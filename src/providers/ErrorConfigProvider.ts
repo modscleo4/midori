@@ -24,7 +24,7 @@ export type ErrorConfig = {
 };
 
 export abstract class ErrorConfigProvider extends ConfigProvider<ErrorConfig> {
-    static config: symbol = Symbol('midori::Error');
+    static override config: symbol = Symbol('midori::Error');
 }
 
 export default function ErrorConfigProviderFactory(options: ErrorConfig): Constructor<ErrorConfigProvider> & { [K in keyof typeof ErrorConfigProvider]: typeof ErrorConfigProvider[K] } {

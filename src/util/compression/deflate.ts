@@ -16,7 +16,7 @@
 
 import { Transform } from "node:stream";
 import { promisify } from "node:util";
-import { createDeflate, createInflate, deflate, inflate } from "node:zlib";
+import { createDeflate, createInflate, deflate, deflateSync, inflate, inflateSync } from "node:zlib";
 
 export default class Deflate {
     static async compress(data: Buffer, level: number = 5): Promise<Buffer> {
@@ -25,6 +25,14 @@ export default class Deflate {
 
     static async decompress(data: Buffer): Promise<Buffer> {
         return await promisify(inflate)(data);
+    }
+
+    static compressSync(data: Buffer, level: number = 5): Buffer {
+        return deflateSync(data, { level });
+    }
+
+    static decompressSync(data: Buffer): Buffer {
+        return inflateSync(data);
     }
 
     static compressStream(level: number = 5): Transform {

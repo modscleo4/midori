@@ -13,7 +13,7 @@
         "alwaysStrict": true,
         "pretty": true,
         "experimentalDecorators": true,
-        "outDir": "./dist",
+        "outDir": "./test",
         "skipLibCheck": true,
         "noImplicitReturns": true,
         "noImplicitAny": true,
@@ -23,10 +23,9 @@
         "strictNullChecks": true
     },
     "include": [
-        "src/**/*"
+        "src/**/*.spec.ts"
     ],
     "exclude": [
-        "node_modules",
-        "**/*.spec.ts"
+        "node_modules"
     ]
 }

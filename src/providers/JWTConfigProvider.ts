@@ -42,7 +42,7 @@ export type JWTConfig = {
 };
 
 export abstract class JWTConfigProvider extends ConfigProvider<JWTConfig> {
-    static config: symbol = Symbol('midori::JWT');
+    static override config: symbol = Symbol('midori::JWT');
 }
 
 export default function JWTConfigProviderFactory(options: JWTConfig): Constructor<JWTConfigProvider> & { [K in keyof typeof JWTConfigProvider]: typeof JWTConfigProvider[K] } {

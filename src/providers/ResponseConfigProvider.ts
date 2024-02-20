@@ -42,7 +42,7 @@ export type ResponseConfig = {
 };
 
 export abstract class ResponseConfigProvider extends ConfigProvider<ResponseConfig> {
-    static config: symbol = Symbol('midori::Response');
+    static override config: symbol = Symbol('midori::Response');
 }
 
 export default function ResponseConfigProviderFactory(options: ResponseConfig): Constructor<ResponseConfigProvider> & { [K in keyof typeof ResponseConfigProvider]: typeof ResponseConfigProvider[K] } {

@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-import { createECDH, createPrivateKey, createPublicKey, generateKeyPairSync, subtle } from "node:crypto";
-import { PayloadEC } from "../jwk.js";
-import { privateKeyToRaw, publicKeyToRaw } from "../asn1.js";
+import { createECDH, createPrivateKey, createPublicKey, generateKeyPairSync } from "node:crypto";
 
+import { privateKeyToRaw, publicKeyToRaw } from "../asn1.js";
+import { PayloadEC } from "../jwk.js";
+
+/**
+ * Elliptic Curve Diffie-Hellman, as used by JWE.
+ */
 export default class ECDH {
     static generateEphemeralKey(crv: string): PayloadEC {
         const { publicKey, privateKey } = generateKeyPairSync('ec', {
@@ -32,7 +36,7 @@ export default class ECDH {
             namedCurve: crv,
         });
 
-        return createPublicKey(publicKey).export({ format: 'jwk' }) as PayloadEC;
+        return createPrivateKey(privateKey).export({ format: 'jwk' }) as PayloadEC;
     }
 
     /**

@@ -14,36 +14,49 @@
  * limitations under the License.
  */
 
-import { createPrivateKey } from "node:crypto";
+import { createPrivateKey, createPublicKey } from "node:crypto";
 
 import { Payload as JWKPayload, PayloadEC, PayloadRSA, PayloadSymmetric } from "./jwk.js";
 import { Payload } from "./jwt.js";
+import JWTError from "../errors/JWTError.js";
 import ECDSA from "./crypt/ecdsa.js";
 import HMAC from "./crypt/hmac.js";
 import RSA from "./crypt/rsa.js";
 import RSAPSS from "./crypt/rsapss.js";
-import JWTError from "../errors/JWTError.js";
 
 /**
  * JWS Algorithms
  */
 export enum JWSAlgorithm {
+    /** HMAC using SHA-256 */
     HS256 = 'HS256',
+    /** HMAC using SHA-384 */
     HS384 = 'HS384',
+    /** HMAC using SHA-512 */
     HS512 = 'HS512',
 
+    /** RSASHA-PKCS1-v1_5 using SHA-256 */
     RS256 = 'RS256',
+    /** RSASHA-PKCS1-v1_5 using SHA-384 */
     RS384 = 'RS384',
+    /** RSASHA-PKCS1-v1_5 using SHA-512 */
     RS512 = 'RS512',
 
+    /** ECDSA using P-256 and SHA-256 */
     ES256 = 'ES256',
+    /** ECDSA using P-384 and SHA-384 */
     ES384 = 'ES384',
+    /** ECDSA using P-521 and SHA-512 */
     ES512 = 'ES512',
 
+    /** RSASSA-PSS using SHA-256 and MGF1 with SHA-256 */
     PS256 = 'PS256',
+    /** RSASSA-PSS using SHA-384 and MGF1 with SHA-384 */
     PS384 = 'PS384',
+    /** RSASSA-PSS using SHA-512 and MGF1 with SHA-512 */
     PS512 = 'PS512',
 
+    /** No digital signature or MAC performed */
     none = 'none',
 };
 
@@ -298,7 +311,7 @@ function verify(
 
             return RSA.verify(
                 256,
-                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPublicKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -310,7 +323,7 @@ function verify(
 
             return RSA.verify(
                 384,
-                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPublicKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -322,7 +335,7 @@ function verify(
 
             return RSA.verify(
                 512,
-                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPublicKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -334,7 +347,7 @@ function verify(
 
             return ECDSA.verify(
                 256,
-                createPrivateKey({ key: <PayloadEC> key, format: 'jwk' }),
+                createPublicKey({ key: <PayloadEC> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -346,7 +359,7 @@ function verify(
 
             return ECDSA.verify(
                 384,
-                createPrivateKey({ key: <PayloadEC> key, format: 'jwk' }),
+                createPublicKey({ key: <PayloadEC> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -358,7 +371,7 @@ function verify(
 
             return ECDSA.verify(
                 512,
-                createPrivateKey({ key: <PayloadEC> key, format: 'jwk' }),
+                createPublicKey({ key: <PayloadEC> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -370,7 +383,7 @@ function verify(
 
             return RSAPSS.verify(
                 256,
-                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPublicKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -382,7 +395,7 @@ function verify(
 
             return RSAPSS.verify(
                 384,
-                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPublicKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -394,7 +407,7 @@ function verify(
 
             return RSAPSS.verify(
                 512,
-                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPublicKey({ key: <PayloadRSA> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );

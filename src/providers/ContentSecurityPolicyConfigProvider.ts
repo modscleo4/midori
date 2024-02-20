@@ -50,7 +50,7 @@ export type ContentSecurityPolicyConfig = {
 };
 
 export abstract class ContentSecurityPolicyConfigProvider extends ConfigProvider<ContentSecurityPolicyConfig> {
-    static config: symbol = Symbol('midori::ContentSecurityPolicy');
+    static override config: symbol = Symbol('midori::ContentSecurityPolicy');
 }
 
 export default function ContentSecurityPolicyConfigProviderFactory(options: ContentSecurityPolicyConfig): Constructor<ContentSecurityPolicyConfigProvider> & { [K in keyof typeof ContentSecurityPolicyConfigProvider]: typeof ContentSecurityPolicyConfigProvider[K] } {

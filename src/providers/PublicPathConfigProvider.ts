@@ -31,7 +31,7 @@ export type PublicPathConfig = {
 };
 
 export abstract class PublicPathConfigProvider extends ConfigProvider<PublicPathConfig> {
-    static config: symbol = Symbol('midori::PublicPath');
+    static override config: symbol = Symbol('midori::PublicPath');
 }
 
 export default function PublicPathConfigProviderFactory(options: PublicPathConfig): Constructor<PublicPathConfigProvider> & { [K in keyof typeof PublicPathConfigProvider]: typeof PublicPathConfigProvider[K] } {

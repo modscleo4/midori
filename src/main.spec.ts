@@ -14,23 +14,9 @@
  * limitations under the License.
  */
 
-import { randomUUID } from "node:crypto";
+import { describe, it } from 'node:test';
 
-/**
- * Generate a UUID v4
- */
-export function generateUUID(): string {
-    return randomUUID();
-}
-
-/**
- * Validate a UUID
- *
- * @param uuid UUID to validate
- * @param version UUID version to validate (-1 to ignore)
- */
-export function validateUUID(uuid: string, version: number = 4): boolean {
-    if (uuid.length !== 36) return false;
-
-    return /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(uuid) && (version == -1 ? true : parseInt(uuid[14], 16) === version);
-}
+describe('Util', async () => {
+    await import('./util/jws.spec.js');
+    await import('./util/jwe.spec.js');
+});

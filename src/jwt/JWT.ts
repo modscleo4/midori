@@ -20,7 +20,7 @@ import { createPrivateKey, createPublicKey } from "node:crypto";
 import { Payload as JWKPayload, PayloadEC, PayloadRSA, PayloadSymmetric } from "../util/jwk.js";
 import { Payload as JWTPayload } from "../util/jwt.js";
 import { signJWT, verifyJWS, JWSAlgorithm } from "../util/jws.js";
-import { decryptJWE, encryptJWT, JWEAlgorithm, JWEEncryption } from "../util/jwe.js";
+import { cekLength, decryptJWE, encryptJWT, JWEAlgorithm, JWEEncryption } from "../util/jwe.js";
 import { generateUUID } from "../util/uuid.js";
 import { JWTConfig } from "../providers/JWTConfigProvider.js";
 
@@ -43,6 +43,10 @@ export default class JWT {
             const alg = JWSAlgorithm[config.sign.alg as keyof typeof JWSAlgorithm];
             const secret = config.sign.secret || null;
             const privateKey = config.sign.privateKeyFile ? readFileSync(config.sign.privateKeyFile, { encoding: 'utf8' }) : null;
+
+            if (alg === JWSAlgorithm.none) {
+                throw new Error('Algorithm "none" is not supported');
+            }
 
             if (![JWSAlgorithm.HS256, JWSAlgorithm.HS384, JWSAlgorithm.HS512].includes(alg) && !privateKey) {
                 throw new Error('Private key is required for this algorithm');
@@ -107,8 +111,8 @@ export default class JWT {
                 throw new Error('Secret is required for this algorithm');
             }
 
-            if (alg === JWEAlgorithm.dir && secret!.length !== 32) {
-                throw new Error('Secret must be 32 bytes long for this algorithm');
+            if (alg === JWEAlgorithm.dir && secret!.length !== cekLength(enc) / 8) {
+                throw new Error(`Secret must be ${cekLength(enc) / 8} bytes long for this algorithm`);
             }
 
             const baseKey: JWKPayload = {

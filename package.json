@@ -17,7 +17,8 @@
     "clean": "tsc -b --clean",
     "build": "tsc && npm run postbuild",
     "postbuild": "node bin/postbuild.js",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test": "tsc -p tsconfig.test.json && node test/main.spec.js"
   },
   "files": [
     "bin/",

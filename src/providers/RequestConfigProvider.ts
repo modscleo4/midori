@@ -24,7 +24,7 @@ export type RequestConfig = {
 };
 
 export abstract class RequestConfigProvider extends ConfigProvider<RequestConfig> {
-    static config: symbol = Symbol('midori::Request');
+    static override config: symbol = Symbol('midori::Request');
 }
 
 export default function RequestConfigProviderFactory(options: RequestConfig): Constructor<RequestConfigProvider> & { [K in keyof typeof RequestConfigProvider]: typeof RequestConfigProvider[K] } {
