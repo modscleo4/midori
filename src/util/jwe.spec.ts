@@ -47,6 +47,9 @@ describe('JWE', () => {
         const DirectKeyRaw = Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'utf8');
         const DirectKey = { kty: 'oct', k: DirectKeyRaw.toString('base64url') };
 
+        const PBES2SymmetricKeyRaw = Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'utf8');
+        const PBES2SymmetricKey = { kty: 'oct', k: PBES2SymmetricKeyRaw.toString('base64url') };
+
         const { publicKey: ECDSAPublicKeyPEM, privateKey: ECDSAPrivateKeyPEM } = generateKeyPairSync('ec', { namedCurve: 'P-256', publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'sec1', format: 'pem' } });
         const ECDSAPublicKey = createPublicKey(ECDSAPublicKeyPEM).export({ format: 'jwk' });
         const ECDSAPrivateKey = createPrivateKey(ECDSAPrivateKeyPEM).export({ format: 'jwk' });
@@ -722,6 +725,150 @@ describe('JWE', () => {
             const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['A256GCMKW'], JWEEncryption["A256GCM"], AES256SymmetricKey);
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
+
+        it('should encrypt a JWT using PBES2-HS256+A128KW and A128CBC-HS256 and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A128CBC-HS256"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A128CBC-HS256"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS256+A128KW and A192CBC-HS384 and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A192CBC-HS384"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A192CBC-HS384"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS256+A128KW and A256CBC-HS512 and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A256CBC-HS512"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A256CBC-HS512"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS256+A128KW and A128GCM and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A128GCM"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A128GCM"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS256+A128KW and A192GCM and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A192GCM"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A192GCM"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS256+A128KW and A256GCM and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A256GCM"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A256GCM"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS384+A192KW and A128CBC-HS256 and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A128CBC-HS256"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A128CBC-HS256"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS384+A192KW and A192CBC-HS384 and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A192CBC-HS384"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A192CBC-HS384"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS384+A192KW and A256CBC-HS512 and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A256CBC-HS512"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A256CBC-HS512"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS384+A192KW and A128GCM and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A128GCM"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A128GCM"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS384+A192KW and A192GCM and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A192GCM"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A192GCM"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS384+A192KW and A256GCM and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A256GCM"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A256GCM"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS512+A256KW and A128CBC-HS256 and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A128CBC-HS256"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A128CBC-HS256"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS512+A256KW and A192CBC-HS384 and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A192CBC-HS384"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A192CBC-HS384"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS512+A256KW and A256CBC-HS512 and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A256CBC-HS512"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A256CBC-HS512"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS512+A256KW and A128GCM and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A128GCM"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A128GCM"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS512+A256KW and A192GCM and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A192GCM"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A192GCM"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
+
+        it('should encrypt a JWT using PBES2-HS512+A256KW and A256GCM and decrypt it', () => {
+            const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A256GCM"], PBES2SymmetricKey);
+            strictEqual(typeof jwe, 'string');
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A256GCM"], PBES2SymmetricKey);
+            strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
+        });
     });
 
     describe('Decrypt known JWEs', () => {
@@ -832,6 +979,45 @@ describe('JWE', () => {
             const jwe = 'eyJhbGciOiJBMjU2R0NNS1ciLCJlbmMiOiJBMjU2R0NNIiwidGFnIjoiVVhtb0dwbzI5V0o0MHNsWHZXc3FXUSIsIml2IjoiMVk3WWxPYjRTNjB1eVFrMyJ9.T7wX7Dt6WhPPkxUmrHgKLbQ3nscNiJ9laz31cwsPYsk.FbigNoLKXNgT_oKF.Sotu5vgQOcdt7gNA8l1lIUmwa-40z7tHWPb951XGjqemVMqcldaD4p_XhXQ.fVuNdAZDPun7KYjKsx06jw';
 
             const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['A256GCMKW'], JWEEncryption["A256GCM"], AES128SymmetricKey);
+
+            ok(plainText.equals(decryptedPayload));
+        });
+
+        it('should decrypt a known JWE using PBES2-HS512+A256KW and A128CBC-HS256', () => {
+            const PBES2SymmetricKey = {
+                kty: 'oct',
+                k: Buffer.from("entrap_o\xe2\x80\x93peter_long\xe2\x80\x93credit_tun", 'ascii').toString('base64url')
+            };
+
+            const plainText = Buffer.from(JSON.stringify({
+                keys: [
+                    {
+                        kty: 'oct',
+                        kid: '77c7e2b8-6e13-45cf-8672-617b5b45243a',
+                        use: 'enc',
+                        alg: 'A128GCM',
+                        k: 'XctOhJAkA-pD9Lh7ZgW_2A'
+                    },
+                    {
+                        kty: 'oct',
+                        kid: '81b20965-8332-43d9-a468-82160ad91ac8',
+                        use: 'enc',
+                        alg: 'A128KW',
+                        k: 'GZy6sIZ6wl9NJOKB-jnmVQ'
+                    },
+                    {
+                        kty: 'oct',
+                        kid: '18ec08e1-bfa9-4d95-b205-2b4dd1d4321d',
+                        use: 'enc',
+                        alg: 'A256GCMKW',
+                        k: 'qC57l_uxcm7Nm3K-ct4GFjx8tM1U8CZ0NLBvdQstiS8'
+                    }
+                ]
+            }), 'utf8');
+
+            const jwe = 'eyJhbGciOiJQQkVTMi1IUzUxMitBMjU2S1ciLCJwMnMiOiI4UTFTemluYXNSM3hjaFl6NlpaY0hBIiwicDJjIjo4MTkyLCJjdHkiOiJqd2stc2V0K2pzb24iLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.d3qNhUWfqheyPp4H8sjOWsDYajoej4c5Je6rlUtFPWdgtURtmeDV1g.VBiCzVHNoLiR3F4V82uoTQ.23i-Tb1AV4n0WKVSSgcQrdg6GRqsUKxjruHXYsTHAJLZ2nsnGIX86vMXqIi6IRsfywCRFzLxEcZBRnTvG3nhzPk0GDD7FMyXhUHpDjEYCNA_XOmzg8yZR9oyjo6lTF6si4q9FZ2EhzgFQCLO_6h5EVg3vR75_hkBsnuoqoM3dwejXBtIodN84PeqMb6asmas_dpSsz7H10fC5ni9xIz424givB1YLldF6exVmL93R3fOoOJbmk2GBQZL_SEGllv2cQsBgeprARsaQ7Bq99tT80coH8ItBjgV08AtzXFFsx9qKvC982KLKdPQMTlVJKkqtV4Ru5LEVpBZXBnZrtViSOgyg6AiuwaS-rCrcD_ePOGSuxvgtrokAKYPqmXUeRdjFJwafkYEkiuDCV9vWGAi1DH2xTafhJwcmywIyzi4BqRpmdn_N-zl5tuJYyuvKhjKv6ihbsV_k1hJGPGAxJ6wUpmwC4PTQ2izEm0TuSE8oMKdTw8V3kobXZ77ulMwDs4p.0HlwodAhOCILG5SQ2LQ9dg';
+
+            const decryptedPayload = decryptJWE(jwe, JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A128CBC-HS256"], PBES2SymmetricKey);
 
             ok(plainText.equals(decryptedPayload));
         });

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { constants, createPrivateKey, createPublicKey, privateDecrypt, publicEncrypt, randomBytes } from "node:crypto";
+import { constants, createPrivateKey, createPublicKey, privateDecrypt, publicEncrypt, randomBytes, pbkdf2Sync } from "node:crypto";
 
 import { Payload as JWKPayload, PayloadEC, PayloadRSA, PayloadSymmetric } from "./jwk.js";
 import { encodeBufferWithLength, encodeUInt32BE } from "./buffer.js";
@@ -132,6 +132,12 @@ export type Header = {
 
     /** Authentication Tag */
     tag?: string,
+
+    /** PBES2 Salt Input */
+    p2s?: string,
+
+    /** PBES2 Count */
+    p2c?: number,
 };
 
 /**
@@ -339,6 +345,14 @@ function generateHeaderParams(alg: JWEAlgorithm, enc: JWEEncryption, ephemeralKe
                 iv: randomBytes(96 / 8).toString('base64url'),
                 tag: '', // This will be generated later
             };
+
+        case JWEAlgorithm["PBES2-HS256+A128KW"]:
+        case JWEAlgorithm["PBES2-HS384+A192KW"]:
+        case JWEAlgorithm["PBES2-HS512+A256KW"]:
+            return {
+                p2s: randomBytes(16).toString('base64url'),
+                p2c: 4096,
+            };
     }
 
     return {};
@@ -419,6 +433,15 @@ function encryptCEK(cek: Buffer, alg: JWEAlgorithm, key: JWKPayload, header: Hea
             header.tag = authenticationTag.toString('base64url');
             return cipherText;
         }
+
+        case JWEAlgorithm["PBES2-HS256+A128KW"]:
+            return AESKW.encrypt(128, cek, pbkdf2Sync(deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.concat([Buffer.from('PBES2-HS256+A128KW', 'utf8'), Buffer.from([0]), Buffer.from(header.p2s!, 'base64url')]), header.p2c!, 16, 'sha256'), Buffer.alloc(8, 0xa6));
+
+        case JWEAlgorithm["PBES2-HS384+A192KW"]:
+            return AESKW.encrypt(192, cek, pbkdf2Sync(deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.concat([Buffer.from('PBES2-HS384+A192KW', 'utf8'), Buffer.from([0]), Buffer.from(header.p2s!, 'base64url')]), header.p2c!, 24, 'sha384'), Buffer.alloc(8, 0xa6));
+
+        case JWEAlgorithm["PBES2-HS512+A256KW"]:
+            return AESKW.encrypt(256, cek, pbkdf2Sync(deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.concat([Buffer.from('PBES2-HS512+A256KW', 'utf8'), Buffer.from([0]), Buffer.from(header.p2s!, 'base64url')]), header.p2c!, 32, 'sha512'), Buffer.alloc(8, 0xa6));
     }
 
     throw new JWTError(`Unsupported algorithm: ${alg}`);
@@ -500,6 +523,15 @@ function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, enc: JWEEncryption,
             }
 
             return AESGCM.decrypt(256, deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.from(header.iv!, 'base64url'), Buffer.alloc(0), encryptedKey, Buffer.from(header.tag!, 'base64url'), 16);
+
+        case JWEAlgorithm["PBES2-HS256+A128KW"]:
+            return AESKW.decrypt(128, encryptedKey, pbkdf2Sync(deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.concat([Buffer.from('PBES2-HS256+A128KW', 'utf8'), Buffer.from([0]), Buffer.from(header.p2s!, 'base64url')]), header.p2c!, 16, 'sha256'), Buffer.alloc(8, 0xa6));
+
+        case JWEAlgorithm["PBES2-HS384+A192KW"]:
+            return AESKW.decrypt(192, encryptedKey, pbkdf2Sync(deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.concat([Buffer.from('PBES2-HS384+A192KW', 'utf8'), Buffer.from([0]), Buffer.from(header.p2s!, 'base64url')]), header.p2c!, 24, 'sha384'), Buffer.alloc(8, 0xa6));
+
+        case JWEAlgorithm["PBES2-HS512+A256KW"]:
+            return AESKW.decrypt(256, encryptedKey, pbkdf2Sync(deserializeSymmetricKey(<PayloadSymmetric> key), Buffer.concat([Buffer.from('PBES2-HS512+A256KW', 'utf8'), Buffer.from([0]), Buffer.from(header.p2s!, 'base64url')]), header.p2c!, 32, 'sha512'), Buffer.alloc(8, 0xa6));
     }
 
     throw new JWTError(`Unsupported algorithm: ${alg}`);

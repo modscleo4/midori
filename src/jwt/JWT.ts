@@ -105,7 +105,7 @@ export default class JWT {
             }
 
             if (
-                [JWEAlgorithm.A128KW, JWEAlgorithm.A192KW, JWEAlgorithm.A256KW, JWEAlgorithm.dir, JWEAlgorithm.A128GCMKW, JWEAlgorithm.A192GCMKW, JWEAlgorithm.A256GCMKW].includes(alg)
+                [JWEAlgorithm.A128KW, JWEAlgorithm.A192KW, JWEAlgorithm.A256KW, JWEAlgorithm.dir, JWEAlgorithm.A128GCMKW, JWEAlgorithm.A192GCMKW, JWEAlgorithm.A256GCMKW, JWEAlgorithm["PBES2-HS256+A128KW"], JWEAlgorithm["PBES2-HS384+A192KW"], JWEAlgorithm["PBES2-HS512+A256KW"]].includes(alg)
                 && !secret
             ) {
                 throw new Error('Secret is required for this algorithm');
