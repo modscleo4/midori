@@ -17,13 +17,13 @@
 import { createECDH, createPrivateKey, createPublicKey, generateKeyPairSync } from "node:crypto";
 
 import { privateKeyToRaw, publicKeyToRaw } from "../asn1.js";
-import { PayloadEC } from "../jwk.js";
+import { ECPublicKey, ECPrivateKey } from "../jwk.js";
 
 /**
  * Elliptic Curve Diffie-Hellman, as used by JWE.
  */
 export default class ECDH {
-    static generateEphemeralKey(crv: string): PayloadEC {
+    static generateEphemeralKey(crv: string): ECPrivateKey {
         const { publicKey, privateKey } = generateKeyPairSync('ec', {
             publicKeyEncoding: {
                 format: 'pem',
@@ -36,17 +36,17 @@ export default class ECDH {
             namedCurve: crv,
         });
 
-        return createPrivateKey(privateKey).export({ format: 'jwk' }) as PayloadEC;
+        return createPrivateKey(privateKey).export({ format: 'jwk' }) as ECPrivateKey;
     }
 
     /**
      * Derives a shared secret from a private and a public key. Uses the crypto.subtle API.
      */
-    static deriveSharedSecret(privateKey: PayloadEC, publicKey: PayloadEC): Buffer {
+    static deriveSharedSecret(privateKey: ECPrivateKey, publicKey: ECPublicKey): Buffer {
         const privKey = createPrivateKey({ format: 'jwk', key: privateKey });
         const pubKey  = createPublicKey({ format: 'jwk', key: publicKey });
 
-        const ecdh = createECDH(ECDH.getCurveName(privateKey.crv!));
+        const ecdh = createECDH(ECDH.getCurveName(privateKey.crv));
         ecdh.setPrivateKey(privateKeyToRaw(privKey));
 
         return ecdh.computeSecret(publicKeyToRaw(pubKey));

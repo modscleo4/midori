@@ -30,17 +30,17 @@ export default class ContentLengthMiddleware extends Middleware {
             if (!res.isStream) { // Calculate Content-Length for non-stream responses
                 res.headers.set('Content-Length', res.length);
             } else if (req.method === 'HEAD') { // Calculate Content-Length for HEAD requests
-                await new Promise<void>((resolve, reject) => {
-                    let bodyLength = 0;
-                    const body = res.body;
+                const bodyLength = await new Promise<number>((resolve, reject) => {
+                    let len = 0;
 
-                    body.on('data', chunk => bodyLength += chunk.length);
-                    body.on('close', () => {
-                        res.headers.set('Content-Length', bodyLength);
-                        resolve();
+                    res.body.on('data', chunk => len += chunk.length);
+                    res.body.on('close', () => {
+                        resolve(len);
                     });
-                    body.on('error', reject);
+                    res.body.on('error', reject);
                 });
+
+                res.headers.set('Content-Length', bodyLength);
             }
         }
 

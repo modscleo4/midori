@@ -20,7 +20,7 @@ import { createHash, createPrivateKey, createPublicKey, generateKeyPairSync, ran
 
 import { encryptJWT, decryptJWE, JWEAlgorithm, JWEEncryption, Header } from './jwe.js';
 import { Payload as JWTPayload } from './jwt.js';
-import { PayloadEC, PayloadSymmetric } from './jwk.js';
+import { SymmetricKey, ECPublicKey, ECPrivateKey, RSAPublicKey, RSAPrivateKey } from './jwk.js';
 
 describe('JWE', () => {
     describe('Decrypt after encrypt', () => {
@@ -32,27 +32,27 @@ describe('JWE', () => {
         };
 
         const { publicKey: RSAPublicKeyPEM, privateKey: RSAPrivateKeyPEM } = generateKeyPairSync('rsa', { modulusLength: 2048, publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'pkcs8', format: 'pem' } });
-        const RSAPublicKey = createPublicKey(RSAPublicKeyPEM).export({ format: 'jwk' });
-        const RSAPrivateKey = createPrivateKey(RSAPrivateKeyPEM).export({ format: 'jwk' });
+        const RSAPublicKey = createPublicKey(RSAPublicKeyPEM).export({ format: 'jwk' }) as RSAPublicKey;
+        const RSAPrivateKey = createPrivateKey(RSAPrivateKeyPEM).export({ format: 'jwk' }) as RSAPrivateKey;
 
         const AES128SymmetricKeyRaw = randomBytes(16);
-        const AES128SymmetricKey = { kty: 'oct', k: AES128SymmetricKeyRaw.toString('base64url') };
+        const AES128SymmetricKey: SymmetricKey = { kty: 'oct', k: AES128SymmetricKeyRaw.toString('base64url') };
 
         const AES192SymmetricKeyRaw = randomBytes(24);
-        const AES192SymmetricKey = { kty: 'oct', k: AES192SymmetricKeyRaw.toString('base64url') };
+        const AES192SymmetricKey: SymmetricKey = { kty: 'oct', k: AES192SymmetricKeyRaw.toString('base64url') };
 
         const AES256SymmetricKeyRaw = randomBytes(32);
-        const AES256SymmetricKey = { kty: 'oct', k: AES256SymmetricKeyRaw.toString('base64url') };
+        const AES256SymmetricKey: SymmetricKey = { kty: 'oct', k: AES256SymmetricKeyRaw.toString('base64url') };
 
         const DirectKeyRaw = Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'utf8');
-        const DirectKey = { kty: 'oct', k: DirectKeyRaw.toString('base64url') };
+        const DirectKey: SymmetricKey = { kty: 'oct', k: DirectKeyRaw.toString('base64url') };
 
         const PBES2SymmetricKeyRaw = Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'utf8');
-        const PBES2SymmetricKey = { kty: 'oct', k: PBES2SymmetricKeyRaw.toString('base64url') };
+        const PBES2SymmetricKey: SymmetricKey = { kty: 'oct', k: PBES2SymmetricKeyRaw.toString('base64url') };
 
         const { publicKey: ECDSAPublicKeyPEM, privateKey: ECDSAPrivateKeyPEM } = generateKeyPairSync('ec', { namedCurve: 'P-256', publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'sec1', format: 'pem' } });
-        const ECDSAPublicKey = createPublicKey(ECDSAPublicKeyPEM).export({ format: 'jwk' });
-        const ECDSAPrivateKey = createPrivateKey(ECDSAPrivateKeyPEM).export({ format: 'jwk' });
+        const ECDSAPublicKey = createPublicKey(ECDSAPublicKeyPEM).export({ format: 'jwk' }) as ECPublicKey;
+        const ECDSAPrivateKey = createPrivateKey(ECDSAPrivateKeyPEM).export({ format: 'jwk' }) as ECPrivateKey;
 
         it('should encrypt a JWT using RSA-1_5 and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA1_5'], JWEEncryption["A128CBC-HS256"], RSAPublicKey);
@@ -873,7 +873,7 @@ describe('JWE', () => {
 
     describe('Decrypt known JWEs', () => {
         it('should decrypt a known JWE using RSA-OAEP and A256GCM', () => {
-            const RSAPrivateKey = {
+            const RSAPrivateKey: RSAPrivateKey = {
                 kty: 'RSA',
                 n: 'oahUIoWw0K0usKNuOR6H4wkf4oBUXHTxRvgb48E-BVvxkeDNjbC4he8rUWcJoZmds2h7M70imEVhRU5djINXtqllXI4DFqcI1DgjT9LewND8MW2Krf3Spsk_ZkoFnilakGygTwpZ3uesH-PFABNIUYpOiN15dsQRkgr0vEhxN92i2asbOenSZeyaxziK72UwxrrKoExv6kc5twXTq4h-QChLOln0_mtUZwfsRaMStPs6mS6XrgxnxbWhojf663tuEQueGC-FCMfra36C9knDFGzKsNa7LZK2djYgyD3JR_MB_4NUJW_TqOQtwHYbxevoJArm-L5StowjzGy-_bq6Gw',
                 e: 'AQAB',
@@ -895,7 +895,7 @@ describe('JWE', () => {
         });
 
         it('should decrypt a known JWE using RSA-1_5 and A128CBC-HS256', () => {
-            const RSAPrivateKey = {
+            const RSAPrivateKey: RSAPrivateKey = {
                 kty: 'RSA',
                 n: 'sXchDaQebHnPiGvyDOAT4saGEUetSyo9MKLOoWFsueri23bOdgWp4Dy1WlUzewbgBHod5pcM9H95GQRV3JDXboIRROSBigeC5yjU1hGzHHyXss8UDprecbAYxknTcQkhslANGRUZmdTOQ5qTRsLAt6BTYuyvVRdhS8exSZEy_c4gs_7svlJJQ4H9_NxsiIoLwAEk7-Q3UXERGYw_75IDrGA84-lA_-Ct4eTlXHBIY2EaV7t7LjJaynVJCpkv4LKjTTAumiGUIuQhrNhZLuF_RJLqHpM2kgWFLU7-VTdL1VbC2tejvcI2BlMkEpk1BzBZI0KQB0GaDWFLN-aEAw3vRw',
                 e: 'AQAB',
@@ -917,7 +917,7 @@ describe('JWE', () => {
         });
 
         it('should decrypt a known JWE using A128KW and A128CBC-HS256', () => {
-            const AES256SymmetricKey = {
+            const AES256SymmetricKey: SymmetricKey = {
                 kty: 'oct',
                 k: 'GawgguFyGrWKav7AX4VKUg'
             };
@@ -932,7 +932,7 @@ describe('JWE', () => {
         });
 
         it('should decrypt a known JWE using ECDH-ES and A256GCM', () => {
-            const ECDSAPrivateKey: PayloadEC = {
+            const ECDSAPrivateKey: ECPrivateKey = {
                 kty: 'EC',
                 crv: 'P-256',
                 x: 'gI0GAILBdu7T53akrFmMyGcsF3n5dO7MmwNBHKW5SV0',
@@ -950,7 +950,7 @@ describe('JWE', () => {
         });
 
         it('should decrypt a known JWE using ECDH-ES+A128KW and A128GCM', () => {
-            const ECDSAPrivateKey: PayloadEC = {
+            const ECDSAPrivateKey: ECPrivateKey = {
                 kty: 'EC',
                 crv: 'P-256',
                 key_ops: ['deriveKey', 'deriveBits'],
@@ -969,7 +969,7 @@ describe('JWE', () => {
         });
 
         it('should decrypt a known JWE using A256GCMKW and A256GCM', () => {
-            const AES128SymmetricKey: PayloadSymmetric = {
+            const AES128SymmetricKey: SymmetricKey = {
                 kty: 'oct',
                 k: createHash('sha256').update(Buffer.from('asdfgasdfgasdfgasdfgasdfgasdfgasdfgasdfg', 'utf8')).digest().toString('base64url'),
             };
@@ -984,7 +984,7 @@ describe('JWE', () => {
         });
 
         it('should decrypt a known JWE using PBES2-HS512+A256KW and A128CBC-HS256', () => {
-            const PBES2SymmetricKey = {
+            const PBES2SymmetricKey: SymmetricKey = {
                 kty: 'oct',
                 k: Buffer.from("entrap_o\xe2\x80\x93peter_long\xe2\x80\x93credit_tun", 'ascii').toString('base64url')
             };

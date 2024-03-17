@@ -17,7 +17,7 @@
 import { readFileSync } from "node:fs";
 import { createPrivateKey, createPublicKey } from "node:crypto";
 
-import { Payload as JWKPayload, PayloadEC, PayloadRSA, PayloadSymmetric } from "../util/jwk.js";
+import { SymmetricKey, JWK, RSAPrivateKey, ECPrivateKey, BaseKey } from "../util/jwk.js";
 import { Payload as JWTPayload } from "../util/jwt.js";
 import { signJWT, verifyJWS, JWSAlgorithm } from "../util/jws.js";
 import { cekLength, decryptJWE, encryptJWT, JWEAlgorithm, JWEEncryption } from "../util/jwe.js";
@@ -30,12 +30,12 @@ import { JWTConfig } from "../providers/JWTConfigProvider.js";
 export default class JWT {
     #sign?: {
         alg: JWSAlgorithm;
-        key: JWKPayload;
+        key: JWK;
     };
     #encrypt?: {
         alg: JWEAlgorithm;
         enc: JWEEncryption;
-        key: JWKPayload;
+        key: JWK;
     };
 
     constructor(config: JWTConfig) {
@@ -56,27 +56,35 @@ export default class JWT {
                 throw new Error('Secret is required for this algorithm');
             }
 
-            const baseKey: JWKPayload = {
+            const key: JWK | null = ([JWSAlgorithm.HS256, JWSAlgorithm.HS384, JWSAlgorithm.HS512].includes(alg) ? <SymmetricKey> {
                 kty: 'oct',
                 use: 'sig',
                 key_ops: ['sign', 'verify'],
                 alg,
                 kid: generateUUID(),
-            };
-
-            const key: JWKPayload = ([JWSAlgorithm.HS256, JWSAlgorithm.HS384, JWSAlgorithm.HS512].includes(alg) ? <PayloadSymmetric> {
-                ...baseKey,
 
                 k: Buffer.from(secret!, 'hex').toString('base64url'),
-            } : [JWSAlgorithm.RS256, JWSAlgorithm.RS384, JWSAlgorithm.RS512, JWSAlgorithm.PS256, JWSAlgorithm.PS384, JWSAlgorithm.PS512].includes(alg) ? <PayloadRSA> {
-                ...baseKey,
+            } : [JWSAlgorithm.RS256, JWSAlgorithm.RS384, JWSAlgorithm.RS512, JWSAlgorithm.PS256, JWSAlgorithm.PS384, JWSAlgorithm.PS512].includes(alg) ? <RSAPrivateKey> {
+                kty: 'RSA',
+                use: 'sig',
+                key_ops: ['sign', 'verify'],
+                alg,
+                kid: generateUUID(),
 
                 ...createPrivateKey(privateKey!).export({ format: 'jwk' })
-            } : [JWSAlgorithm.ES256, JWSAlgorithm.ES384, JWSAlgorithm.ES512].includes(alg) ? <PayloadEC> {
-                ...baseKey,
+            } : [JWSAlgorithm.ES256, JWSAlgorithm.ES384, JWSAlgorithm.ES512].includes(alg) ? <ECPrivateKey> {
+                kty: 'EC',
+                use: 'sig',
+                key_ops: ['sign', 'verify'],
+                alg,
+                kid: generateUUID(),
 
                 ...createPrivateKey(privateKey!).export({ format: 'jwk' })
-            } : baseKey);
+            } : null);
+
+            if (!key) {
+                throw new Error('Invalid algorithm');
+            }
 
             this.#sign = {
                 alg,
@@ -115,27 +123,35 @@ export default class JWT {
                 throw new Error(`Secret must be ${cekLength(enc) / 8} bytes long for this algorithm`);
             }
 
-            const baseKey: JWKPayload = {
+            const key: JWK | null = ([JWEAlgorithm.A128KW, JWEAlgorithm.A192KW, JWEAlgorithm.A256KW, JWEAlgorithm.dir].includes(alg) ? <SymmetricKey> {
                 kty: 'oct',
-                use: 'sig',
-                key_ops: ['sign', 'verify'],
+                use: 'enc',
+                key_ops: ['encrypt', 'decrypt'],
                 alg,
                 kid: generateUUID(),
-            };
-
-            const key: JWKPayload = ([JWEAlgorithm.A128KW, JWEAlgorithm.A192KW, JWEAlgorithm.A256KW, JWEAlgorithm.dir].includes(alg) ? <PayloadSymmetric> {
-                ...baseKey,
 
                 k: Buffer.from(secret!, 'hex').toString('base64url'),
-            } : [JWEAlgorithm.RSA1_5, JWEAlgorithm['RSA-OAEP'], JWEAlgorithm['RSA-OAEP-256']].includes(alg) ? <PayloadRSA> {
-                ...baseKey,
+            } : [JWEAlgorithm.RSA1_5, JWEAlgorithm['RSA-OAEP'], JWEAlgorithm['RSA-OAEP-256']].includes(alg) ? <RSAPrivateKey> {
+                kty: 'RSA',
+                use: 'enc',
+                key_ops: ['encrypt', 'decrypt'],
+                alg,
+                kid: generateUUID(),
 
                 ...createPrivateKey(privateKey!).export({ format: 'jwk' })
-            } : [JWEAlgorithm['ECDH-ES'], JWEAlgorithm['ECDH-ES+A128KW'], JWEAlgorithm['ECDH-ES+A192KW'], JWEAlgorithm['ECDH-ES+A256KW']].includes(alg) ? <PayloadEC> {
-                ...baseKey,
+            } : [JWEAlgorithm['ECDH-ES'], JWEAlgorithm['ECDH-ES+A128KW'], JWEAlgorithm['ECDH-ES+A192KW'], JWEAlgorithm['ECDH-ES+A256KW']].includes(alg) ? <ECPrivateKey> {
+                kty: 'EC',
+                use: 'enc',
+                key_ops: ['encrypt', 'decrypt'],
+                alg,
+                kid: generateUUID(),
 
                 ...createPrivateKey(privateKey!).export({ format: 'jwk' })
-            } : baseKey);
+            } : null);
+
+            if (!key) {
+                throw new Error('Invalid algorithm');
+            }
 
             this.#encrypt = {
                 alg,
@@ -185,19 +201,19 @@ export default class JWT {
         }
     }
 
-    getPublicKeys(): JWKPayload[] {
-        const keys: JWKPayload[] = [];
+    getPublicKeys(): BaseKey[] {
+        const keys: BaseKey[] = [];
 
-        if (this.#sign?.key) {
+        if (this.#sign?.key && this.#sign.key.kty !== 'oct') { // DO NOT export symmetric keys (oct)
             const key = createPublicKey(createPrivateKey({ key: this.#sign.key, format: 'jwk' }));
 
-            keys.push({ ...key.export({ format: 'jwk' }), use: 'sig', kid: this.#sign.key.kid });
+            keys.push({ ...key.export({ format: 'jwk' }), kty: this.#sign.key.kty, use: 'sig', kid: this.#sign.key.kid });
         }
 
-        if (this.#encrypt?.key) {
+        if (this.#encrypt?.key && this.#encrypt.key.kty !== 'oct') { // DO NOT export symmetric keys (oct)
             const key = createPublicKey(createPrivateKey({ key: this.#encrypt.key, format: 'jwk' }));
 
-            keys.push({ ...key.export({ format: 'jwk' }), use: 'enc', kid: this.#encrypt.key.kid });
+            keys.push({ ...key.export({ format: 'jwk' }), kty: this.#encrypt.key.kty, use: 'enc', kid: this.#encrypt.key.kid });
         }
 
         return keys;

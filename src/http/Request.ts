@@ -46,7 +46,7 @@ export default class Request<T = unknown> extends IncomingMessage {
     init(app: Application) {
         this.#config = app.config.get(RequestConfigProvider);
 
-        const url = new URL(this.url ?? '', `http://${this.headers.host}`);
+        const url = new URL(this.url ?? '', `${this.headers['x-forwarded-proto'] ?? 'http'}://${this.headers.host}`);
 
         this.#query = url.searchParams;
         this.#path = url.pathname;
@@ -86,8 +86,8 @@ export default class Request<T = unknown> extends IncomingMessage {
             return;
         }
 
-        this.headers.cookie.split(';').forEach((cookie) => {
-            const [key, value] = cookie.split('=');
+        this.headers.cookie.split(';').forEach(cookie => {
+            const [key, value] = cookie.split('=', 2);
             this.#cookies.set(key.trim(), value.trim());
         });
     }
@@ -99,7 +99,7 @@ export default class Request<T = unknown> extends IncomingMessage {
         }
 
         const mimeTypes = this.headers.accept.split(',').map((algorithm) => {
-            const [mimeType, q] = algorithm.split(';');
+            const [mimeType, q] = algorithm.split(';', 2);
             return {
                 mimeType: mimeType.trim(),
                 q: q ? parseFloat(q.replace('q=', '')) : 1,

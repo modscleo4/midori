@@ -16,7 +16,7 @@
 
 import { createPrivateKey, createPublicKey } from "node:crypto";
 
-import { Payload as JWKPayload, PayloadEC, PayloadRSA, PayloadSymmetric } from "./jwk.js";
+import { ECPublicKey, RSAPublicKey, ECPrivateKey, RSAPrivateKey, SymmetricKey, JWK } from "./jwk.js";
 import { Payload } from "./jwt.js";
 import JWTError from "../errors/JWTError.js";
 import ECDSA from "./crypt/ecdsa.js";
@@ -82,7 +82,7 @@ export type Header = {
 export function signJWT(
     payload: Payload,
     alg: JWSAlgorithm,
-    key: JWKPayload,
+    key: JWK,
 ): string {
     const header: Header = {
         alg: JWSAlgorithm[alg],
@@ -107,7 +107,7 @@ export function signJWT(
 export function verifyJWS(
     token: string,
     alg: JWSAlgorithm,
-    key: JWKPayload,
+    key: JWK,
 ): boolean {
     const [headerBase64, payloadBase64, signature] = token.split('.');
 
@@ -129,39 +129,39 @@ function sign(
     headerBase64: string,
     payloadBase64: string,
     alg: JWSAlgorithm,
-    key: JWKPayload,
+    key: JWK,
 ): string {
     switch (alg) {
         case JWSAlgorithm.HS256:
-            if (!(<PayloadSymmetric> key).k) {
+            if (!(<SymmetricKey> key).k) {
                 throw new JWTError('Missing secret');
             }
 
             return HMAC.sign(
                 256,
-                Buffer.from((<PayloadSymmetric> key).k!, 'base64url'),
+                Buffer.from((<SymmetricKey> key).k!, 'base64url'),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWSAlgorithm.HS384:
-            if (!(<PayloadSymmetric> key).k) {
+            if (!(<SymmetricKey> key).k) {
                 throw new JWTError('Missing secret');
             }
 
             return HMAC.sign(
                 384,
-                Buffer.from((<PayloadSymmetric> key).k!, 'base64url'),
+                Buffer.from((<SymmetricKey> key).k!, 'base64url'),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
         case JWSAlgorithm.HS512:
-            if (!(<PayloadSymmetric> key).k!) {
+            if (!(<SymmetricKey> key).k!) {
                 throw new JWTError('Missing secret');
             }
 
             return HMAC.sign(
                 512,
-                Buffer.from((<PayloadSymmetric> key).k!, 'base64url'),
+                Buffer.from((<SymmetricKey> key).k!, 'base64url'),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
@@ -172,7 +172,7 @@ function sign(
 
             return RSA.sign(
                 256,
-                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPrivateKey({ key: <RSAPrivateKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
@@ -183,7 +183,7 @@ function sign(
 
             return RSA.sign(
                 384,
-                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPrivateKey({ key: <RSAPrivateKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
@@ -194,7 +194,7 @@ function sign(
 
             return RSA.sign(
                 512,
-                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPrivateKey({ key: <RSAPrivateKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
@@ -205,7 +205,7 @@ function sign(
 
             return ECDSA.sign(
                 256,
-                createPrivateKey({ key: <PayloadEC> key, format: 'jwk' }),
+                createPrivateKey({ key: <ECPrivateKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
@@ -216,7 +216,7 @@ function sign(
 
             return ECDSA.sign(
                 384,
-                createPrivateKey({ key: <PayloadEC> key, format: 'jwk' }),
+                createPrivateKey({ key: <ECPrivateKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
@@ -227,7 +227,7 @@ function sign(
 
             return ECDSA.sign(
                 512,
-                createPrivateKey({ key: <PayloadEC> key, format: 'jwk' }),
+                createPrivateKey({ key: <ECPrivateKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
@@ -238,7 +238,7 @@ function sign(
 
             return RSAPSS.sign(
                 256,
-                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPrivateKey({ key: <RSAPrivateKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
@@ -249,7 +249,7 @@ function sign(
 
             return RSAPSS.sign(
                 384,
-                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPrivateKey({ key: <RSAPrivateKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
 
@@ -260,7 +260,7 @@ function sign(
 
             return RSAPSS.sign(
                 512,
-                createPrivateKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPrivateKey({ key: <RSAPrivateKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8')
             ).toString('base64url');
     }
@@ -274,41 +274,41 @@ function verify(
     payloadBase64: string,
     signature: string,
     alg: JWSAlgorithm,
-    key: JWKPayload,
+    key: JWK,
 ): boolean {
     switch (alg) {
         case JWSAlgorithm.HS256:
-            if (!(<PayloadSymmetric> key).k) {
+            if (!(<SymmetricKey> key).k) {
                 throw new JWTError('Missing secret');
             }
 
             return HMAC.verify(
                 256,
-                Buffer.from((<PayloadSymmetric> key).k!, 'base64url'),
+                Buffer.from((<SymmetricKey> key).k!, 'base64url'),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
         case JWSAlgorithm.HS384:
-            if (!(<PayloadSymmetric> key).k) {
+            if (!(<SymmetricKey> key).k) {
                 throw new JWTError('Missing secret');
             }
 
             return HMAC.verify(
                 384,
-                Buffer.from((<PayloadSymmetric> key).k!, 'base64url'),
+                Buffer.from((<SymmetricKey> key).k!, 'base64url'),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
 
         case JWSAlgorithm.HS512:
-            if (!(<PayloadSymmetric> key).k) {
+            if (!(<SymmetricKey> key).k) {
                 throw new JWTError('Missing secret');
             }
 
             return HMAC.verify(
                 512,
-                Buffer.from((<PayloadSymmetric> key).k!, 'base64url'),
+                Buffer.from((<SymmetricKey> key).k!, 'base64url'),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -320,7 +320,7 @@ function verify(
 
             return RSA.verify(
                 256,
-                createPublicKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPublicKey({ key: <RSAPublicKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -332,7 +332,7 @@ function verify(
 
             return RSA.verify(
                 384,
-                createPublicKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPublicKey({ key: <RSAPublicKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -344,7 +344,7 @@ function verify(
 
             return RSA.verify(
                 512,
-                createPublicKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPublicKey({ key: <RSAPublicKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -356,7 +356,7 @@ function verify(
 
             return ECDSA.verify(
                 256,
-                createPublicKey({ key: <PayloadEC> key, format: 'jwk' }),
+                createPublicKey({ key: <ECPublicKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -368,7 +368,7 @@ function verify(
 
             return ECDSA.verify(
                 384,
-                createPublicKey({ key: <PayloadEC> key, format: 'jwk' }),
+                createPublicKey({ key: <ECPublicKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -380,7 +380,7 @@ function verify(
 
             return ECDSA.verify(
                 512,
-                createPublicKey({ key: <PayloadEC> key, format: 'jwk' }),
+                createPublicKey({ key: <ECPublicKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -392,7 +392,7 @@ function verify(
 
             return RSAPSS.verify(
                 256,
-                createPublicKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPublicKey({ key: <RSAPublicKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -404,7 +404,7 @@ function verify(
 
             return RSAPSS.verify(
                 384,
-                createPublicKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPublicKey({ key: <RSAPublicKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );
@@ -416,7 +416,7 @@ function verify(
 
             return RSAPSS.verify(
                 512,
-                createPublicKey({ key: <PayloadRSA> key, format: 'jwk' }),
+                createPublicKey({ key: <RSAPublicKey> key, format: 'jwk' }),
                 Buffer.from(headerBase64 + '.' + payloadBase64, 'utf8'),
                 Buffer.from(signature, 'base64url')
             );

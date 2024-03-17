@@ -21,7 +21,9 @@ import Hash from "./Hash.js";
 /**
  * SHA512 Hash implementation.
  *
- * Format: `$6$<digest>$<iterations>$<cost>$<salt>$<hash>`
+ * Format: `$6$<salt>$<hash>`
+ *
+ * Note: This should not be used for new applications.
  */
 
 export default class SHA512 extends Hash {
@@ -35,7 +37,7 @@ export default class SHA512 extends Hash {
     }
 
     override verify(hash: string, data: string | Buffer): boolean {
-        const [, version, salt] = hash.split('$', 7);
+        const [, version, salt] = hash.split('$', 4);
         if (version !== SHA512.version) {
             return false;
         }

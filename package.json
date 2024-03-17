@@ -1,6 +1,6 @@
 {
   "name": "midori",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Midori is a Node.js web API framework with minimal dependencies and based on PSR ideas.",
   "type": "module",
   "keywords": [

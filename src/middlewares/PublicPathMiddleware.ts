@@ -15,8 +15,9 @@
  */
 
 import { existsSync, statSync } from "node:fs";
-import { EStatusCode } from "../http/EStatusCode.js";
+import { join, normalize } from "node:path";
 
+import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
@@ -48,6 +49,11 @@ export class PublicPathMiddleware extends Middleware {
             return await next(req);
         }
 
+        // Don't allow path traversal
+        if (req.path.includes('..')) {
+            return Response.redirect(normalize(req.path));
+        }
+
         const indexFiles = this.options?.indexFiles ?? ['index.html'];
 
         // If the request ends with a slash, try to find an index file
@@ -74,7 +80,7 @@ export class PublicPathMiddleware extends Middleware {
     /** @internal */
     async tryFile(path: string): Promise<Response | false> {
         // Try to find a matching file in the public directory
-        const filename = this.options?.path + (!path.startsWith('/') ? '/' : '') + (path.endsWith('/') ? path.substring(0, path.length - 1) : path);
+        const filename = join(this.options?.path!, normalize(path));
 
         // If the file exists, return it
         if (existsSync(filename) && statSync(filename).isFile()) {

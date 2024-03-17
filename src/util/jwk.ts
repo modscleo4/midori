@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-export type Payload = {
+/**
+ * JSON Web Key (JWK) Base Payload.
+ */
+export type BaseKey = {
     /** Key type */
-    kty?: string,
+    kty: string,
 
     /** Public Key use */
     use?: 'sig' | 'enc',
@@ -43,28 +46,75 @@ export type Payload = {
     'x5t#S256'?: string,
 };
 
-export type PayloadEC = Payload & {
-    crv?: string,
-    x?: string,
+/**
+ * Represents an Elliptic Curve Public Key.
+ */
+export type ECPublicKey = BaseKey & {
+    kty: 'EC',
+
+    /** Curve */
+    crv: string,
+    /** X Coordinate */
+    x: string,
+    /** Y Coordinate */
     y?: string,
-
-    d?: string,
 };
 
-export type PayloadRSA = Payload & {
-    mod?: string,
-    exp?: string,
-
-    n?: string,
-    e?: string,
-    d?: string,
-    p?: string,
-    q?: string,
-    dp?: string,
-    dq?: string,
-    qi?: string,
+/**
+ * Represents an Elliptic Curve Private Key.
+ */
+export type ECPrivateKey = ECPublicKey & {
+    /** ECC Private Key */
+    d: string,
 };
 
-export type PayloadSymmetric = Payload & {
-    k?: string,
+/**
+ * Represents an RSA Public Key.
+ */
+export type RSAPublicKey = BaseKey & {
+    kty: 'RSA',
+
+    /** Modulus */
+    n: string,
+    /** Exponent */
+    e: string,
 };
+
+/**
+ * Represents an RSA Private Key.
+ */
+export type RSAPrivateKey = RSAPublicKey & {
+    /** Private Exponent */
+    d: string,
+    /** First Prime Factor */
+    p: string,
+    /** Second Prime Factor */
+    q: string,
+    /** First Factor CRT Exponent */
+    dp: string,
+    /** Second Factor CRT Exponent */
+    dq: string,
+    /** First CRT Coefficient */
+    qi: string,
+    /** Other Primes Info */
+    oth?: {
+        /** Prime Factor */
+        r: string,
+        /** Factor CRT Exponent */
+        d: string,
+        /** Factor CRT Coefficient */
+        t: string,
+    }[],
+};
+
+/**
+ * Represents a Symmetric Key.
+ */
+export type SymmetricKey = BaseKey & {
+    kty: 'oct',
+
+    /** Symmetric Key */
+    k: string,
+};
+
+export type JWK = ECPublicKey | ECPrivateKey | RSAPublicKey | RSAPrivateKey | SymmetricKey;

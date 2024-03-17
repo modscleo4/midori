@@ -20,6 +20,7 @@ import { createPrivateKey, createPublicKey, generateKeyPairSync, randomBytes } f
 
 import { signJWT, verifyJWS, JWSAlgorithm, Header } from './jws.js';
 import { Payload as JWTPayload } from './jwt.js';
+import { ECPrivateKey, ECPublicKey, RSAPrivateKey, RSAPublicKey, SymmetricKey } from './jwk.js';
 
 describe('JWS', () => {
     describe('Verify after sign', () => {
@@ -31,17 +32,17 @@ describe('JWS', () => {
         };
 
         const { publicKey: RSAPublicKeyPEM, privateKey: RSAPrivateKeyPEM } = generateKeyPairSync('rsa', { modulusLength: 2048, publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'pkcs8', format: 'pem' } });
-        const RSAPublicKey = createPublicKey(RSAPublicKeyPEM).export({ format: 'jwk' });
-        const RSAPrivateKey = createPrivateKey(RSAPrivateKeyPEM).export({ format: 'jwk' });
+        const RSAPublicKey = createPublicKey(RSAPublicKeyPEM).export({ format: 'jwk' }) as RSAPublicKey;
+        const RSAPrivateKey = createPrivateKey(RSAPrivateKeyPEM).export({ format: 'jwk' }) as RSAPrivateKey;
 
         const { publicKey: ECDSAPublicKeyPEM, privateKey: ECDSAPrivateKeyPEM } = generateKeyPairSync('ec', { namedCurve: 'P-256', publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'sec1', format: 'pem' } });
-        const ECDSAPublicKey = createPublicKey(ECDSAPublicKeyPEM).export({ format: 'jwk' });
-        const ECDSAPrivateKey = createPrivateKey(ECDSAPrivateKeyPEM).export({ format: 'jwk' });
+        const ECDSAPublicKey = createPublicKey(ECDSAPublicKeyPEM).export({ format: 'jwk' }) as ECPublicKey;
+        const ECDSAPrivateKey = createPrivateKey(ECDSAPrivateKeyPEM).export({ format: 'jwk' }) as ECPrivateKey;
 
         const HMACKeyRaw = Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'utf8');
-        const HMACKey = { kty: 'oct', k: HMACKeyRaw.toString('base64url') };
+        const HMACKey: SymmetricKey = { kty: 'oct', k: HMACKeyRaw.toString('base64url') };
 
-        it('should sign a JWT using HS256 and decrypt it', () => {
+        it('should sign a JWT using HS256 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['HS256'], HMACKey);
             strictEqual(typeof jws, 'string');
 
@@ -49,7 +50,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using HS384 and decrypt it', () => {
+        it('should sign a JWT using HS384 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['HS384'], HMACKey);
             strictEqual(typeof jws, 'string');
 
@@ -57,7 +58,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using HS512 and decrypt it', () => {
+        it('should sign a JWT using HS512 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['HS512'], HMACKey);
             strictEqual(typeof jws, 'string');
 
@@ -65,7 +66,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using RS256 and decrypt it', () => {
+        it('should sign a JWT using RS256 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['RS256'], RSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -73,7 +74,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using RS384 and decrypt it', () => {
+        it('should sign a JWT using RS384 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['RS384'], RSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -81,7 +82,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using RS512 and decrypt it', () => {
+        it('should sign a JWT using RS512 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['RS512'], RSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -89,7 +90,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using PS256 and decrypt it', () => {
+        it('should sign a JWT using PS256 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['PS256'], RSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -97,7 +98,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using PS384 and decrypt it', () => {
+        it('should sign a JWT using PS384 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['PS384'], RSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -105,7 +106,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using PS512 and decrypt it', () => {
+        it('should sign a JWT using PS512 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['PS512'], RSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -113,7 +114,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using ES256 and decrypt it', () => {
+        it('should sign a JWT using ES256 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['ES256'], ECDSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -121,7 +122,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using ES384 and decrypt it', () => {
+        it('should sign a JWT using ES384 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['ES384'], ECDSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -129,7 +130,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using ES512 and decrypt it', () => {
+        it('should sign a JWT using ES512 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['ES512'], ECDSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -140,7 +141,7 @@ describe('JWS', () => {
 
     describe('Verify known JWS', () => {
         it('should verify a known JWS using HS256', () => {
-            const HMACKey = {
+            const HMACKey: SymmetricKey = {
                 kty: 'oct',
                 k: 'AyM1SysPpbyDfgZld3umj1qzKObwVMkoqQ-EstJQLr_T-1qS0gZH75aKtMN3Yj0iPS4hcgUuTwjAzZr1Z9CAow'
             };
@@ -152,7 +153,7 @@ describe('JWS', () => {
         });
 
         it('should verify a known JWS using RS256', () => {
-            const RSAPrivateKey = {
+            const RSAPrivateKey: RSAPrivateKey = {
                 kty: 'RSA',
                 n: 'ofgWCuLjybRlzo0tZWJjNiuSfb4p4fAkd_wWJcyQoTbji9k0l8W26mPddxHmfHQp-Vaw-4qPCJrcS2mJPMEzP1Pt0Bm4d4QlL-yRT-SFd2lZS-pCgNMsD1W_YpRPEwOWvG6b32690r2jZ47soMZo9wGzjb_7OMg0LOL-bSf63kpaSHSXndS5z5rexMdbBYUsLA9e-KXBdQOS-UTo7WTBEMa2R2CapHg665xsmtdVMTBQY4uDZlxvb3qCo5ZwKh9kG4LT6_I5IhlJH7aGhyxXFvUK-DWNmoudF8NAco9_h9iaGNj8q2ethFkMLs91kzk2PAcDTW9gb54h4FRWyuXpoQ',
                 e: 'AQAB',
@@ -171,7 +172,7 @@ describe('JWS', () => {
         });
 
         it('should verify a known JWS using ES256', () => {
-            const ECDSAPrivateKey = {
+            const ECDSAPrivateKey: ECPrivateKey = {
                 kty: 'EC',
                 crv: 'P-256',
                 x: 'f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU',
@@ -186,7 +187,7 @@ describe('JWS', () => {
         });
 
         it('should verify a known JWS using ES512', () => {
-            const ECDSAPrivateKey = {
+            const ECDSAPrivateKey: ECPrivateKey = {
                 kty: 'EC',
                 crv: 'P-521',
                 x: 'AekpBQ8ST8a8VcfVOTNl353vSrDCLLJXmPk06wTjxrrjcBpXp5EOnYG_NjFZ6OvLFV1jSfS9tsz4qUxcWceqwQGk',
