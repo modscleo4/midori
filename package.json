@@ -1,5 +1,5 @@
 {
-  "name": "midori",
+  "name": "@modscleo4/midori",
   "version": "0.1.0",
   "description": "Midori is a Node.js web API framework with minimal dependencies and based on PSR ideas.",
   "type": "module",
@@ -27,7 +27,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/modscleo4/midori.git"
+    "url": "git+https://github.com/modscleo4/midori.git"
   },
   "exports": {
     "./app": {
