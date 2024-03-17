@@ -30,7 +30,7 @@ import DeflateRaw from "./compression/deflateRaw.js";
  * JWE Algorithms
  */
 export enum JWEAlgorithm {
-    /** RSAES-PKCS1-v1_5 */
+    /** RSAES-PKCS1-v1_5 @deprecated CVE-2023-46809 */
     RSA1_5 = 'RSA1_5',
     /** RSAES OAEP */
     "RSA-OAEP" = 'RSA-OAEP',
