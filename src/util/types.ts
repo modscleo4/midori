@@ -18,3 +18,15 @@
  * This is used as the same of 'typeof T', but when T is a abstract class
  */
 export type Constructor<T> = new (...args: any[]) => T;
+
+/**
+ * This is intended to be used as a TypeScript assertion function, without any runtime code.
+ * Use this function to assert conditions that TypeScript cannot infer but you know that are true.
+ *
+ * @param condition The condition to be asserted.
+ * @param message The message to be shown if the condition is false. This parameter is not used.
+ * @returns Nothing.
+ */
+export function fakeAssert(condition: boolean, message?: string): asserts condition {
+    //
+}

@@ -48,6 +48,10 @@ export class CORSMiddleware extends Middleware {
             res.withHeader('Access-Control-Allow-Headers', Array.isArray(this.options.headers) ? this.options.headers.join(', ') : this.options.headers);
         }
 
+        if (this.options?.credentials) {
+            res.withHeader('Access-Control-Allow-Credentials', 'true');
+        }
+
         if (this.options?.maxAge) {
             res.withHeader('Access-Control-Max-Age', this.options.maxAge);
         }

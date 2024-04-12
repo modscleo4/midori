@@ -16,7 +16,8 @@
 
 import { describe, it } from 'node:test';
 
-describe('Util', async () => {
+await describe('Util', async () => {
     await import('./util/jws.spec.js');
     await import('./util/jwe.spec.js');
+    await import('./util/uuid.spec.js');
 });

@@ -20,7 +20,7 @@ import { CipherKey, createCipheriv, createDecipheriv } from 'crypto';
  * Advanced Encryption Standard Key Wrap (AESKW) algorithm, as used in JWE.
  */
 export default class AESKW {
-    static encrypt(aesVersion: 128 | 192 | 256, cek: Buffer, key: CipherKey, iv: Buffer): Buffer {
+    static encrypt(aesVersion: 128 | 192 | 256, cek: Buffer, key: CipherKey, iv: Buffer = Buffer.alloc(8, 0xa6)): Buffer {
         const cipher = createCipheriv(`id-aes${aesVersion}-wrap`, key, iv);
         const encrypted = cipher.update(cek);
         cipher.final();
@@ -28,7 +28,7 @@ export default class AESKW {
         return encrypted;
     }
 
-    static decrypt(aesVersion: 128 | 192 | 256, encrypted: Buffer, key: CipherKey, iv: Buffer): Buffer {
+    static decrypt(aesVersion: 128 | 192 | 256, encrypted: Buffer, key: CipherKey, iv: Buffer = Buffer.alloc(8, 0xa6)): Buffer {
         const decipher = createDecipheriv(`id-aes${aesVersion}-wrap`, key, iv);
         const decrypted = decipher.update(encrypted);
         decipher.final();

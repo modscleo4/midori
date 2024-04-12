@@ -87,3 +87,140 @@ export enum EStatusCode {
     NOT_EXTENDED = 510,
     NETWORK_AUTHENTICATION_REQUIRED = 511
 }
+
+export function titleFromStatus(status: number): string | null {
+    switch (status) {
+        case EStatusCode.CONTINUE:
+            return 'Continue';
+        case EStatusCode.SWITCHING_PROTOCOLS:
+            return 'Switching Protocols';
+        case EStatusCode.PROCESSING:
+            return 'Processing';
+        case EStatusCode.EARLY_HINTS:
+            return 'Early Hints';
+
+        case EStatusCode.OK:
+            return 'OK';
+        case EStatusCode.CREATED:
+            return 'Created';
+        case EStatusCode.ACCEPTED:
+            return 'Accepted';
+        case EStatusCode.NON_AUTHORITATIVE_INFORMATION:
+            return 'Non-Authoritative Information';
+        case EStatusCode.NO_CONTENT:
+            return 'No Content';
+        case EStatusCode.RESET_CONTENT:
+            return 'Reset Content';
+        case EStatusCode.PARTIAL_CONTENT:
+            return 'Partial Content';
+        case EStatusCode.MULTI_STATUS:
+            return 'Multi-Status';
+        case EStatusCode.ALREADY_REPORTED:
+            return 'Already Reported';
+        case EStatusCode.IM_USED:
+            return 'IM Used';
+
+        case EStatusCode.MULTIPLE_CHOICES:
+            return 'Multiple Choices';
+        case EStatusCode.MOVED_PERMANENTLY:
+            return 'Moved Permanently';
+        case EStatusCode.FOUND:
+            return 'Found';
+        case EStatusCode.SEE_OTHER:
+            return 'See Other';
+        case EStatusCode.NOT_MODIFIED:
+            return 'Not Modified';
+        case EStatusCode.USE_PROXY:
+            return 'Use Proxy';
+        case EStatusCode.SWITCH_PROXY:
+            return 'Switch Proxy';
+        case EStatusCode.TEMPORARY_REDIRECT:
+            return 'Temporary Redirect';
+        case EStatusCode.PERMANENT_REDIRECT:
+            return 'Permanent Redirect';
+
+        case EStatusCode.BAD_REQUEST:
+            return 'Bad Request';
+        case EStatusCode.UNAUTHORIZED:
+            return 'Unauthorized';
+        case EStatusCode.PAYMENT_REQUIRED:
+            return 'Payment Required';
+        case EStatusCode.FORBIDDEN:
+            return 'Forbidden';
+        case EStatusCode.NOT_FOUND:
+            return 'Not Found';
+        case EStatusCode.METHOD_NOT_ALLOWED:
+            return 'Method Not Allowed';
+        case EStatusCode.NOT_ACCEPTABLE:
+            return 'Not Acceptable';
+        case EStatusCode.PROXY_AUTHENTICATION_REQUIRED:
+            return 'Proxy Authentication Required';
+        case EStatusCode.REQUEST_TIMEOUT:
+            return 'Request Timeout';
+        case EStatusCode.CONFLICT:
+            return 'Conflict';
+        case EStatusCode.GONE:
+            return 'Gone';
+        case EStatusCode.LENGTH_REQUIRED:
+            return 'Length Required';
+        case EStatusCode.PRECONDITION_FAILED:
+            return 'Precondition Failed';
+        case EStatusCode.PAYLOAD_TOO_LARGE:
+            return 'Payload Too Large';
+        case EStatusCode.URI_TOO_LONG:
+            return 'URI Too Long';
+        case EStatusCode.UNSUPPORTED_MEDIA_TYPE:
+            return 'Unsupported Media Type';
+        case EStatusCode.RANGE_NOT_SATISFIABLE:
+            return 'Range Not Satisfiable';
+        case EStatusCode.EXPECTATION_FAILED:
+            return 'Expectation Failed';
+        case EStatusCode.I_AM_A_TEAPOT:
+            return 'I\'m a teapot';
+        case EStatusCode.MISDIRECTED_REQUEST:
+            return 'Misdirected Request';
+        case EStatusCode.UNPROCESSABLE_ENTITY:
+            return 'Unprocessable Entity';
+        case EStatusCode.LOCKED:
+            return 'Locked';
+        case EStatusCode.FAILED_DEPENDENCY:
+            return 'Failed Dependency';
+        case EStatusCode.TOO_EARLY:
+            return 'Too Early';
+        case EStatusCode.UPGRADE_REQUIRED:
+            return 'Upgrade Required';
+        case EStatusCode.PRECONDITION_REQUIRED:
+            return 'Precondition Required';
+        case EStatusCode.TOO_MANY_REQUESTS:
+            return 'Too Many Requests';
+        case EStatusCode.REQUEST_HEADER_FIELDS_TOO_LARGE:
+            return 'Request Header Fields Too Large';
+        case EStatusCode.UNAVAILABLE_FOR_LEGAL_REASONS:
+            return 'Unavailable For Legal Reasons';
+
+        case EStatusCode.INTERNAL_SERVER_ERROR:
+            return 'Internal Server Error';
+        case EStatusCode.NOT_IMPLEMENTED:
+            return 'Not Implemented';
+        case EStatusCode.BAD_GATEWAY:
+            return 'Bad Gateway';
+        case EStatusCode.SERVICE_UNAVAILABLE:
+            return 'Service Unavailable';
+        case EStatusCode.GATEWAY_TIMEOUT:
+            return 'Gateway Timeout';
+        case EStatusCode.HTTP_VERSION_NOT_SUPPORTED:
+            return 'HTTP Version Not Supported';
+        case EStatusCode.VARIANT_ALSO_NEGOTIATES:
+            return 'Variant Also Negotiates';
+        case EStatusCode.INSUFFICIENT_STORAGE:
+            return 'Insufficient Storage';
+        case EStatusCode.LOOP_DETECTED:
+            return 'Loop Detected';
+        case EStatusCode.NOT_EXTENDED:
+            return 'Not Extended';
+        case EStatusCode.NETWORK_AUTHENTICATION_REQUIRED:
+            return 'Network Authentication Required';
+    }
+
+    return null;
+}

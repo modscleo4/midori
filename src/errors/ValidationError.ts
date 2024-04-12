@@ -22,13 +22,6 @@ export default class ValidationError extends HTTPError {
         message: string = 'Some fields are invalid',
         status: number = 400,
     ) {
-        super(message, status);
-    }
-
-    override toJSON(): object {
-        return {
-            ...super.toJSON(),
-            errors: this.errors,
-        };
+        super(message, status, { errors });
     }
 }

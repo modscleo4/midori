@@ -44,23 +44,20 @@ export default class AuthBearerMiddleware extends Middleware {
 
     override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         if (!req.headers['authorization']) {
-            return Response.json({ message: 'Invalid Authorization header.' })
-                .withHeader('WWW-Authenticate', 'Bearer')
-                .withStatus(EStatusCode.UNAUTHORIZED);
+            return Response.problem('Invalid Authorization header.', 'No Authorization header provided.', EStatusCode.UNAUTHORIZED)
+                .withHeader('WWW-Authenticate', 'Bearer');
         }
 
         const [scheme, credentials] = req.headers['authorization'].split(' ', 2);
 
         if (scheme !== 'Bearer') {
-            return Response.json({ message: 'Invalid Authorization scheme.' })
-                .withHeader('WWW-Authenticate', 'Bearer')
-                .withStatus(EStatusCode.UNAUTHORIZED);
+            return Response.problem('Invalid Authorization header.', 'Only Bearer scheme is supported.', EStatusCode.UNAUTHORIZED)
+                .withHeader('WWW-Authenticate', 'Bearer');
         }
 
         if (!credentials || !this.#jwt.verify(credentials)) {
-            return Response.json({ message: 'Invalid Authorization credentials.' })
-                .withHeader('WWW-Authenticate', 'Bearer')
-                .withStatus(EStatusCode.UNAUTHORIZED);
+            return Response.problem('Invalid Authorization header.', 'Invalid token provided.', EStatusCode.UNAUTHORIZED)
+                .withHeader('WWW-Authenticate', 'Bearer');
         }
 
         const [, payloadBase64] = credentials.split('.');
@@ -68,9 +65,8 @@ export default class AuthBearerMiddleware extends Middleware {
         const payload = JSON.parse(Buffer.from(payloadBase64, 'base64url').toString());
 
         if (!await this.validateToken(req, payload)) {
-            return Response.json({ message: 'Invalid Authorization credentials.' })
-                .withHeader('WWW-Authenticate', 'Bearer')
-                .withStatus(EStatusCode.UNAUTHORIZED);
+            return Response.problem('Invalid Authorization header.', 'Invalid token provided.', EStatusCode.UNAUTHORIZED)
+                .withHeader('WWW-Authenticate', 'Bearer');
         }
 
         req.container.set(AuthBearerMiddleware.TokenKey, payload);

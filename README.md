@@ -19,15 +19,28 @@ Midori is an opinionated Web API Framework designed for Node.js, using Node.js's
     - [x] JWE
     - [x] JWK
 - [x] CORS
+- [x] Content Security Policy
 - [x] Static Files
-- [x] Body Parser
-    - [x] JSON BigInt support
+- [x] Response Compression using `node:zlib` module
+    - [x] Gzip
+    - [x] Deflate
+    - [x] Brotli
+- [x] Extensible Body Parser and Response Serializer
+    - [x] JSON+BigInt
+    - [x] CSV
+    - [x] Form
+    - [x] Multipart
+    - [x] Streams
 - [x] Hashing using native Node.js `node:crypto` module
     - [x] PBKDF2
     - [x] Scrypt
     - [x] SHA-256
     - [x] SHA-512
-- [x] Basic Validation
+- [x] Problem Details
+- [x] Request Validation
+- [x] Auth
+    - [x] Basic
+    - [x] Bearer
 
 ## Roadmap
 - [ ] Tests
@@ -149,7 +162,10 @@ The HTTP module is responsible for handling HTTP requests and responses.
 import { Application } from 'midori/app';
 import { Request, Response } from 'midori/http';
 
-const handler = async (req: Request, app: Application): Promise<Response> {
+const handler = async (
+    req: Request,
+    app: Application
+): Promise<Response> {
     // ...
 }
 ```
@@ -158,7 +174,11 @@ const handler = async (req: Request, app: Application): Promise<Response> {
 import { Application } from 'midori/app';
 import { Request, Response } from 'midori/http';
 
-const middleware = async (req: Request, next: (req: Request) => Promise<Response>, app: Application): Promise<Response> {
+const middleware = async (
+    req: Request,
+    next: (req: Request) => Promise<Response>,
+    app: Application
+): Promise<Response> {
     // ...
 }
 ```

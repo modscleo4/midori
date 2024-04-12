@@ -22,8 +22,8 @@ import { encryptJWT, decryptJWE, JWEAlgorithm, JWEEncryption, Header } from './j
 import { Payload as JWTPayload } from './jwt.js';
 import { SymmetricKey, ECPublicKey, ECPrivateKey, RSAPublicKey, RSAPrivateKey } from './jwk.js';
 
-describe('JWE', () => {
-    describe('Decrypt after encrypt', () => {
+await describe('JWE', async () => {
+    await describe('Decrypt after encrypt', async () => {
         const payload: JWTPayload = {
             iss: 'www.example.com',
             aud: 'www.example.com',
@@ -54,7 +54,7 @@ describe('JWE', () => {
         const ECDSAPublicKey = createPublicKey(ECDSAPublicKeyPEM).export({ format: 'jwk' }) as ECPublicKey;
         const ECDSAPrivateKey = createPrivateKey(ECDSAPrivateKeyPEM).export({ format: 'jwk' }) as ECPrivateKey;
 
-        it('should encrypt a JWT using RSA-1_5 and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-1_5 and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA1_5'], JWEEncryption["A128CBC-HS256"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -62,7 +62,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-1_5 and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-1_5 and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA1_5'], JWEEncryption["A192CBC-HS384"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -70,7 +70,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-1_5 and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-1_5 and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA1_5'], JWEEncryption["A256CBC-HS512"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -78,7 +78,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-1_5 and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-1_5 and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA1_5'], JWEEncryption["A128GCM"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -86,7 +86,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-1_5 and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-1_5 and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA1_5'], JWEEncryption["A192GCM"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -94,7 +94,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-1_5 and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-1_5 and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA1_5'], JWEEncryption["A256GCM"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -102,7 +102,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-OAEP and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-OAEP and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA-OAEP'], JWEEncryption["A128CBC-HS256"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -110,7 +110,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-OAEP and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-OAEP and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA-OAEP'], JWEEncryption["A192CBC-HS384"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -118,7 +118,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-OAEP and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-OAEP and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA-OAEP'], JWEEncryption["A256CBC-HS512"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -126,7 +126,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-OAEP and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-OAEP and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA-OAEP'], JWEEncryption["A128GCM"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -134,7 +134,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-OAEP and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-OAEP and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA-OAEP'], JWEEncryption["A192GCM"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -142,7 +142,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-OAEP and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-OAEP and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA-OAEP'], JWEEncryption["A256GCM"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -150,7 +150,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-OAEP-256 and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-OAEP-256 and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA-OAEP-256'], JWEEncryption["A128CBC-HS256"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -158,7 +158,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-OAEP-256 and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-OAEP-256 and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA-OAEP-256'], JWEEncryption["A192CBC-HS384"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -166,7 +166,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-OAEP-256 and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-OAEP-256 and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA-OAEP-256'], JWEEncryption["A256CBC-HS512"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -174,7 +174,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-OAEP-256 and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-OAEP-256 and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA-OAEP-256'], JWEEncryption["A128GCM"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -182,7 +182,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-OAEP-256 and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-OAEP-256 and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA-OAEP-256'], JWEEncryption["A192GCM"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -190,7 +190,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using RSA-OAEP-256 and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using RSA-OAEP-256 and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['RSA-OAEP-256'], JWEEncryption["A256GCM"], RSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -198,7 +198,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A128KW and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using A128KW and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A128KW'], JWEEncryption["A128CBC-HS256"], AES128SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -206,7 +206,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A128KW and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using A128KW and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A128KW'], JWEEncryption["A192CBC-HS384"], AES128SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -214,7 +214,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A128KW and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using A128KW and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A128KW'], JWEEncryption["A256CBC-HS512"], AES128SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -222,7 +222,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A128KW and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A128KW and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A128KW'], JWEEncryption["A128GCM"], AES128SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -230,7 +230,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A128KW and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A128KW and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A128KW'], JWEEncryption["A192GCM"], AES128SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -238,7 +238,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A128KW and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A128KW and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A128KW'], JWEEncryption["A256GCM"], AES128SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -246,7 +246,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A192KW and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using A192KW and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A192KW'], JWEEncryption["A128CBC-HS256"], AES192SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -254,7 +254,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A192KW and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using A192KW and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A192KW'], JWEEncryption["A192CBC-HS384"], AES192SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -262,7 +262,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A192KW and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using A192KW and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A192KW'], JWEEncryption["A256CBC-HS512"], AES192SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -270,7 +270,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A192KW and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A192KW and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A192KW'], JWEEncryption["A128GCM"], AES192SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -278,7 +278,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A192KW and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A192KW and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A192KW'], JWEEncryption["A192GCM"], AES192SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -286,7 +286,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A192KW and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A192KW and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A192KW'], JWEEncryption["A256GCM"], AES192SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -294,7 +294,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A256KW and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using A256KW and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A256KW'], JWEEncryption["A128CBC-HS256"], AES256SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -302,7 +302,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A256KW and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using A256KW and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A256KW'], JWEEncryption["A192CBC-HS384"], AES256SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -310,7 +310,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A256KW and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using A256KW and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A256KW'], JWEEncryption["A256CBC-HS512"], AES256SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -318,7 +318,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A256KW and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A256KW and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A256KW'], JWEEncryption["A128GCM"], AES256SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -326,7 +326,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A256KW and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A256KW and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A256KW'], JWEEncryption["A192GCM"], AES256SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -334,7 +334,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A256KW and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A256KW and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A256KW'], JWEEncryption["A256GCM"], AES256SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -342,7 +342,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using dir and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using dir and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['dir'], JWEEncryption["A128CBC-HS256"], DirectKey);
             strictEqual(typeof jwe, 'string');
 
@@ -350,7 +350,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using dir and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using dir and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['dir'], JWEEncryption["A192CBC-HS384"], DirectKey);
             strictEqual(typeof jwe, 'string');
 
@@ -358,7 +358,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using dir and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using dir and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['dir'], JWEEncryption["A256CBC-HS512"], DirectKey);
             strictEqual(typeof jwe, 'string');
 
@@ -366,7 +366,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using dir and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using dir and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['dir'], JWEEncryption["A128GCM"], DirectKey);
             strictEqual(typeof jwe, 'string');
 
@@ -374,7 +374,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using dir and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using dir and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['dir'], JWEEncryption["A192GCM"], DirectKey);
             strictEqual(typeof jwe, 'string');
 
@@ -382,7 +382,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using dir and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using dir and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['dir'], JWEEncryption["A256GCM"], DirectKey);
             strictEqual(typeof jwe, 'string');
 
@@ -390,7 +390,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES'], JWEEncryption["A128CBC-HS256"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -398,7 +398,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES'], JWEEncryption["A192CBC-HS384"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -406,7 +406,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES'], JWEEncryption["A256CBC-HS512"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -414,7 +414,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES'], JWEEncryption["A128GCM"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -422,7 +422,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES'], JWEEncryption["A192GCM"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -430,7 +430,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES'], JWEEncryption["A256GCM"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -438,7 +438,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A128KW and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A128KW and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A128KW'], JWEEncryption["A128CBC-HS256"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -446,7 +446,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A128KW and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A128KW and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A128KW'], JWEEncryption["A192CBC-HS384"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -454,7 +454,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A128KW and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A128KW and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A128KW'], JWEEncryption["A256CBC-HS512"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -462,7 +462,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A128KW and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A128KW and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A128KW'], JWEEncryption["A128GCM"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -470,7 +470,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A128KW and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A128KW and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A128KW'], JWEEncryption["A192GCM"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -478,7 +478,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A128KW and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A128KW and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A128KW'], JWEEncryption["A256GCM"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -486,7 +486,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A192KW and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A192KW and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A192KW'], JWEEncryption["A128CBC-HS256"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -494,7 +494,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A192KW and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A192KW and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A192KW'], JWEEncryption["A192CBC-HS384"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -502,7 +502,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A192KW and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A192KW and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A192KW'], JWEEncryption["A256CBC-HS512"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -510,7 +510,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A192KW and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A192KW and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A192KW'], JWEEncryption["A128GCM"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -518,7 +518,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A192KW and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A192KW and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A192KW'], JWEEncryption["A192GCM"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -526,7 +526,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A192KW and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A192KW and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A192KW'], JWEEncryption["A256GCM"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -534,7 +534,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A256KW and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A256KW and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A256KW'], JWEEncryption["A128CBC-HS256"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -542,7 +542,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A256KW and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A256KW and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A256KW'], JWEEncryption["A192CBC-HS384"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -550,7 +550,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A256KW and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A256KW and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A256KW'], JWEEncryption["A256CBC-HS512"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -558,7 +558,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A256KW and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A256KW and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A256KW'], JWEEncryption["A128GCM"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -566,7 +566,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A256KW and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A256KW and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A256KW'], JWEEncryption["A192GCM"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -574,7 +574,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using ECDH-ES+A256KW and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using ECDH-ES+A256KW and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['ECDH-ES+A256KW'], JWEEncryption["A256GCM"], ECDSAPublicKey);
             strictEqual(typeof jwe, 'string');
 
@@ -582,7 +582,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A128GCMKW and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using A128GCMKW and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A128GCMKW'], JWEEncryption["A128CBC-HS256"], AES128SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -590,7 +590,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A128GCMKW and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using A128GCMKW and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A128GCMKW'], JWEEncryption["A192CBC-HS384"], AES128SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -598,7 +598,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A128GCMKW and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using A128GCMKW and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A128GCMKW'], JWEEncryption["A256CBC-HS512"], AES128SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -606,7 +606,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A128GCMKW and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A128GCMKW and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A128GCMKW'], JWEEncryption["A128GCM"], AES128SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -614,7 +614,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A128GCMKW and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A128GCMKW and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A128GCMKW'], JWEEncryption["A192GCM"], AES128SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -622,7 +622,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A128GCMKW and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A128GCMKW and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A128GCMKW'], JWEEncryption["A256GCM"], AES128SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -630,7 +630,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A192GCMKW and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using A192GCMKW and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A192GCMKW'], JWEEncryption["A128CBC-HS256"], AES192SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -638,7 +638,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A192GCMKW and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using A192GCMKW and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A192GCMKW'], JWEEncryption["A192CBC-HS384"], AES192SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -646,7 +646,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A192GCMKW and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using A192GCMKW and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A192GCMKW'], JWEEncryption["A256CBC-HS512"], AES192SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -654,7 +654,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A192GCMKW and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A192GCMKW and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A192GCMKW'], JWEEncryption["A128GCM"], AES192SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -662,7 +662,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A192GCMKW and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A192GCMKW and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A192GCMKW'], JWEEncryption["A192GCM"], AES192SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -670,7 +670,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A192GCMKW and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A192GCMKW and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A192GCMKW'], JWEEncryption["A256GCM"], AES192SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -678,7 +678,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A256GCMKW and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using A256GCMKW and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A256GCMKW'], JWEEncryption["A128CBC-HS256"], AES256SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -686,7 +686,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A256GCMKW and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using A256GCMKW and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A256GCMKW'], JWEEncryption["A192CBC-HS384"], AES256SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -694,7 +694,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A256GCMKW and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using A256GCMKW and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A256GCMKW'], JWEEncryption["A256CBC-HS512"], AES256SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -702,7 +702,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A256GCMKW and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A256GCMKW and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A256GCMKW'], JWEEncryption["A128GCM"], AES256SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -710,7 +710,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A256GCMKW and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A256GCMKW and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A256GCMKW'], JWEEncryption["A192GCM"], AES256SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -718,7 +718,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using A256GCMKW and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using A256GCMKW and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['A256GCMKW'], JWEEncryption["A256GCM"], AES256SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -726,7 +726,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS256+A128KW and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS256+A128KW and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A128CBC-HS256"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -734,7 +734,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS256+A128KW and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS256+A128KW and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A192CBC-HS384"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -742,7 +742,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS256+A128KW and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS256+A128KW and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A256CBC-HS512"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -750,7 +750,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS256+A128KW and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS256+A128KW and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A128GCM"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -758,7 +758,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS256+A128KW and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS256+A128KW and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A192GCM"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -766,7 +766,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS256+A128KW and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS256+A128KW and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS256+A128KW'], JWEEncryption["A256GCM"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -774,7 +774,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS384+A192KW and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS384+A192KW and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A128CBC-HS256"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -782,7 +782,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS384+A192KW and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS384+A192KW and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A192CBC-HS384"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -790,7 +790,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS384+A192KW and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS384+A192KW and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A256CBC-HS512"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -798,7 +798,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS384+A192KW and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS384+A192KW and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A128GCM"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -806,7 +806,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS384+A192KW and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS384+A192KW and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A192GCM"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -814,7 +814,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS384+A192KW and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS384+A192KW and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS384+A192KW'], JWEEncryption["A256GCM"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -822,7 +822,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS512+A256KW and A128CBC-HS256 and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS512+A256KW and A128CBC-HS256 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A128CBC-HS256"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -830,7 +830,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS512+A256KW and A192CBC-HS384 and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS512+A256KW and A192CBC-HS384 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A192CBC-HS384"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -838,7 +838,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS512+A256KW and A256CBC-HS512 and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS512+A256KW and A256CBC-HS512 and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A256CBC-HS512"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -846,7 +846,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS512+A256KW and A128GCM and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS512+A256KW and A128GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A128GCM"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -854,7 +854,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS512+A256KW and A192GCM and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS512+A256KW and A192GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A192GCM"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -862,7 +862,7 @@ describe('JWE', () => {
             strictEqual(decryptedPayload.toString(), JSON.stringify(payload));
         });
 
-        it('should encrypt a JWT using PBES2-HS512+A256KW and A256GCM and decrypt it', () => {
+        await it('should encrypt a JWT using PBES2-HS512+A256KW and A256GCM and decrypt it', () => {
             const jwe = encryptJWT(Buffer.from(JSON.stringify(payload)), 'application/json', JWEAlgorithm['PBES2-HS512+A256KW'], JWEEncryption["A256GCM"], PBES2SymmetricKey);
             strictEqual(typeof jwe, 'string');
 
@@ -871,8 +871,8 @@ describe('JWE', () => {
         });
     });
 
-    describe('Decrypt known JWEs', () => {
-        it('should decrypt a known JWE using RSA-OAEP and A256GCM', () => {
+    await describe('Decrypt known JWEs', async () => {
+        await it('should decrypt a known JWE using RSA-OAEP and A256GCM', () => {
             const RSAPrivateKey: RSAPrivateKey = {
                 kty: 'RSA',
                 n: 'oahUIoWw0K0usKNuOR6H4wkf4oBUXHTxRvgb48E-BVvxkeDNjbC4he8rUWcJoZmds2h7M70imEVhRU5djINXtqllXI4DFqcI1DgjT9LewND8MW2Krf3Spsk_ZkoFnilakGygTwpZ3uesH-PFABNIUYpOiN15dsQRkgr0vEhxN92i2asbOenSZeyaxziK72UwxrrKoExv6kc5twXTq4h-QChLOln0_mtUZwfsRaMStPs6mS6XrgxnxbWhojf663tuEQueGC-FCMfra36C9knDFGzKsNa7LZK2djYgyD3JR_MB_4NUJW_TqOQtwHYbxevoJArm-L5StowjzGy-_bq6Gw',
@@ -894,7 +894,7 @@ describe('JWE', () => {
             ok(plainText.equals(decryptedPayload));
         });
 
-        it('should decrypt a known JWE using RSA-1_5 and A128CBC-HS256', () => {
+        await it('should decrypt a known JWE using RSA-1_5 and A128CBC-HS256', () => {
             const RSAPrivateKey: RSAPrivateKey = {
                 kty: 'RSA',
                 n: 'sXchDaQebHnPiGvyDOAT4saGEUetSyo9MKLOoWFsueri23bOdgWp4Dy1WlUzewbgBHod5pcM9H95GQRV3JDXboIRROSBigeC5yjU1hGzHHyXss8UDprecbAYxknTcQkhslANGRUZmdTOQ5qTRsLAt6BTYuyvVRdhS8exSZEy_c4gs_7svlJJQ4H9_NxsiIoLwAEk7-Q3UXERGYw_75IDrGA84-lA_-Ct4eTlXHBIY2EaV7t7LjJaynVJCpkv4LKjTTAumiGUIuQhrNhZLuF_RJLqHpM2kgWFLU7-VTdL1VbC2tejvcI2BlMkEpk1BzBZI0KQB0GaDWFLN-aEAw3vRw',
@@ -916,7 +916,7 @@ describe('JWE', () => {
             ok(plainText.equals(decryptedPayload));
         });
 
-        it('should decrypt a known JWE using A128KW and A128CBC-HS256', () => {
+        await it('should decrypt a known JWE using A128KW and A128CBC-HS256', () => {
             const AES256SymmetricKey: SymmetricKey = {
                 kty: 'oct',
                 k: 'GawgguFyGrWKav7AX4VKUg'
@@ -931,7 +931,7 @@ describe('JWE', () => {
             ok(plainText.equals(decryptedPayload));
         });
 
-        it('should decrypt a known JWE using ECDH-ES and A256GCM', () => {
+        await it('should decrypt a known JWE using ECDH-ES and A256GCM', () => {
             const ECDSAPrivateKey: ECPrivateKey = {
                 kty: 'EC',
                 crv: 'P-256',
@@ -949,7 +949,7 @@ describe('JWE', () => {
             ok(plainText.equals(decryptedPayload));
         });
 
-        it('should decrypt a known JWE using ECDH-ES+A128KW and A128GCM', () => {
+        await it('should decrypt a known JWE using ECDH-ES+A128KW and A128GCM', () => {
             const ECDSAPrivateKey: ECPrivateKey = {
                 kty: 'EC',
                 crv: 'P-256',
@@ -968,7 +968,7 @@ describe('JWE', () => {
             ok(plainText.equals(decryptedPayload));
         });
 
-        it('should decrypt a known JWE using A256GCMKW and A256GCM', () => {
+        await it('should decrypt a known JWE using A256GCMKW and A256GCM', () => {
             const AES128SymmetricKey: SymmetricKey = {
                 kty: 'oct',
                 k: createHash('sha256').update(Buffer.from('asdfgasdfgasdfgasdfgasdfgasdfgasdfgasdfg', 'utf8')).digest().toString('base64url'),
@@ -983,7 +983,7 @@ describe('JWE', () => {
             ok(plainText.equals(decryptedPayload));
         });
 
-        it('should decrypt a known JWE using PBES2-HS512+A256KW and A128CBC-HS256', () => {
+        await it('should decrypt a known JWE using PBES2-HS512+A256KW and A128CBC-HS256', () => {
             const PBES2SymmetricKey: SymmetricKey = {
                 kty: 'oct',
                 k: Buffer.from("entrap_o\xe2\x80\x93peter_long\xe2\x80\x93credit_tun", 'ascii').toString('base64url')

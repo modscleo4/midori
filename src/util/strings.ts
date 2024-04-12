@@ -36,8 +36,33 @@ export function globMatch(pattern: string, search: string): boolean {
     return regex.test(search);
 }
 
+/**
+ * Generate a random string with `n` characters using the `crypto` module.
+ *
+ * @param n The number of characters to generate
+ * @returns A random string with `n` characters
+ */
 export function generateRandomString(n: number): string {
     const bytes = randomBytes(n);
 
     return bytes.toString('hex').slice(0, n);
+}
+
+/**
+ * Split a string into an array of substrings using a separator. Optionally, you can limit the number of splits and the result will combine the remaining parts into the last element.
+ *
+ * @param str The string to be split
+ * @param separator The separator to split the string
+ * @param limit The maximum number of splits
+ * @returns An array of substrings
+ */
+export function split(str: string, separator: string, limit?: number): string[] {
+    const parts = str.split(separator);
+
+    if (limit && parts.length > limit) {
+        const last = parts.slice(limit - 1).join(separator);
+        parts.splice(limit - 1, parts.length, last);
+    }
+
+    return parts;
 }

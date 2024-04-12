@@ -19,6 +19,7 @@ import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
+import { ParseBodyConfigProvider, ParseBodyOptions } from "../providers/ParseBodyConfigProvider.js";
 
 /**
  * Middleware to parse the request body, returning a 415 if no recognized Content-Type is detected.
@@ -27,16 +28,20 @@ import Response from "../http/Response.js";
  * - `application/json`
  * - `application/json-bigint`
  * - `application/x-www-form-urlencoded`
+ * - `text/csv`
  * - `text/plain`
  * - `multipart/form-data`
  *
  * Install a parser with the method `installParser()`.
  */
 export default class ParseBodyMiddleware extends Middleware {
+    #options: ParseBodyOptions | undefined;
     #parsers: Map<string, (req: Request, encoding: BufferEncoding) => Promise<unknown>> = new Map();
 
     constructor(app: Application) {
         super(app);
+
+        this.#options = app.config.get(ParseBodyConfigProvider);
 
         this.installParser('application/json', async (req: Request, enc: BufferEncoding = 'utf8'): Promise<unknown> => {
             return JSON.parse((await req.readBody()).toString(enc));
@@ -85,6 +90,10 @@ export default class ParseBodyMiddleware extends Middleware {
         });
     }
 
+    get options(): ParseBodyOptions | undefined {
+        return this.#options;
+    }
+
     installParser(contentType: string, parser: (req: Request, encoding: BufferEncoding) => Promise<any>) {
         this.#parsers.set(contentType, parser);
     }
@@ -97,7 +106,7 @@ export default class ParseBodyMiddleware extends Middleware {
 
                 if (contentType && this.#parsers.has(contentType)) {
                     req.parsedBody = await this.#parsers.get(contentType)!(req, encoding);
-                } else {
+                } else if (this.options?.errorOnUnknownContentType) {
                     return Response.status(EStatusCode.UNSUPPORTED_MEDIA_TYPE);
                 }
             }

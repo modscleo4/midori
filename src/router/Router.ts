@@ -84,6 +84,27 @@ export default class Router {
     }
 
     /**
+     * Handles a OPTIONS request.
+     */
+    options(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
+        return this.route('OPTIONS', path, handler, middlewares, name);
+    }
+
+    /**
+     * Handles a CONNECT request.
+     */
+    connect(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
+        return this.route('CONNECT', path, handler, middlewares, name);
+    }
+
+    /**
+     * Handles a TRACE request.
+     */
+    trace(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
+        return this.route('TRACE', path, handler, middlewares, name);
+    }
+
+    /**
      * Groups routes together. Use this to apply middlewares to a group of routes, or when there are routes with a common path prefix.
      */
     group(prefix: string, groupCallback: (Router: Router) => void, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): void {

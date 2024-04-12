@@ -106,6 +106,13 @@ export default abstract class Logger {
         return this.#formattingEnabled;
     }
 
+    static dateFormat: ANSIOptions = {
+        color: {
+            fg: Color.BLACK,
+        },
+        bold: true,
+    };
+
     static levelToFormat(level: LogLevel): ANSIOptions {
         switch (level) {
             case LogLevel.DEBUG:

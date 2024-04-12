@@ -25,6 +25,8 @@ export type CORSConfig = {
     methods?: string | string[];
     /** Access-Control-Allow-Headers header. */
     headers?: string | string[];
+    /** Access-Control-Allow-Credentials header. */
+    credentials?: boolean;
     /** Access-Control-Max-Age header. */
     maxAge?: number;
     /** Cross-Origin-Opener-Policy header. */

@@ -18,6 +18,7 @@ import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import HTTPError from "../errors/HTTPError.js";
+import { titleFromStatus } from "../http/EStatusCode.js";
 
 /**
  * Catches any HTTPError and returns as a Response.
@@ -28,8 +29,20 @@ export default class HTTPErrorMiddleware extends Middleware {
             return await next(req);
         } catch (e) {
             if (e instanceof HTTPError) {
-                return Response.json(e.toJSON())
-                    .withStatus(e.status);
+                const res = Response.problem(
+                    titleFromStatus(e.status) ?? 'An error occurred',
+                    e.message,
+                    e.status,
+                    null,
+                    req.path,
+                    e.extra
+                );
+
+                if (e.extraHeaders) {
+                    res.withHeaders(e.extraHeaders);
+                }
+
+                return res;
             }
 
             throw e;

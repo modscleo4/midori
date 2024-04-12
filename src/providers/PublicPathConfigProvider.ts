@@ -23,6 +23,8 @@ export type PublicPathConfig = {
     path: string;
     /** Index files to be served when a directory is requested. */
     indexFiles?: string[];
+    /** Generate an Apache-like index when a directory is requested and no index file is found. */
+    generateIndex?: boolean;
     /** Cache configuration */
     cache?: {
         /** Max age in seconds. */

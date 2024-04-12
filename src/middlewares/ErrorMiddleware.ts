@@ -42,7 +42,14 @@ export class ErrorMiddleware extends Middleware {
             // The status code for a server error is 500
             const response = Response.status(EStatusCode.INTERNAL_SERVER_ERROR);
             if ((this.options?.exposeErrors ?? false) && e instanceof Error) {
-                response.json({ message: e.message, stack: this.parseStack(e.stack ?? '') });
+                response.problem(
+                    e.message,
+                    e.stack ?? '',
+                    EStatusCode.INTERNAL_SERVER_ERROR,
+                    null,
+                    req.path,
+                    { method: req.method, stack: this.parseStack(e.stack ?? '') }
+                );
             }
 
             return response;

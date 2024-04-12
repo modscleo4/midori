@@ -16,6 +16,12 @@
 
 import { KeyPairSyncResult, generateKeyPairSync } from "node:crypto";
 
+/**
+ * Generate a keypair using the `crypto` module.
+ *
+ * @param alg The algorithm to use. Can be `rsa` or `ec`.
+ * @returns A keypair with the public and private keys.
+ */
 export function generateKeypair(alg: 'rsa' | 'ec'): KeyPairSyncResult<string, string> {
     switch (alg) {
         case 'rsa':

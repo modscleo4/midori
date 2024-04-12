@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 import { Application } from "../app/Server.js";
 import HTTPError from "../errors/HTTPError.js";
 import ValidationError from "../errors/ValidationError.js";
@@ -22,8 +21,8 @@ import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
 import Request from "../http/Request.js";
 import Response from "../http/Response.js";
+import { fakeAssert } from "../util/types.js";
 import { ValidatonRules, CustomValidation } from "../util/validation.js";
-
 
 type Errors = Record<string, string[]>;
 
@@ -34,7 +33,13 @@ export default abstract class ValidationMiddleware extends Middleware {
 
     abstract get rules(): ValidatonRules;
 
-    validate(body: Record<string, any>, rules: ValidatonRules): Errors {
+    /**
+     * Validates a request body based on a set of rules.
+     * @param body The request body (or any object) to be validated.
+     * @param rules The rules to validate each field of the body param.
+     * @returns A dictionary with the errors found in each field.
+     */
+    validate(body: Record<string, unknown>, rules: ValidatonRules): Errors {
         const errors: Errors = {};
 
         for (const [key, rule] of Object.entries(rules)) {
@@ -45,76 +50,83 @@ export default abstract class ValidationMiddleware extends Middleware {
             }
 
             if (key in body) {
-                if (rule.nullable === false && body[key] == null) {
+                const value = body[key];
+
+                if (rule.nullable === false && value == null) {
                     entryErrors.push('This field cannot be null.');
                 }
 
                 if (
-                    rule.type === 'array' && !Array.isArray(body[key])
-                    || typeof body[key] !== rule.type
+                    rule.type === 'array' && !Array.isArray(value)
+                    || typeof value !== rule.type
                 ) {
-                    entryErrors.push(`expected type '${rule.type}' but got '${typeof body[key]}'.`);
+                    entryErrors.push(`expected type '${rule.type}' but got '${typeof value}'.`);
                 }
 
-                if (rule.oneOf && !(rule.oneOf as any[]).includes(body[key])) {
-                    entryErrors.push(`expected one of [${rule.oneOf.join(', ')}] but got '${body[key]}'.`);
+                if (rule.oneOf && !(rule.oneOf as unknown[]).includes(value)) {
+                    entryErrors.push(`expected one of [${rule.oneOf.join(', ')}] but got '${value}'.`);
                 }
 
                 if (rule.type === 'string') {
-                    if (rule.min && body[key].length < rule.min) {
-                        entryErrors.push(`expected a minimum of ${rule.min} characters but got ${body[key].length}.`);
+                    fakeAssert(typeof value === 'string');
+                    if (rule.min && value.length < rule.min) {
+                        entryErrors.push(`expected a minimum of ${rule.min} characters but got ${value.length}.`);
                     }
 
-                    if (rule.max && body[key].length > rule.max) {
-                        entryErrors.push(`expected a maximum of ${rule.max} characters but got ${body[key].length}.`);
+                    if (rule.max && value.length > rule.max) {
+                        entryErrors.push(`expected a maximum of ${rule.max} characters but got ${value.length}.`);
                     }
 
-                    if (rule.regex && !rule.regex.test(body[key])) {
-                        entryErrors.push(`expected to match '${rule.regex}' but got '${body[key]}'.`);
+                    if (rule.regex && !rule.regex.test(value)) {
+                        entryErrors.push(`expected to match '${rule.regex}' but got '${value}'.`);
                     }
                 } else if (rule.type === 'number') {
-                    if (rule.min && body[key] < rule.min) {
-                        entryErrors.push(`expected a minimum of ${rule.min} but got ${body[key]}.`);
+                    fakeAssert(typeof value === 'number');
+                    if (rule.min && value < rule.min) {
+                        entryErrors.push(`expected a minimum of ${rule.min} but got ${value}.`);
                     }
 
-                    if (rule.max && body[key] > rule.max) {
-                        entryErrors.push(`expected a maximum of ${rule.max} but got ${body[key]}.`);
+                    if (rule.max && value > rule.max) {
+                        entryErrors.push(`expected a maximum of ${rule.max} but got ${value}.`);
                     }
 
-                    if (rule.integer && !Number.isInteger(body[key])) {
-                        entryErrors.push(`expected an integer but got ${body[key]}.`);
+                    if (rule.integer && !Number.isInteger(value)) {
+                        entryErrors.push(`expected an integer but got ${value}.`);
                     }
                 } else if (rule.type === 'bigint') {
-                    if (rule.min && body[key] < rule.min) {
-                        entryErrors.push(`expected a minimum of ${rule.min} but got ${body[key]}.`);
+                    fakeAssert(typeof value === 'bigint');
+                    if (rule.min && value < rule.min) {
+                        entryErrors.push(`expected a minimum of ${rule.min} but got ${value}.`);
                     }
 
-                    if (rule.max && body[key] > rule.max) {
-                        entryErrors.push(`expected a maximum of ${rule.max} but got ${body[key]}.`);
+                    if (rule.max && value > rule.max) {
+                        entryErrors.push(`expected a maximum of ${rule.max} but got ${value}.`);
                     }
                 } else if (rule.type === 'object') {
+                    fakeAssert(value instanceof Object);
                     if (rule.properties) {
-                        const objectErrors = this.validate(body[key], rule.properties);
+                        const objectErrors = this.validate(value as Record<string, unknown>, rule.properties);
 
                         if (Object.keys(objectErrors).length > 0) {
                             entryErrors.push(...Object.values(objectErrors).flat());
                         }
                     }
                 } else if (rule.type === 'array') {
-                    if (rule.min && body[key].length < rule.min) {
-                        entryErrors.push(`expected a minimum of ${rule.min} items but got ${body[key].length}.`);
+                    fakeAssert(Array.isArray(value));
+                    if (rule.min && value.length < rule.min) {
+                        entryErrors.push(`expected a minimum of ${rule.min} items but got ${value.length}.`);
                     }
 
-                    if (rule.max && body[key].length > rule.max) {
-                        entryErrors.push(`expected a maximum of ${rule.max} items but got ${body[key].length}.`);
+                    if (rule.max && value.length > rule.max) {
+                        entryErrors.push(`expected a maximum of ${rule.max} items but got ${value.length}.`);
                     }
 
-                    if (rule.unique && new Set(body[key]).size !== body[key].length) {
+                    if (rule.unique && new Set(value).size !== value.length) {
                         entryErrors.push('expected all items to be unique.');
                     }
 
                     if (rule.all) {
-                        for (const item of body[key]) {
+                        for (const item of value) {
                             const itemErrors = this.validate({ item }, { item: rule.all });
 
                             if (Object.keys(itemErrors).length > 0) {
@@ -124,8 +136,8 @@ export default abstract class ValidationMiddleware extends Middleware {
                     }
 
                     if (rule.items) {
-                        for (let i = 0; i < Math.min(body[key].length, rule.items.length); i++) {
-                            const itemErrors = this.validate({ item: body[key][i] }, { item: rule.items[i] });
+                        for (let i = 0; i < Math.min(value.length, rule.items.length); i++) {
+                            const itemErrors = this.validate({ item: value[i] }, { item: rule.items[i] });
 
                             if (Object.keys(itemErrors).length > 0) {
                                 entryErrors.push(...Object.values(itemErrors).flat());
@@ -136,7 +148,7 @@ export default abstract class ValidationMiddleware extends Middleware {
 
                 if (rule.customValidations) {
                     for (const customValidation of rule.customValidations as CustomValidation<any>[]) {
-                        if (!customValidation.validator(body[key])) {
+                        if (!customValidation.validator(value)) {
                             entryErrors.push(customValidation.message);
                         }
                     }
@@ -153,14 +165,10 @@ export default abstract class ValidationMiddleware extends Middleware {
 
     override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         if (!req.parsedBody || typeof req.parsedBody !== 'object') {
-            return Response.status(EStatusCode.BAD_REQUEST)
-                .json({
-                    message: "Invalid request body.",
-                    error: "Expected a JSON object as request body.",
-                });
+            return Response.problem('Invalid request body.', 'Expected a JSON object as request body.', EStatusCode.BAD_REQUEST);
         }
 
-        const errors = this.validate(req.parsedBody, this.rules);
+        const errors = this.validate(req.parsedBody as Record<string, unknown>, this.rules);
 
         if (Object.keys(errors).length > 0) {
             throw new ValidationError(errors);

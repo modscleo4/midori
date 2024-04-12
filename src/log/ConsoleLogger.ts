@@ -26,12 +26,13 @@ export default class ConsoleLogger extends Logger {
             return;
         }
 
-        let logDate = `[${new Date().toISOString()}]`;
-        let logLevel = `[${LogLevel[level]}]`;
+        let logDate = `${new Date().toISOString()}`;
+        let logLevel = `${LogLevel[level]}`;
         let logMessage = `${message}`;
         const fn = level < LogLevel.WARNING ? console.log : console.error;
 
         if (this.formattingEnabled) {
+            logDate = format(logDate, Logger.dateFormat);
             logLevel = format(logLevel, Logger.levelToFormat(level));
 
             if (options?.format) {
@@ -40,9 +41,9 @@ export default class ConsoleLogger extends Logger {
         }
 
         if (options?.context !== undefined) {
-            fn(`${logDate} ${logLevel} ${logMessage}` + (options?.separator ?? ' ') + options?.context);
+            fn(`[${logDate}] [${logLevel}] ${logMessage}` + (options?.separator ?? ' ') + options?.context);
         } else {
-            fn(`${logDate} ${logLevel} ${logMessage}`);
+            fn(`[${logDate}] [${logLevel}] ${logMessage}`);
         }
     }
 }

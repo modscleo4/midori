@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { OutgoingHttpHeaders } from "http";
+
 /**
  * Basic HTTP Error with a status code and message.
  * The HTTPErrorMiddleware will catch this error and send the status code and message to the client.
@@ -23,7 +25,9 @@ export default class HTTPError extends Error {
 
     constructor(
         message: string,
-        public status: number = 500
+        public status: number = 500,
+        public extra: Record<string, unknown> = {},
+        public extraHeaders: OutgoingHttpHeaders = {},
     ) {
         super(message);
     }
@@ -31,6 +35,7 @@ export default class HTTPError extends Error {
     toJSON(): object {
         return {
             message: this.message,
+            ...this.extra,
         };
     }
 }

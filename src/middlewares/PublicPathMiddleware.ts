@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { existsSync, statSync } from "node:fs";
+import { Dirent, existsSync, statSync } from "node:fs";
+import { readdir } from "node:fs/promises";
 import { join, normalize } from "node:path";
 
 import { EStatusCode } from "../http/EStatusCode.js";
@@ -59,15 +60,41 @@ export class PublicPathMiddleware extends Middleware {
         // If the request ends with a slash, try to find an index file
         if (req.path.endsWith('/') || req.path === '') {
             for (const file of indexFiles) {
-                const res = await this.tryFile(req.path + file);
-
+                const res = await this.tryFile(req.path + file, req);
                 if (res) {
                     return res;
                 }
             }
-        } else {
-            const res = await this.tryFile(req.path);
 
+            if (this.options?.generateIndex) {
+                const files = await this.listDirectory(req.path);
+                if (files) {
+                    return Response.html(`
+                    <h1>Index of ${req.path}</h1>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Last Modified</th>
+                                <th>Size</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        ${files.map(file => {
+                            const stat = statSync(join(this.options?.path!, normalize(req.path), normalize(file.name)));
+                            return `
+                            <tr>
+                                <td><a href="${file.isDirectory() ? file.name + '/' : file.name}">${file.isDirectory() ? file.name + '/' : file.name}</a></td>
+                                <td>${stat.mtime.toUTCString()}</td>
+                                <td>${stat.size}</td>
+                            </tr>`;
+                        }).join('')}
+                        </tbody>
+                    </table>`);
+                }
+            }
+        } else {
+            const res = await this.tryFile(req.path, req);
             if (res) {
                 return res;
             }
@@ -78,13 +105,13 @@ export class PublicPathMiddleware extends Middleware {
     }
 
     /** @internal */
-    async tryFile(path: string): Promise<Response | false> {
+    async tryFile(path: string, req?: Request): Promise<Response | false> {
         // Try to find a matching file in the public directory
         const filename = join(this.options?.path!, normalize(path));
 
         // If the file exists, return it
         if (existsSync(filename) && statSync(filename).isFile()) {
-            const res = Response.file(filename);
+            const res = Response.file(filename, req);
             if (this.options?.cache?.maxAge) {
                 res.withHeader('Cache-Control', `public, max-age=${this.options.cache.maxAge}`);
             }
@@ -93,6 +120,16 @@ export class PublicPathMiddleware extends Middleware {
         }
 
         return false;
+    }
+
+    /** @internal */
+    async listDirectory(path: string): Promise<Dirent[] | false> {
+        const dir = join(this.options?.path!, normalize(path));
+        if (!existsSync(dir) || !statSync(dir).isDirectory()) {
+            return false;
+        }
+
+        return await readdir(dir, { withFileTypes: true });
     }
 }
 

@@ -38,7 +38,7 @@ export default class Request<T = unknown> extends IncomingMessage {
     #path?: string;
     #body: Buffer[] = [];
     #parsedBody?: T = undefined;
-    #container?: Container<string | symbol, unknown> = new Container();
+    #container: Container<string | symbol, unknown> = new Container();
     #ip: string | undefined;
     #acceptPriority: string[] = [];
 
@@ -49,7 +49,7 @@ export default class Request<T = unknown> extends IncomingMessage {
         const url = new URL(this.url ?? '', `${this.headers['x-forwarded-proto'] ?? 'http'}://${this.headers.host}`);
 
         this.#query = url.searchParams;
-        this.#path = url.pathname;
+        this.#path = decodeURIComponent(url.pathname);
         this.#ip = this.socket.remoteAddress;
         if (this.headers['x-real-ip']) {
             this.#ip = Array.isArray(this.headers['x-real-ip']) ? this.headers['x-real-ip'][0] : this.headers['x-real-ip'];
@@ -142,7 +142,7 @@ export default class Request<T = unknown> extends IncomingMessage {
     }
 
     get container() {
-        return this.#container!;
+        return this.#container;
     }
 
     get ip() {

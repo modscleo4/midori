@@ -22,8 +22,8 @@ import { signJWT, verifyJWS, JWSAlgorithm, Header } from './jws.js';
 import { Payload as JWTPayload } from './jwt.js';
 import { ECPrivateKey, ECPublicKey, RSAPrivateKey, RSAPublicKey, SymmetricKey } from './jwk.js';
 
-describe('JWS', () => {
-    describe('Verify after sign', () => {
+await describe('JWS', async () => {
+    await describe('Verify after sign', async () => {
         const payload: JWTPayload = {
             iss: 'www.example.com',
             aud: 'www.example.com',
@@ -42,7 +42,7 @@ describe('JWS', () => {
         const HMACKeyRaw = Buffer.from('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef', 'utf8');
         const HMACKey: SymmetricKey = { kty: 'oct', k: HMACKeyRaw.toString('base64url') };
 
-        it('should sign a JWT using HS256 and verify it', () => {
+        await it('should sign a JWT using HS256 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['HS256'], HMACKey);
             strictEqual(typeof jws, 'string');
 
@@ -50,7 +50,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using HS384 and verify it', () => {
+        await it('should sign a JWT using HS384 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['HS384'], HMACKey);
             strictEqual(typeof jws, 'string');
 
@@ -58,7 +58,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using HS512 and verify it', () => {
+        await it('should sign a JWT using HS512 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['HS512'], HMACKey);
             strictEqual(typeof jws, 'string');
 
@@ -66,7 +66,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using RS256 and verify it', () => {
+        await it('should sign a JWT using RS256 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['RS256'], RSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -74,7 +74,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using RS384 and verify it', () => {
+        await it('should sign a JWT using RS384 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['RS384'], RSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -82,7 +82,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using RS512 and verify it', () => {
+        await it('should sign a JWT using RS512 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['RS512'], RSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -90,7 +90,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using PS256 and verify it', () => {
+        await it('should sign a JWT using PS256 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['PS256'], RSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -98,7 +98,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using PS384 and verify it', () => {
+        await it('should sign a JWT using PS384 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['PS384'], RSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -106,7 +106,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using PS512 and verify it', () => {
+        await it('should sign a JWT using PS512 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['PS512'], RSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -114,7 +114,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using ES256 and verify it', () => {
+        await it('should sign a JWT using ES256 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['ES256'], ECDSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -122,7 +122,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using ES384 and verify it', () => {
+        await it('should sign a JWT using ES384 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['ES384'], ECDSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -130,7 +130,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should sign a JWT using ES512 and verify it', () => {
+        await it('should sign a JWT using ES512 and verify it', () => {
             const jws = signJWT(payload, JWSAlgorithm['ES512'], ECDSAPrivateKey);
             strictEqual(typeof jws, 'string');
 
@@ -139,8 +139,8 @@ describe('JWS', () => {
         });
     });
 
-    describe('Verify known JWS', () => {
-        it('should verify a known JWS using HS256', () => {
+    await describe('Verify known JWS', async () => {
+        await it('should verify a known JWS using HS256', () => {
             const HMACKey: SymmetricKey = {
                 kty: 'oct',
                 k: 'AyM1SysPpbyDfgZld3umj1qzKObwVMkoqQ-EstJQLr_T-1qS0gZH75aKtMN3Yj0iPS4hcgUuTwjAzZr1Z9CAow'
@@ -152,7 +152,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should verify a known JWS using RS256', () => {
+        await it('should verify a known JWS using RS256', () => {
             const RSAPrivateKey: RSAPrivateKey = {
                 kty: 'RSA',
                 n: 'ofgWCuLjybRlzo0tZWJjNiuSfb4p4fAkd_wWJcyQoTbji9k0l8W26mPddxHmfHQp-Vaw-4qPCJrcS2mJPMEzP1Pt0Bm4d4QlL-yRT-SFd2lZS-pCgNMsD1W_YpRPEwOWvG6b32690r2jZ47soMZo9wGzjb_7OMg0LOL-bSf63kpaSHSXndS5z5rexMdbBYUsLA9e-KXBdQOS-UTo7WTBEMa2R2CapHg665xsmtdVMTBQY4uDZlxvb3qCo5ZwKh9kG4LT6_I5IhlJH7aGhyxXFvUK-DWNmoudF8NAco9_h9iaGNj8q2ethFkMLs91kzk2PAcDTW9gb54h4FRWyuXpoQ',
@@ -171,7 +171,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should verify a known JWS using ES256', () => {
+        await it('should verify a known JWS using ES256', () => {
             const ECDSAPrivateKey: ECPrivateKey = {
                 kty: 'EC',
                 crv: 'P-256',
@@ -186,7 +186,7 @@ describe('JWS', () => {
             ok(verified);
         });
 
-        it('should verify a known JWS using ES512', () => {
+        await it('should verify a known JWS using ES512', () => {
             const ECDSAPrivateKey: ECPrivateKey = {
                 kty: 'EC',
                 crv: 'P-521',

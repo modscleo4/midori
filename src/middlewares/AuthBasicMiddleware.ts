@@ -36,23 +36,20 @@ export default class AuthBasicMiddleware extends Middleware {
 
     override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         if (!req.headers['authorization']) {
-            return Response.json({ message: 'Invalid Authorization header.' })
-                .withHeader('WWW-Authenticate', 'Basic')
-                .withStatus(EStatusCode.UNAUTHORIZED);
+            return Response.problem('Invalid Authorization header.', 'No Authorization header provided.', EStatusCode.UNAUTHORIZED)
+                .withHeader('WWW-Authenticate', 'Basic');
         }
 
         const [scheme, credentialsBase64] = req.headers['authorization'].split(' ', 2);
 
         if (scheme !== 'Basic') {
-            return Response.json({ message: 'Invalid Authorization scheme.' })
-                .withHeader('WWW-Authenticate', 'Basic')
-                .withStatus(EStatusCode.UNAUTHORIZED);
+            return Response.problem('Invalid Authorization scheme.', 'Only Basic scheme is supported.', EStatusCode.UNAUTHORIZED)
+                .withHeader('WWW-Authenticate', 'Basic');
         }
 
         if (!credentialsBase64) {
-            return Response.json({ message: 'Invalid Authorization credentials.' })
-                .withHeader('WWW-Authenticate', 'Basic')
-                .withStatus(EStatusCode.UNAUTHORIZED);
+            return Response.problem('Invalid Authorization credentials.', 'No credentials provided.', EStatusCode.UNAUTHORIZED)
+                .withHeader('WWW-Authenticate', 'Basic');
         }
 
         const [username, password] = Buffer.from(credentialsBase64, 'base64').toString('utf8').split(':');
@@ -61,17 +58,15 @@ export default class AuthBasicMiddleware extends Middleware {
             !username
             || !password
         ) {
-            return Response.json({ message: 'Invalid Authorization credentials.' })
-                .withHeader('WWW-Authenticate', 'Basic')
-                .withStatus(EStatusCode.UNAUTHORIZED);
+            return Response.problem('Invalid Authorization credentials.', 'Invalid username or password provided (is it base64 encoded?).', EStatusCode.UNAUTHORIZED)
+                .withHeader('WWW-Authenticate', 'Basic');
         }
 
         try {
             await this.#auth.authenticate(req, username, password);
         } catch (e) {
-            return Response.json({ message: 'Invalid Authorization credentials.' })
-                .withHeader('WWW-Authenticate', 'Basic')
-                .withStatus(EStatusCode.UNAUTHORIZED);
+            return Response.problem('Invalid Authorization credentials.', 'Could not authenticate with username or password provided.', EStatusCode.UNAUTHORIZED)
+                .withHeader('WWW-Authenticate', 'Basic');
         }
 
         return await next(req);
