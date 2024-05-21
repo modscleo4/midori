@@ -161,6 +161,8 @@ export default class Response<T = any> {
             } else {
                 this.#headers.set('Set-Cookie', [setCookie as string, cookie]);
             }
+        } else {
+            this.#headers.set('Set-Cookie', [cookie]);
         }
 
         return this;

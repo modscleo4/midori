@@ -16,6 +16,7 @@
 
 import { HandlerConstructor, HandlerFunction } from "../http/Handler.js";
 import { MiddlewareConstructor, MiddlewareFunction } from "../http/Middleware.js";
+import { split } from "../util/strings.js";
 import { validateUUID } from "../util/uuid.js";
 import Route from "./Route.js";
 
@@ -137,7 +138,7 @@ export default class Router {
                 if (parts[i] !== routeParts[i]) {
                     if (paramRegex.test(routeParts[i])) {
                         const [, before, param, after] = routeParts[i].match(paramRegex)!;
-                        const [paramName, paramType] = param.split(':');
+                        const [paramName, paramType] = split(param, ':', 2);
 
                         if (!parts[i].startsWith(before) || !parts[i].endsWith(after)) {
                             return false;

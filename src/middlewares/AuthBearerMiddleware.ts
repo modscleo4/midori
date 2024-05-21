@@ -43,12 +43,13 @@ export default class AuthBearerMiddleware extends Middleware {
     }
 
     override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
-        if (!req.headers['authorization']) {
-            return Response.problem('Invalid Authorization header.', 'No Authorization header provided.', EStatusCode.UNAUTHORIZED)
+        const authInfo = this.getAuthInfo(req);
+        if (!authInfo) {
+            return Response.problem('Invalid Authorization header.', 'No Authorization info provided.', EStatusCode.UNAUTHORIZED)
                 .withHeader('WWW-Authenticate', 'Bearer');
         }
 
-        const [scheme, credentials] = req.headers['authorization'].split(' ', 2);
+        const { scheme, credentials } = authInfo;
 
         if (scheme !== 'Bearer') {
             return Response.problem('Invalid Authorization header.', 'Only Bearer scheme is supported.', EStatusCode.UNAUTHORIZED)
@@ -74,6 +75,29 @@ export default class AuthBearerMiddleware extends Middleware {
         return await next(req);
     }
 
+    /**
+     * Extracts the Authorization header from the Request.
+     *
+     * @param req Request object.
+     * @returns An object with the scheme and credentials or null if the header is not present.
+     */
+    getAuthInfo(req: Request): { scheme: string, credentials: string } | null {
+        if (!req.headers['authorization']) {
+            return null;
+        }
+
+        const [scheme, credentials] = req.headers['authorization'].split(' ', 2);
+
+        return { scheme, credentials };
+    }
+
+    /**
+     * Validates the token payload.
+     *
+     * @param req Request object.
+     * @param payload Token payload.
+     * @returns True if the token is valid, false otherwise.
+     */
     async validateToken(req: Request, payload: Payload): Promise<boolean> {
         if (
             typeof payload !== 'object'
