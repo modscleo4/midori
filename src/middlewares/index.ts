@@ -1,3 +1,4 @@
+export { default as AuthMiddleware } from './AuthMiddleware.js';
 export { default as AuthBasicMiddleware } from './AuthBasicMiddleware.js';
 export { default as AuthBearerMiddleware } from './AuthBearerMiddleware.js';
 export { default as ContentLengthMiddleware } from './ContentLengthMiddleware.js';

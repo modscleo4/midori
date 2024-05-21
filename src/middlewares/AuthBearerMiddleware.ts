@@ -45,8 +45,7 @@ export default class AuthBearerMiddleware extends Middleware {
     override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         const authInfo = this.getAuthInfo(req);
         if (!authInfo) {
-            return Response.problem('Invalid Authorization header.', 'No Authorization info provided.', EStatusCode.UNAUTHORIZED)
-                .withHeader('WWW-Authenticate', 'Bearer');
+            return await next(req);
         }
 
         const { scheme, credentials } = authInfo;

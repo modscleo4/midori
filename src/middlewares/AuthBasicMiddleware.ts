@@ -36,8 +36,7 @@ export default class AuthBasicMiddleware extends Middleware {
 
     override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         if (!req.headers['authorization']) {
-            return Response.problem('Invalid Authorization header.', 'No Authorization header provided.', EStatusCode.UNAUTHORIZED)
-                .withHeader('WWW-Authenticate', 'Basic');
+            return await next(req);
         }
 
         const [scheme, credentialsBase64] = req.headers['authorization'].split(' ', 2);

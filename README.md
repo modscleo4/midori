@@ -197,6 +197,7 @@ The Log module is responsible for logging.
 
 ### midori/middlewares
 The Middlewares module is responsible for providing basic middlewares to be used by the application.
+- `AuthMiddleware` - Middleware to check if the user is authenticated. It uses the `Auth` service installed on the app.
 - `AuthBasicMiddleware` - Middleware for Basic Authentication.
 - `AuthBearerMiddleware` - Middleware for Bearer Authentication.
 - `ContentLengthMiddleware` - Middleware to send the Content-Length header to the client. It is automatically installed on the app as the first middleware.
