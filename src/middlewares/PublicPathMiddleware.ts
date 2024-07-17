@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { Dirent, existsSync, statSync } from "node:fs";
-import { readdir } from "node:fs/promises";
+import { createReadStream, Dirent, existsSync, statSync } from "node:fs";
+import { readdir, stat } from "node:fs/promises";
 import { join, normalize } from "node:path";
 
 import { EStatusCode } from "../http/EStatusCode.js";
@@ -25,6 +25,7 @@ import Response from "../http/Response.js";
 import { Constructor } from "../util/types.js";
 import { Application } from "../app/Server.js";
 import { PublicPathConfig, PublicPathConfigProvider } from "../providers/PublicPathConfigProvider.js";
+import SHA256 from "../hash/SHA256.js";
 
 export class PublicPathMiddleware extends Middleware {
     #options: PublicPathConfig | undefined;
@@ -111,9 +112,12 @@ export class PublicPathMiddleware extends Middleware {
 
         // If the file exists, return it
         if (existsSync(filename) && statSync(filename).isFile()) {
-            const res = Response.file(filename, req);
+            const res = Response.file(filename, req)
+                .withLastModified((await stat(filename)).mtime)
+                .withETag(await SHA256.hashStream(createReadStream(filename)));
+
             if (this.options?.cache?.maxAge) {
-                res.withHeader('Cache-Control', `public, max-age=${this.options.cache.maxAge}`);
+                res.withCacheControl('public', { maxAge: this.options.cache.maxAge });
             }
 
             return res;

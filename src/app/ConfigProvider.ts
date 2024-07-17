@@ -16,6 +16,9 @@
 
 import { Application } from "./Server.js";
 
+/**
+ * ConfigProvider is a class that is used to provide configurations to the application.
+ */
 export default abstract class ConfigProvider<T> {
     static config: symbol;
 
@@ -23,5 +26,10 @@ export default abstract class ConfigProvider<T> {
         //
     }
 
+    /**
+     * Register the configuration to the application.
+     *
+     * @param app The application instance.
+     */
     abstract register(app: Application): T;
 }

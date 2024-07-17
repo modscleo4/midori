@@ -19,15 +19,26 @@ import { Application } from "../app/Server.js";
 export type TaskConstructor = new (app: Application) => Task;
 export type TaskFunction = (app: Application) => Promise<void>;
 
+/**
+ * Represents a task that can be scheduled.
+ */
 export default abstract class Task {
     constructor(app: Application) {
 
     }
 
+    /**
+     * Runs the task.
+     */
     abstract run(): Promise<void>;
 
     /**
      * Converts a Task class to a Task function.
+     *
+     * @param task The Task class to be converted.
+     * @param app The application instance.
+     *
+     * @returns The Task function.
      */
     static asFunction(task: TaskConstructor | TaskFunction, app: Application): TaskFunction {
         if (task.prototype instanceof Task) {

@@ -14,50 +14,75 @@
  * limitations under the License.
  */
 
+/**
+ * Represents a cron expression.
+ */
 export type CronExpression = {
+    /** Seconds. (0-59) */
     seconds: number[];
+    /** Minutes. (0-59) */
     minutes: number[];
+    /** Hours. (0-23) */
     hours: number[];
+    /** Days of the month. (1-31) */
     daysOfMonth: number[];
+    /** Months. (1-12) */
     months: number[];
+    /** Days of the week. (0-6) */
     daysOfWeek: number[];
 };
 
+/**
+ * Validates a part of a cron string. The part can be a number, a range, a list, a step or the wildcard.
+ *
+ * @param part The part to be validated.
+ * @param min The minimum value.
+ * @param max The maximum value.
+ *
+ * @returns Whether the part is valid.
+ */
+function validateCronPart(part: string, min: number, max: number): boolean {
+    if (!part) {
+        return false;
+    }
+
+    // Any
+    if (part === '*') {
+        return true;
+    }
+
+    // List
+    if (part.includes(',')) {
+        return part.split(',').every(p => validateCronPart(p, min, max));
+    }
+
+    // Range
+    if (part.includes('-')) {
+        const [start, end] = part.split('-', 2).map(parseInt);
+        return start >= min
+            && end <= max;
+    }
+
+    // Step
+    if (part.includes('/')) {
+        const [start, step] = part.split('/', 2);
+        return (start === '*' || parseInt(start) >= min)
+            && parseInt(step) >= min;
+    }
+
+    const n = parseInt(part, 10);
+    return n >= min && n <= max;
+}
+
+/**
+ * Validates a cron string.
+ *
+ * @param cronString The cron string to be validated.
+ *
+ * @returns Whether the cron string is valid.
+ */
 export function validateCronString(cronString: string): boolean {
     const [second, minute, hour, dayOfMonth, month, dayOfWeek] = cronString.split(" ", 6);
-
-    function validateCronPart(part: string, min: number, max: number): boolean {
-        if (!part) {
-            return false;
-        }
-
-        // Any
-        if (part === '*') {
-            return true;
-        }
-
-        // List
-        if (part.includes(',')) {
-            return part.split(',').every(p => validateCronPart(p, min, max));
-        }
-
-        // Range
-        if (part.includes('-')) {
-            const [start, end] = part.split('-', 2).map(parseInt);
-            return start >= min
-                && end <= max;
-        }
-
-        // Step
-        if (part.includes('/')) {
-            const [start, step] = part.split('/', 2);
-            return (start === '*' || parseInt(start) >= min)
-                && parseInt(step) >= min
-        }
-
-        const n = parseInt(part, 10);
-        return n >= min && n <= max;
-    }
 
     return validateCronPart(second, 0, 59)
         && validateCronPart(minute, 0, 59)
@@ -67,37 +92,53 @@ export function validateCronString(cronString: string): boolean {
         && validateCronPart(dayOfWeek, 0, 6);
 }
 
+/**
+ * Parses a part of a cron string. The part can be a number, a range, a list, a step or the wildcard.
+ *
+ * @param part The part to be parsed.
+ * @param min The minimum value.
+ * @param max The maximum value.
+ *
+ * @returns The parsed part as an array of numbers.
+ */
+function parseCronPart(part: string, min: number, max: number): number[] {
+    // Any
+    if (part === '*') {
+        return Array.from({ length: max - min + 1 }, (_, i) => i + min);
+    }
+
+    // List
+    if (part.includes(',')) {
+        return part.split(',').flatMap(p => parseCronPart(p, min, max));
+    }
+
+    // Range
+    if (part.includes('-')) {
+        const [start, end] = part.split('-', 2).map(parseInt);
+        return Array.from({ length: end - start + 1 }, (_, i) => i + start);
+    }
+
+    // Step
+    if (part.includes('/')) {
+        const [start, step] = part.split('/', 2);
+        const s = start === '*' ? min : parseInt(start);
+        const st = parseInt(step);
+
+        return Array.from({ length: Math.floor((max - s) / st) + 1 }, (_, i) => i * st + s);
+    }
+
+    return [Number(part)];
+}
+
+/**
+ * Parses a cron string.
+ *
+ * @param cronString The cron string to be parsed.
+ *
+ * @returns The parsed cron expression.
+ */
 export function parseCronString(cronString: string): CronExpression {
     const [second, minute, hour, dayOfMonth, month, dayOfWeek] = cronString.split(" ", 6);
-
-    function parseCronPart(part: string, min: number, max: number): number[] {
-        // Any
-        if (part === '*') {
-            return Array.from({ length: max - min + 1 }, (_, i) => i + min);
-        }
-
-        // List
-        if (part.includes(',')) {
-            return part.split(',').flatMap(p => parseCronPart(p, min, max));
-        }
-
-        // Range
-        if (part.includes('-')) {
-            const [start, end] = part.split('-', 2).map(parseInt);
-            return Array.from({ length: end - start + 1 }, (_, i) => i + start);
-        }
-
-        // Step
-        if (part.includes('/')) {
-            const [start, step] = part.split('/', 2);
-            const s = start === '*' ? min : parseInt(start);
-            const st = parseInt(step);
-
-            return Array.from({ length: Math.floor((max - s) / st) + 1 }, (_, i) => i * st + s);
-        }
-
-        return [Number(part)];
-    }
 
     return {
         seconds: parseCronPart(second, 0, 59),
@@ -109,6 +150,15 @@ export function parseCronString(cronString: string): CronExpression {
     };
 }
 
+/**
+ * Checks if a task can run based on a cron expression.
+ *
+ * @param cronExpression The cron expression parsed by `parseCronString`.
+ * @param now The current date and time.
+ * @param lastRun The last time the task was run.
+ *
+ * @returns Whether the task can run or not.
+ */
 export function canRunTask(cronExpression: CronExpression, now: Date, lastRun?: Date): boolean {
     if (lastRun && now.getSeconds() === lastRun.getSeconds()) {
         return false;

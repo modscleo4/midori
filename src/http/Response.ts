@@ -44,6 +44,56 @@ export type ProblemDetails = {
 type Bufferable = Buffer | string | (Buffer | string)[];
 type Streamable = Readable | Iterable<Bufferable> | AsyncIterable<Bufferable>;
 
+type CookieOptions = {
+    /** Defines the host to which the cookie will be sent. */
+    domain?: string;
+    /** Indicates the path that must exist in the requested URL for the browser to send the Cookie header. */
+    path?: string;
+    /** Indicates the maximum lifetime of the cookie as an HTTP-date timestamp. */
+    expires?: Date;
+    /** Indicates the number of seconds until the cookie expires. A zero or negative number will expire the cookie immediately. */
+    maxAge?: number;
+    /** Indicates that the cookie is sent to the server only when a request is made with the https: scheme (except on localhost), and therefore, is more resistant to man-in-the-middle attacks. */
+    secure?: boolean;
+    /** Forbids JavaScript from accessing the cookie, for example, through the `Document.cookie` property. */
+    httpOnly?: boolean;
+    /** Controls whether or not a cookie is sent with cross-site requests, providing some protection against cross-site request forgery attacks (CSRF). */
+    sameSite?: 'strict' | 'lax' | 'none';
+    /** Indicates that the cookie should be stored using partitioned storage. */
+    partitioned?: boolean;
+};
+
+type CacheControlExpiration = {
+    /** The max-age=N response directive indicates that the response remains fresh until N seconds after the response is generated. */
+    maxAge?: number;
+    /** The s-maxage response directive indicates how long the response remains fresh in a shared cache. The s-maxage directive is ignored by private caches, and overrides the value specified by the max-age directive or the Expires header for shared caches, if they are present.  */
+    sharedMaxAge?: number;
+    /** The max-stale=N request directive indicates that the client allows a stored response that is stale within N seconds. If no N value is specified, the client will accept a stale response of any age. */
+    maxStale?: number;
+    /** The min-fresh=N request directive indicates that the client allows a stored response that is fresh for at least N seconds. */
+    minFresh?: number;
+    /** The stale-while-revalidate response directive indicates that the cache could reuse a stale response while it revalidates it to a cache. */
+    staleWhileRevalidate?: number;
+    /** he stale-if-error response directive indicates that the cache can reuse a stale response when an upstream server generates an error, or when the error is generated locally. */
+    staleIfError?: number;
+};
+
+type CacheControlRevalidation = {
+    /** The must-revalidate response directive indicates that the response can be stored in caches and can be reused while fresh. If the response becomes stale, it must be validated with the origin server before reuse. */
+    mustRevalidate?: boolean;
+    /** The proxy-revalidate response directive is the equivalent of must-revalidate, but specifically for shared caches only. */
+    proxyRevalidate?: boolean
+    /** The immutable response directive indicates that the response will not be updated while it's fresh. */
+    immutable?: boolean;
+};
+
+type CacheControlOptions = {
+    /** The no-store response directive indicates that any caches of any kind (private or shared) should not store this response. */
+    noStore?: boolean;
+    /** no-transform indicates that any intermediary (regardless of whether it implements a cache) shouldn't transform the response contents. */
+    noTransform?: boolean;
+};
+
 /**
  * Representation of a HTTP Response.
  *
@@ -115,15 +165,7 @@ export default class Response<T = any> {
      * @param options The cookie options.
      * @returns The response object.
      */
-    withCookie(key: string, value: string, options?: {
-        domain?: string;
-        path?: string;
-        expires?: Date;
-        maxAge?: number;
-        secure?: boolean;
-        httpOnly?: boolean;
-        sameSite?: 'strict' | 'lax' | 'none';
-    }): Response<T> {
+    withCookie(key: string, value: string, options?: CookieOptions): Response<T> {
         let cookie = `${key}=${value};`;
 
         if (options?.domain) {
@@ -152,6 +194,10 @@ export default class Response<T = any> {
 
         if (options?.sameSite) {
             cookie += ` SameSite=${options.sameSite};`;
+        }
+
+        if (options?.partitioned) {
+            cookie += ' Partitioned;';
         }
 
         if (this.#headers.has('Set-Cookie')) {
@@ -183,6 +229,91 @@ export default class Response<T = any> {
         this.#earlyHints.get(key)!.push(value);
 
         return this;
+    }
+
+    /**
+     * Add a Cache-Control header to the response.
+     *
+     * @param kind The kind of Cache-Control header. It can be `public`, `private`, `no-cache` or `only-if-cached`.
+     * @param expiration The expiration options, such as `maxAge`.
+     * @param revalidation The revalidation options, such as `mustRevalidate`.
+     * @param options The additional options, such as `noStore`.
+     *
+     * @returns The response object.
+     */
+    withCacheControl(
+        kind: 'public' | 'private' | 'no-cache' | 'only-if-cached',
+        expiration?: CacheControlExpiration,
+        revalidation?: CacheControlRevalidation,
+        options?: CacheControlOptions
+    ): Response<T> {
+        let cacheControl = kind;
+
+        if (expiration?.maxAge) {
+            cacheControl += `, max-age=${expiration.maxAge}`;
+        }
+
+        if (expiration?.sharedMaxAge) {
+            cacheControl += `, s-maxage=${expiration.sharedMaxAge}`;
+        }
+
+        if (expiration?.maxStale) {
+            cacheControl += `, max-stale=${expiration.maxStale}`;
+        }
+
+        if (expiration?.minFresh) {
+            cacheControl += `, min-fresh=${expiration.minFresh}`;
+        }
+
+        if (expiration?.staleWhileRevalidate) {
+            cacheControl += `, stale-while-revalidate=${expiration.staleWhileRevalidate}`;
+        }
+
+        if (expiration?.staleIfError) {
+            cacheControl += `, stale-if-error=${expiration.staleIfError}`;
+        }
+
+        if (revalidation?.mustRevalidate) {
+            cacheControl += ', must-revalidate';
+        }
+
+        if (revalidation?.proxyRevalidate) {
+            cacheControl += ', proxy-revalidate';
+        }
+
+        if (revalidation?.immutable) {
+            cacheControl += ', immutable';
+        }
+
+        if (options?.noStore) {
+            cacheControl += ', no-store';
+        }
+
+        if (options?.noTransform) {
+            cacheControl += ', no-transform';
+        }
+
+        return this.withHeader('Cache-Control', cacheControl);
+    }
+
+    /**
+     * Add an ETag header to the response.
+     *
+     * @param value The ETag value.
+     * @returns The response object.
+     */
+    withETag(value: string): Response<T> {
+        return this.withHeader('ETag', value);
+    }
+
+    /**
+     * Add a Last-Modified header to the response.
+     *
+     * @param value The Last-Modified value.
+     * @returns The response object.
+     */
+    withLastModified(value: Date): Response<T> {
+        return this.withHeader('Last-Modified', value.toUTCString());
     }
 
     /**

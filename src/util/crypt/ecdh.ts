@@ -23,6 +23,13 @@ import { ECPublicKey, ECPrivateKey } from "../jwk.js";
  * Elliptic Curve Diffie-Hellman, as used by JWE.
  */
 export default class ECDH {
+    /**
+     * Generates an ephemeral private key for the given curve.
+     *
+     * @param crv The curve to use
+     *
+     * @returns The generated private key
+     */
     static generateEphemeralKey(crv: string): ECPrivateKey {
         const { publicKey, privateKey } = generateKeyPairSync('ec', {
             publicKeyEncoding: {
@@ -40,7 +47,12 @@ export default class ECDH {
     }
 
     /**
-     * Derives a shared secret from a private and a public key. Uses the crypto.subtle API.
+     * Derives a shared secret from a private and a public key. Uses the crypto API.
+     *
+     * @param privateKey The private key
+     * @param publicKey The public key
+     *
+     * @returns The shared secret
      */
     static deriveSharedSecret(privateKey: ECPrivateKey, publicKey: ECPublicKey): Buffer {
         const privKey = createPrivateKey({ format: 'jwk', key: privateKey });
@@ -52,6 +64,13 @@ export default class ECDH {
         return ecdh.computeSecret(publicKeyToRaw(pubKey));
     }
 
+    /**
+     * Returns the OpenSSL curve name for the given curve.
+     *
+     * @param crv The curve name
+     *
+     * @returns The OpenSSL curve name
+     */
     static getCurveName(crv: string): string {
         switch (crv) {
             case 'P-256':

@@ -40,6 +40,7 @@ export function globMatch(pattern: string, search: string): boolean {
  * Generate a random string with `n` characters using the `crypto` module.
  *
  * @param n The number of characters to generate
+ *
  * @returns A random string with `n` characters
  */
 export function generateRandomString(n: number): string {
@@ -54,6 +55,7 @@ export function generateRandomString(n: number): string {
  * @param str The string to be split
  * @param separator The separator to split the string
  * @param limit The maximum number of splits
+ *
  * @returns An array of substrings
  */
 export function split(str: string, separator: string, limit?: number): string[] {

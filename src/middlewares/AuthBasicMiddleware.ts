@@ -35,23 +35,24 @@ export default class AuthBasicMiddleware extends Middleware {
     }
 
     override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
-        if (!req.headers['authorization']) {
+        const authInfo = this.getAuthInfo(req);
+        if (!authInfo) {
             return await next(req);
         }
 
-        const [scheme, credentialsBase64] = req.headers['authorization'].split(' ', 2);
+        const { scheme, credentials } = authInfo;
 
         if (scheme !== 'Basic') {
             return Response.problem('Invalid Authorization scheme.', 'Only Basic scheme is supported.', EStatusCode.UNAUTHORIZED)
                 .withHeader('WWW-Authenticate', 'Basic');
         }
 
-        if (!credentialsBase64) {
+        if (!credentials) {
             return Response.problem('Invalid Authorization credentials.', 'No credentials provided.', EStatusCode.UNAUTHORIZED)
                 .withHeader('WWW-Authenticate', 'Basic');
         }
 
-        const [username, password] = Buffer.from(credentialsBase64, 'base64').toString('utf8').split(':');
+        const [username, password] = Buffer.from(credentials, 'base64').toString('utf8').split(':');
 
         if (
             !username
@@ -69,5 +70,21 @@ export default class AuthBasicMiddleware extends Middleware {
         }
 
         return await next(req);
+    }
+
+    /**
+     * Extracts the Authorization header from the Request.
+     *
+     * @param req Request object.
+     * @returns An object with the scheme and credentials or null if the header is not present.
+     */
+    getAuthInfo(req: Request): { scheme: string, credentials: string; } | null {
+        if (!req.headers['authorization']) {
+            return null;
+        }
+
+        const [scheme, credentials] = req.headers['authorization'].split(' ', 2);
+
+        return { scheme, credentials };
     }
 }

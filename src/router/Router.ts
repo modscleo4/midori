@@ -32,6 +32,14 @@ export default class Router {
 
     /**
      * Handles a custom method request.
+     *
+     * @param method The method to be handled.
+     * @param path The relative path to be handled. It can contain parameters.
+     * @param handler The handler for the request.
+     * @param middlewares The middlewares to be applied to the request.
+     * @param name The name of the route.
+     *
+     * @returns The Route instance.
      */
     route(method: string, path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
         Router.validatePath(path);
@@ -44,6 +52,13 @@ export default class Router {
 
     /**
      * Handle a GET (List) request.
+     *
+     * @param path The relative path to be handled. It can contain parameters.
+     * @param handler The handler for the request.
+     * @param middlewares The middlewares to be applied to the request.
+     * @param name The name of the route.
+     *
+     * @returns The Route instance.
      */
     get(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
         return this.route('GET', path, handler, middlewares, name);
@@ -51,6 +66,14 @@ export default class Router {
 
     /**
      * Handle a HEAD (Body-less GET) request.
+     * You can also use the ImplicitHeadMiddleware to automatically handle HEAD requests for GET routes.
+     *
+     * @param path The relative path to be handled. It can contain parameters.
+     * @param handler The handler for the request.
+     * @param middlewares The middlewares to be applied to the request.
+     * @param name The name of the route.
+     *
+     * @returns The Route instance.
      */
     head(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
         return this.route('HEAD', path, handler, middlewares, name);
@@ -58,6 +81,13 @@ export default class Router {
 
     /**
      * Handles a POST (Create) request.
+     *
+     * @param path The relative path to be handled. It can contain parameters.
+     * @param handler The handler for the request.
+     * @param middlewares The middlewares to be applied to the request.
+     * @param name The name of the route.
+     *
+     * @returns The Route instance.
      */
     post(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
         return this.route('POST', path, handler, middlewares, name);
@@ -65,6 +95,13 @@ export default class Router {
 
     /**
      * Handles a PUT (Full Update) request.
+     *
+     * @param path The relative path to be handled. It can contain parameters.
+     * @param handler The handler for the request.
+     * @param middlewares The middlewares to be applied to the request.
+     * @param name The name of the route.
+     *
+     * @returns The Route instance.
      */
     put(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
         return this.route('PUT', path, handler, middlewares, name);
@@ -72,6 +109,13 @@ export default class Router {
 
     /**
      * Handles a PATCH (Partial Update) request.
+     *
+     * @param path The relative path to be handled. It can contain parameters.
+     * @param handler The handler for the request.
+     * @param middlewares The middlewares to be applied to the request.
+     * @param name The name of the route.
+     *
+     * @returns The Route instance.
      */
     patch(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
         return this.route('PATCH', path, handler, middlewares, name);
@@ -79,6 +123,13 @@ export default class Router {
 
     /**
      * Handles a DELETE request.
+     *
+     * @param path The relative path to be handled. It can contain parameters.
+     * @param handler The handler for the request.
+     * @param middlewares The middlewares to be applied to the request.
+     * @param name The name of the route.
+     *
+     * @returns The Route instance.
      */
     delete(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
         return this.route('DELETE', path, handler, middlewares, name);
@@ -86,6 +137,14 @@ export default class Router {
 
     /**
      * Handles a OPTIONS request.
+     * You can also use the ImplicitOptionsMiddleware to automatically handle OPTIONS requests for all routes.
+     *
+     * @param path The relative path to be handled. It can contain parameters.
+     * @param handler The handler for the request.
+     * @param middlewares The middlewares to be applied to the request.
+     * @param name The name of the route.
+     *
+     * @returns The Route instance.
      */
     options(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
         return this.route('OPTIONS', path, handler, middlewares, name);
@@ -93,6 +152,13 @@ export default class Router {
 
     /**
      * Handles a CONNECT request.
+     *
+     * @param path The relative path to be handled. It can contain parameters.
+     * @param handler The handler for the request.
+     * @param middlewares The middlewares to be applied to the request.
+     * @param name The name of the route.
+     *
+     * @returns The Route instance.
      */
     connect(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
         return this.route('CONNECT', path, handler, middlewares, name);
@@ -100,6 +166,13 @@ export default class Router {
 
     /**
      * Handles a TRACE request.
+     *
+     * @param path The relative path to be handled. It can contain parameters.
+     * @param handler The handler for the request.
+     * @param middlewares The middlewares to be applied to the request.
+     * @param name The name of the route.
+     *
+     * @returns The Route instance.
      */
     trace(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
         return this.route('TRACE', path, handler, middlewares, name);
@@ -107,17 +180,25 @@ export default class Router {
 
     /**
      * Groups routes together. Use this to apply middlewares to a group of routes, or when there are routes with a common path prefix.
+     * This method mutates the Router instance, so you don't need to use the Router argument inside the callback.
+     *
+     * @param prefix The prefix to be applied to the routes inside the group.
+     * @param groupCallback The callback to define the routes inside the group.
+     * @param middlewares The middlewares to be applied to the group.
      */
     group(prefix: string, groupCallback: (Router: Router) => void, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = []): void {
         Router.validatePath(prefix);
 
+        // Save the current prefix and middlewares
         const _prefix = this.#prefix;
         const _middlewares = this.#middlewares;
+        // Apply the new prefix and middlewares
         this.#prefix += prefix;
         this.#middlewares = this.#middlewares.concat(middlewares);
 
         groupCallback(this);
 
+        // Restore the previous prefix and middlewares
         this.#prefix = _prefix;
         this.#middlewares = _middlewares;
     }
@@ -215,6 +296,11 @@ export default class Router {
 
     /**
      * Clone a Router instance and all its routes.
+     * This should be done when working with multiple Applications or threads.
+     *
+     * @param router The Router instance to be cloned.
+     *
+     * @returns The cloned Router instance.
      */
     static clone(router: Router): Router {
         const newRouter = new Router();

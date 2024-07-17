@@ -20,6 +20,15 @@ import { createSign, createVerify, KeyObject } from "node:crypto";
  * Elliptic Curve Digital Signature Algorithm, as used by JWS.
  */
 export default class ECDSA {
+    /**
+     * Signs a message using the given private key.
+     *
+     * @param shaVersion The SHA version to use (256, 384 or 512)
+     * @param privateKey The private key
+     * @param data The data to be signed
+     *
+     * @returns The signature
+     */
     static sign(shaVersion: 256 | 384 | 512, privateKey: KeyObject, data: Buffer): Buffer {
         const sign = createSign('SHA' + shaVersion);
         sign.update(data);
@@ -29,6 +38,16 @@ export default class ECDSA {
         });
     }
 
+    /**
+     * Verifies a signature using the given public key.
+     *
+     * @param shaVersion The SHA version to use (256, 384 or 512)
+     * @param publicKey The public key
+     * @param data The data to be verified
+     * @param signature The signature to be verified
+     *
+     * @returns Whether the signature is valid
+     */
     static verify(shaVersion: 256 | 384 | 512, publicKey: KeyObject, data: Buffer, signature: Buffer): boolean {
         const verify = createVerify('SHA' + shaVersion);
         verify.update(data);

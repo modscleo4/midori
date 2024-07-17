@@ -20,6 +20,18 @@ import { createCipheriv, createDecipheriv } from "node:crypto";
  * Advanced Encryption Standard (Galois/Counter Mode), as used by JWE.
  */
 export default class AESGCM {
+    /**
+     * Encrypt a plaintext using AES-GCM.
+     *
+     * @param aesVersion The AES version to use (128, 192 or 256)
+     * @param cek The Content Encryption Key
+     * @param iv The Initialization Vector
+     * @param aad The Additional Authenticated Data
+     * @param plainText The plaintext to be encrypted
+     * @param authTagLength The length of the authentication tag
+     *
+     * @returns The ciphertext and the authentication tag
+     */
     static encrypt(aesVersion: 128 | 192 | 256, cek: Buffer, iv: Buffer, aad: Buffer, plainText: Buffer, authTagLength: number): { cipherText: Buffer; authenticationTag: Buffer; } {
         const cipher = createCipheriv(`aes-${aesVersion}-gcm`, cek, iv, { authTagLength });
         cipher.setAAD(aad);
@@ -30,6 +42,19 @@ export default class AESGCM {
         return { cipherText, authenticationTag };
     }
 
+    /**
+     * Decrypt a ciphertext using AES-GCM.
+     *
+     * @param aesVersion The AES version to use (128, 192 or 256)
+     * @param cek The Content Encryption Key
+     * @param iv The Initialization Vector
+     * @param aad The Additional Authenticated Data
+     * @param cipherText The ciphertext to be decrypted
+     * @param authenticationTag The authentication tag
+     * @param authTagLength The length of the authentication tag
+     *
+     * @returns The plain text
+     */
     static decrypt(aesVersion: 128 | 192 | 256, cek: Buffer, iv: Buffer, aad: Buffer, cipherText: Buffer, authenticationTag: Buffer, authTagLength: number): Buffer {
         const decipher = createDecipheriv(`aes-${aesVersion}-gcm`, cek, iv, { authTagLength });
         decipher.setAAD(aad);

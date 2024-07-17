@@ -16,6 +16,9 @@
 
 import { Application } from "./Server.js";
 
+/**
+ * ServiceProvider is a class that is used to provide services to the application.
+ */
 export default abstract class ServiceProvider<T> {
     static service: symbol;
 
@@ -23,5 +26,10 @@ export default abstract class ServiceProvider<T> {
         //
     }
 
+    /**
+     * Register the service to the application.
+     *
+     * @param app The application instance.
+     */
     abstract register(app: Application): T;
 }

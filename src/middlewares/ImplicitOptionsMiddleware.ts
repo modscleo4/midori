@@ -33,10 +33,14 @@ export default class ImplicitOptionsMiddleware extends Middleware {
                 return await next(req);
             }
 
-            return Response.status(EStatusCode.OK)
-                .withHeader('Allow', routes.map(r => r.method).join(', '));
+            return this.generateResponse(req, routes);
         }
 
         return await next(req);
+    }
+
+    generateResponse(req: Request, routes: Route[]): Response {
+        return Response.status(EStatusCode.OK)
+            .withHeader('Allow', routes.map(r => r.method).join(', '));
     }
 }

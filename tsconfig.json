@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "incremental": true,
         "moduleResolution": "Node16",
         "module": "Node16",
         "target": "ES2022",
@@ -20,7 +21,9 @@
         "noImplicitOverride": true,
         "noImplicitThis": true,
         "strictBindCallApply": true,
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "strictPropertyInitialization": true
     },
     "include": [
         "src/**/*"

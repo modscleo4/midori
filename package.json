@@ -1,6 +1,6 @@
 {
   "name": "@modscleo4/midori",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Midori is a Node.js web API framework with minimal dependencies and based on PSR ideas.",
   "type": "module",
   "keywords": [
@@ -101,8 +101,8 @@
   },
   "devDependencies": {
     "@types/mime-types": "^2.1.4",
-    "@types/node": "^20.12.12",
-    "typescript": "^5.4.5"
+    "@types/node": "^20.14.9",
+    "typescript": "^5.5.3"
   },
   "dependencies": {
     "mime-types": "^2.1.35"

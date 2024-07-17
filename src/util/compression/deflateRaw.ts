@@ -18,29 +18,74 @@ import { Transform } from "node:stream";
 import { promisify } from "node:util";
 import { createDeflateRaw, createInflateRaw, deflateRaw, deflateRawSync, inflateRaw, inflateRawSync } from "node:zlib";
 
+/**
+ * Deflate compression and Inflate decompression without headers.
+ */
 export default class DeflateRaw {
+    /**
+     * Asynchronously compresses the given data.
+     *
+     * @param data The data to be compressed
+     * @param level The compression level (0-9)
+     *
+     * @returns The compressed data
+     */
     static async compress(data: Buffer, level: number = 5): Promise<Buffer> {
         return await promisify(deflateRaw)(data, { level });
     }
 
+    /**
+     * Asynchronously decompresses the given data.
+     *
+     * @param data The data to be decompressed
+     *
+     * @returns The decompressed data
+     */
     static async decompress(data: Buffer): Promise<Buffer> {
         return await promisify(inflateRaw)(data);
     }
 
+    /**
+     * Synchronously compresses the given data.
+     *
+     * @param data The data to be compressed
+     * @param level The compression level (0-9)
+     *
+     * @returns The compressed data
+     */
     static compressSync(data: Buffer, level: number = 5): Buffer {
         return deflateRawSync(data, { level });
     }
 
+    /**
+     * Synchronously decompresses the given data.
+     *
+     * @param data The data to be decompressed
+     *
+     * @returns The decompressed data
+     */
     static decompressSync(data: Buffer): Buffer {
         return inflateRawSync(data);
     }
 
+    /**
+     * Creates a stream to compress data.
+     *
+     * @param level The compression level (0-9)
+     *
+     * @returns The stream
+     */
     static compressStream(level: number = 5): Transform {
         const stream = createDeflateRaw({ level });
 
         return stream;
     }
 
+    /**
+     * Creates a stream to decompress data.
+     *
+     * @returns The stream
+     */
     static decompressStream(): Transform {
         const stream = createInflateRaw();
 

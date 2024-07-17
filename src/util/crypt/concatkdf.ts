@@ -22,6 +22,16 @@ import { encodeUInt32BE } from '../buffer.js';
  * Concatenation Key Derivation Function, as defined in NIST SP 800-56A, section 5.8.1.
  */
 export default class ConcatKDF {
+    /**
+     * Derive a key using the Concatenation Key Derivation Function.
+     *
+     * @param shaVersion The SHA version to use (1, 256, 384 or 512)
+     * @param sharedSecret The shared secret
+     * @param keyLengthBits The length of the derived key in bits
+     * @param otherInfo The other info to be included in the key derivation
+     *
+     * @returns The derived key
+     */
     static deriveKey(shaVersion: 1 | 256 | 384 | 512, sharedSecret: Buffer, keyLengthBits: number, otherInfo: Buffer | null): Buffer {
         const digestLengthBits = this.getDigestLengthBits(shaVersion);
 
@@ -44,10 +54,25 @@ export default class ConcatKDF {
         return derivedKey.subarray(0, keyLengthBits / 8);
     }
 
+    /**
+     * Compute the number of digest cycles needed to derive a key.
+     *
+     * @param digestLengthBits The length of the digest in bits
+     * @param keyLengthBits The length of the derived key in bits
+     *
+     * @returns The number of digest cycles needed
+     */
     static computeDigestCycles(digestLengthBits: number, keyLengthBits: number): number {
         return (keyLengthBits + digestLengthBits - 1) / digestLengthBits;
     }
 
+    /**
+     * Get the length of the digest in bits for a given SHA version.
+     *
+     * @param shaVersion The SHA version
+     *
+     * @returns The length of the digest in bits
+     */
     static getDigestLengthBits(shaVersion: 1 | 256 | 384 | 512): number {
         if (shaVersion === 1) {
             return 160;

@@ -17,7 +17,11 @@
 import { UUID, randomBytes, randomUUID } from "node:crypto";
 
 /**
- * Generate a UUID v4
+ * Generate an UUID using the `crypto` module.
+ *
+ * @param version UUID version to generate (4, 7, Infinity for Max UUID or null for Nil UUID)
+ *
+ * @returns An UUID string in the format `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
  */
 export function generateUUID(version: number | null = 4): UUID {
     if (version === null) {
@@ -62,10 +66,12 @@ export function generateUUID(version: number | null = 4): UUID {
 }
 
 /**
- * Validate a UUID
+ * Validate an UUID
  *
  * @param uuid UUID to validate
  * @param version UUID version to validate (-1 to ignore)
+ *
+ * @returns Whether the UUID is valid or not according to the version
  */
 export function validateUUID(uuid: string, version: number = 4): boolean {
     if (uuid.length !== 36) return false; // UUIDs have 36 characters no matter the version

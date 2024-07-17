@@ -31,8 +31,13 @@ export default abstract class Middleware {
     }
 
     /**
-     * Middlewares are used to process a request before it reaches the handler.
+     * Process a request before it reaches the handler.
      * Here you can do things like authentication, authorization, etc.
+     *
+     * @param req The request to be processed.
+     * @param next The next Middleware (or the Handler) in the chain.
+     *
+     * @returns The response to the request.
      */
     abstract process(
         req: Request,
@@ -45,6 +50,11 @@ export default abstract class Middleware {
 
     /**
      * Converts a Middleware class to a Middleware function.
+     *
+     * @param middleware The Middleware class to be converted.
+     * @param app The application instance.
+     *
+     * @returns The Middleware function.
      */
     static asFunction(middleware: MiddlewareConstructor | MiddlewareFunction, app: Application): MiddlewareFunction {
         if (middleware.prototype instanceof Middleware) {

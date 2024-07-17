@@ -20,6 +20,18 @@ import { createCipheriv, createDecipheriv, createHmac } from "node:crypto";
  * Advanced Encryption Standard (Cipher Block Chaining) + Hash-based Message Authentication Code, as used by JWE.
  */
 export default class AESHMAC {
+    /**
+     * Encrypt a plaintext using AES-CBC + HMAC.
+     *
+     * @param aesVersion The AES version to use (128, 192 or 256)
+     * @param shaVersion The SHA version to use (256, 384 or 512)
+     * @param cek The Content Encryption Key
+     * @param iv The Initialization Vector
+     * @param aad The Additional Authenticated Data
+     * @param plainText The plaintext to be encrypted
+     *
+     * @returns The ciphertext and the authentication tag
+     */
     static encrypt(aesVersion: 128 | 192 | 256, shaVersion: 256 | 384 | 512, cek: Buffer, iv: Buffer, aad: Buffer, plainText: Buffer): { cipherText: Buffer; authenticationTag: Buffer; } {
         const macKey = cek.subarray(0, aesVersion / 8);
         const encKey = cek.subarray(aesVersion / 8, cek.length);
@@ -39,6 +51,19 @@ export default class AESHMAC {
         return { cipherText, authenticationTag: authenticationTag.subarray(0, authenticationTag.length / 2) };
     }
 
+    /**
+     * Decrypt a ciphertext using AES-CBC + HMAC.
+     *
+     * @param aesVersion The AES version to use (128, 192 or 256)
+     * @param shaVersion The SHA version to use (256, 384 or 512)
+     * @param cek The Content Encryption Key
+     * @param iv The Initialization Vector
+     * @param aad The Additional Authenticated Data
+     * @param cipherText The ciphertext to be decrypted
+     * @param authenticationTag The authentication tag
+     *
+     * @returns The plain text
+     */
     static decrypt(aesVersion: 128 | 192 | 256, shaVersion: 256 | 384 | 512, cek: Buffer, iv: Buffer, aad: Buffer, cipherText: Buffer, authenticationTag: Buffer): Buffer {
         const macKey = cek.subarray(0, aesVersion / 8);
         const encKey = cek.subarray(aesVersion / 8, cek.length);

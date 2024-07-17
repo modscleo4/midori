@@ -48,6 +48,11 @@ export type ANSIOptions = {
 
 /**
  * Formats a text with ANSI escape sequences.
+ *
+ * @param text The text to be formatted.
+ * @param options The options to be used.
+ *
+ * @returns The formatted text.
  */
 export function format(text: string, options?: ANSIOptions): string {
     const fomatters = [];

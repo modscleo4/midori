@@ -33,6 +33,6 @@ export default class AuthMiddleware extends Middleware {
     }
 
     async failedResponse(req: Request): Promise<Response> {
-        return Response.problem('Unauthorized.', 'You need to be authenticated to access this resource.', EStatusCode.UNAUTHORIZED);
+        return Response.problem('Unauthorized.', 'Authentication is required to access this resource.', EStatusCode.UNAUTHORIZED);
     }
 }

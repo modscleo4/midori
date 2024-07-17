@@ -77,6 +77,7 @@ export type Header = {
  * @param payload JWT Payload
  * @param alg Algorithm
  * @param key Private Key (for RSA and ECDSA) or Secret (for HMAC)
+ *
  * @returns Signed JWT in JWS Compact Serialization format
  */
 export function signJWT(
@@ -102,6 +103,7 @@ export function signJWT(
  * @param token JWT Token in JWS Compact Serialization format
  * @param alg Algorithm
  * @param key Private Key (for RSA and ECDSA) or Secret (for HMAC)
+ *
  * @returns Whether the token is valid
  */
 export function verifyJWS(
@@ -125,6 +127,16 @@ export function verifyJWS(
     return verify(headerBase64, payloadBase64, signature, alg, key);
 }
 
+/**
+ * Sign a JWS Payload with the given algorithm and secret or private key
+ *
+ * @param header JWS Header
+ * @param payload JWS Payload
+ * @param alg Algorithm
+ * @param key Private Key (for RSA and ECDSA) or Secret (for HMAC)
+ *
+ * @returns Signed JWS in JWS Compact Serialization format
+ */
 function sign(
     headerBase64: string,
     payloadBase64: string,
@@ -268,7 +280,17 @@ function sign(
     throw new JWTError(`Unsupported algorithm: ${alg}`);
 }
 
-
+/**
+ * Verify a JWS Payload with the given algorithm and secret or public key
+ *
+ * @param headerBase64 JWS Header in Base64
+ * @param payloadBase64 JWS Payload in Base64
+ * @param signature JWS Signature
+ * @param alg Algorithm
+ * @param key Public Key (for RSA and ECDSA) or Secret (for HMAC)
+ *
+ * @returns Whether the JWS is valid
+ */
 function verify(
     headerBase64: string,
     payloadBase64: string,

@@ -88,6 +88,9 @@ type ServerConfig = {
     production?: boolean;
 };
 
+/**
+ * The main class of the application.
+ */
 export default class Server extends HTTPServer<typeof Request> implements Application {
     #config = new Container<symbol, unknown>();
     #services = new ServiceContainer();

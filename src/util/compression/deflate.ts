@@ -18,29 +18,74 @@ import { Transform } from "node:stream";
 import { promisify } from "node:util";
 import { createDeflate, createInflate, deflate, deflateSync, inflate, inflateSync } from "node:zlib";
 
+/**
+ * Deflate compression and Inflate decompression.
+ */
 export default class Deflate {
+    /**
+     * Asynchronously compresses the given data.
+     *
+     * @param data The data to be compressed
+     * @param level The compression level (0-9)
+     *
+     * @returns The compressed data
+     */
     static async compress(data: Buffer, level: number = 5): Promise<Buffer> {
         return await promisify(deflate)(data, { level });
     }
 
+    /**
+     * Asynchronously decompresses the given data.
+     *
+     * @param data The data to be decompressed
+     *
+     * @returns The decompressed data
+     */
     static async decompress(data: Buffer): Promise<Buffer> {
         return await promisify(inflate)(data);
     }
 
+    /**
+     * Synchronously compresses the given data.
+     *
+     * @param data The data to be compressed
+     * @param level The compression level (0-9)
+     *
+     * @returns The compressed data
+     */
     static compressSync(data: Buffer, level: number = 5): Buffer {
         return deflateSync(data, { level });
     }
 
+    /**
+     * Synchronously decompresses the given data.
+     *
+     * @param data The data to be decompressed
+     *
+     * @returns The decompressed data
+     */
     static decompressSync(data: Buffer): Buffer {
         return inflateSync(data);
     }
 
+    /**
+     * Creates a stream to compress data.
+     *
+     * @param level The compression level (0-9)
+     *
+     * @returns The stream
+     */
     static compressStream(level: number = 5): Transform {
         const stream = createDeflate({ level });
 
         return stream;
     }
 
+    /**
+     * Creates a stream to decompress data.
+     *
+     * @returns The stream
+     */
     static decompressStream(): Transform {
         const stream = createInflate();
 

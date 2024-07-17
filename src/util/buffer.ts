@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
+/**
+ * Encodes a number as a 32-bit unsigned integer in big-endian.
+ *
+ * @param value The number to be encoded.
+ *
+ * @returns The encoded number as a Buffer.
+ */
 export function encodeUInt32BE(value: number): Buffer {
     const buffer = Buffer.alloc(4);
     buffer.writeUInt32BE(value, 0);
@@ -21,6 +28,13 @@ export function encodeUInt32BE(value: number): Buffer {
     return buffer;
 }
 
+/**
+ * Encodes a buffer with its length as a 32-bit unsigned integer in big-endian.
+ *
+ * @param data The buffer to be encoded.
+ *
+ * @returns The encoded buffer.
+ */
 export function encodeBufferWithLength(data: Buffer): Buffer {
     const length = encodeUInt32BE(data.length);
     return Buffer.concat([length, data]);

@@ -18,29 +18,74 @@ import { Transform } from "node:stream";
 import { promisify } from "node:util";
 import { brotliCompress, brotliDecompress, brotliCompressSync, brotliDecompressSync, createBrotliCompress, createBrotliDecompress, constants } from "node:zlib";
 
+/**
+ * Brotli compression and decompression.
+ */
 export default class Brotli {
+    /**
+     * Asynchronously compresses the given data.
+     *
+     * @param data The data to be compressed
+     * @param quality The compression quality (0-11)
+     *
+     * @returns The compressed data
+     */
     static async compress(data: Buffer, quality: number = 5): Promise<Buffer> {
         return await promisify(brotliCompress)(data, { params: { [constants.BROTLI_PARAM_QUALITY]: quality } });
     }
 
+    /**
+     * Asynchronously decompresses the given data.
+     *
+     * @param data The data to be decompressed
+     *
+     * @returns The decompressed data
+     */
     static async decompress(data: Buffer): Promise<Buffer> {
         return await promisify(brotliDecompress)(data);
     }
 
+    /**
+     * Synchronously compresses the given data.
+     *
+     * @param data The data to be compressed
+     * @param quality The compression quality (0-11)
+     *
+     * @returns The compressed data
+     */
     static compressSync(data: Buffer, quality: number = 5): Buffer {
         return brotliCompressSync(data, { params: { [constants.BROTLI_PARAM_QUALITY]: quality } });
     }
 
+    /**
+     * Synchronously decompresses the given data.
+     *
+     * @param data The data to be decompressed
+     *
+     * @returns The decompressed data
+     */
     static decompressSync(data: Buffer): Buffer {
         return brotliDecompressSync(data);
     }
 
+    /**
+     * Creates a stream to compress data.
+     *
+     * @param level The compression level (0-11)
+     *
+     * @returns The stream
+     */
     static compressStream(quality: number = 5): Transform {
         const stream = createBrotliCompress({ params: { [constants.BROTLI_PARAM_QUALITY]: quality } });
 
         return stream;
     }
 
+    /**
+     * Creates a stream to decompress data.
+     *
+     * @returns The stream
+     */
     static decompressStream(): Transform {
         const stream = createBrotliDecompress();
 

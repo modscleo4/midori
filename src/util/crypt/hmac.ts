@@ -20,6 +20,15 @@ import { createHmac } from "node:crypto";
  * Hash-based Message Authentication Code, as used by JWS.
  */
 export default class HMAC {
+    /**
+     * Signs a message using the given secret.
+     *
+     * @param shaVersion The SHA version to use (256, 384 or 512)
+     * @param secret The secret
+     * @param data The data to be signed
+     *
+     * @returns The signature
+     */
     static sign(shaVersion: 256 | 384 | 512, secret: Buffer, data: Buffer): Buffer {
         const hmac = createHmac('sha' + shaVersion, secret);
         hmac.update(data);
@@ -28,6 +37,16 @@ export default class HMAC {
         return signature;
     }
 
+    /**
+     * Verifies a signature using the given secret.
+     *
+     * @param shaVersion The SHA version to use (256, 384 or 512)
+     * @param secret The secret
+     * @param data The data to be verified
+     * @param signature The signature to be verified
+     *
+     * @returns Whether the signature is valid
+     */
     static verify(shaVersion: 256 | 384 | 512, secret: Buffer, data: Buffer, signature: Buffer): boolean {
         const hmac = createHmac('sha' + shaVersion, secret);
         hmac.update(data);

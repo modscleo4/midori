@@ -25,6 +25,7 @@ export type Constructor<T> = new (...args: any[]) => T;
  *
  * @param condition The condition to be asserted.
  * @param message The message to be shown if the condition is false. This parameter is not used.
+ *
  * @returns Nothing.
  */
 export function fakeAssert(condition: boolean, message?: string): asserts condition {

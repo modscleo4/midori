@@ -71,6 +71,9 @@ export enum JWEAlgorithm {
     "PBES2-HS512+A256KW" = 'PBES2-HS512+A256KW',
 };
 
+/**
+ * JWE Encryption Algorithms
+ */
 export enum JWEEncryption {
     /** AES_128_CBC_HMAC_SHA_256 authenticated encryption algorithm */
     "A128CBC-HS256" = 'A128CBC-HS256',
@@ -223,6 +226,13 @@ export function decryptJWE(
     return plainText;
 }
 
+/**
+ * Calculates the length of the CEK based on the encryption algorithm
+ *
+ * @param enc Encryption algorithm
+ *
+ * @returns Length of the CEK in bits
+ */
 export function cekLength(enc: JWEEncryption): number {
     switch (enc) {
         case JWEEncryption.A128GCM:
@@ -243,6 +253,16 @@ export function cekLength(enc: JWEEncryption): number {
     throw new JWTError(`Unsupported encryption: ${enc}`);
 }
 
+/**
+ * Generates the Content Encryption Key (CEK) based on the algorithm and encryption algorithm
+ *
+ * @param alg Algorithm
+ * @param enc Encryption algorithm
+ * @param header Header
+ * @param key Public key (for asymmetric algorithms) or shared secret (for symmetric algorithms)
+ * @param ephemeralKey Ephemeral key (null to generate a new one)
+ * @returns CEK and the key to be used for encryption (null if the CEK is used directly)
+*/
 //function generateCEK(alg: JWEAlgorithm, enc: JWEEncryption, header: Header, key: JWKPayload): [Buffer, JWKPayload];
 function generateCEK(alg: JWEAlgorithm, enc: JWEEncryption, header: Header, key: JWK, ephemeralKey: ECPublicKey | ECPrivateKey | null): [Buffer, JWK | null] {
     if (alg === JWEAlgorithm.dir) {
@@ -284,6 +304,13 @@ function generateCEK(alg: JWEAlgorithm, enc: JWEEncryption, header: Header, key:
     return [randomBytes(cekLength(enc) / 8), null];
 }
 
+/**
+ * Calculates the length of the IV (Initialization Vector) based on the encryption algorithm
+ *
+ * @param enc Encryption algorithm
+ *
+ * @returns Length of the IV in bits
+ */
 function ivLength(enc: JWEEncryption): number {
     switch (enc) {
         case JWEEncryption.A128GCM:
@@ -299,6 +326,14 @@ function ivLength(enc: JWEEncryption): number {
     throw new JWTError(`Unsupported encryption: ${enc}`);
 }
 
+/**
+ * Generates an ephemeral key for ECDH-ES algorithms
+ *
+ * @param alg Algorithm
+ * @param key Public key (for asymmetric algorithms) or shared secret (for symmetric algorithms)
+ *
+ * @returns Ephemeral key (null if the algorithm does not require it)
+ */
 function generateEphemeralKey(alg: JWEAlgorithm, key: ECPublicKey): ECPrivateKey | null {
     if (alg === JWEAlgorithm["ECDH-ES"] || alg === JWEAlgorithm["ECDH-ES+A128KW"] || alg === JWEAlgorithm["ECDH-ES+A192KW"] || alg === JWEAlgorithm["ECDH-ES+A256KW"]) {
         return ECDH.generateEphemeralKey(key.crv);
@@ -307,6 +342,15 @@ function generateEphemeralKey(alg: JWEAlgorithm, key: ECPublicKey): ECPrivateKey
     return null;
 }
 
+/**
+ * Generates additional parameters for the header based on the algorithm
+ *
+ * @param alg Algorithm
+ * @param enc Encryption algorithm
+ * @param ephemeralKey Ephemeral key (null if the algorithm does not require it)
+ *
+ * @returns Additional parameters for the header (epk, iv, tag, p2s, p2c...)
+ */
 function generateHeaderParams(alg: JWEAlgorithm, enc: JWEEncryption, ephemeralKey: ECPublicKey | null): Partial<Header> {
     switch (alg) {
         case JWEAlgorithm['ECDH-ES']:
@@ -346,10 +390,27 @@ function generateHeaderParams(alg: JWEAlgorithm, enc: JWEEncryption, ephemeralKe
     return {};
 }
 
+/**
+ * Get the raw key from a SymmetricKey
+ *
+ * @param key Symmetric Key
+ *
+ * @returns Raw key bytes
+ */
 function deserializeSymmetricKey(key: SymmetricKey): Buffer {
     return Buffer.from(key.k!, 'base64url');
 }
 
+/**
+ * Encrypts the CEK using the provided algorithm and key
+ *
+ * @param cek Content Encryption Key
+ * @param alg Algorithm
+ * @param key Public key (for asymmetric algorithms) or shared secret (for symmetric algorithms)
+ * @param header Header (used to retrieve the IV and store the authentication tag for GCM algorithms)
+ *
+ * @returns Encrypted CEK
+ */
 function encryptCEK(cek: Buffer, alg: JWEAlgorithm, key: JWK, header: Header): Buffer {
     switch (alg) {
         case JWEAlgorithm.RSA1_5:
@@ -435,6 +496,17 @@ function encryptCEK(cek: Buffer, alg: JWEAlgorithm, key: JWK, header: Header): B
     throw new JWTError(`Unsupported algorithm: ${alg}`);
 }
 
+/**
+ * Decrypts the CEK using the provided algorithm and key
+ *
+ * @param encryptedKey Encrypted CEK
+ * @param alg Algorithm
+ * @param enc Encryption algorithm
+ * @param key Private key (for asymmetric algorithms) or shared secret (for symmetric algorithms)
+ * @param header Header (used to retrieve the IV and authentication tag for GCM algorithms and the ephemeral key for ECDH-ES algorithm)
+ *
+ * @returns Decrypted CEK
+ */
 function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, enc: JWEEncryption, key: JWK, header: Header): Buffer {
     switch (alg) {
         case JWEAlgorithm.RSA1_5:
@@ -525,6 +597,17 @@ function decryptCEK(encryptedKey: Buffer, alg: JWEAlgorithm, enc: JWEEncryption,
     throw new JWTError(`Unsupported algorithm: ${alg}`);
 }
 
+/**
+ * Encrypts the plain text using the provided algorithm and key
+ *
+ * @param plainText Plain text to be encrypted
+ * @param cek Content Encryption Key
+ * @param iv Initialization Vector
+ * @param aad Additional Authenticated Data
+ * @param enc Encryption algorithm
+ *
+ * @returns Encrypted cipher text and authentication tag
+ */
 function encrypt(plainText: Buffer, cek: Buffer, iv: Buffer, aad: Buffer, enc: JWEEncryption): { cipherText: Buffer; authenticationTag: Buffer; } {
     switch (enc) {
         case JWEEncryption.A128GCM:
@@ -549,6 +632,18 @@ function encrypt(plainText: Buffer, cek: Buffer, iv: Buffer, aad: Buffer, enc: J
     throw new JWTError(`Unsupported encryption: ${enc}`);
 }
 
+/**
+ * Decrypts the cipher text using the provided algorithm and key
+ *
+ * @param cipherText Cipher text to be decrypted
+ * @param cek Content Encryption Key
+ * @param iv Initialization Vector
+ * @param aad Additional Authenticated Data
+ * @param authenticationTag Authentication Tag
+ * @param enc Encryption algorithm
+ *
+ * @returns Decrypted plain text
+ */
 function decrypt(cipherText: Buffer, cek: Buffer, iv: Buffer, aad: Buffer, authenticationTag: Buffer, enc: JWEEncryption): Buffer {
     switch (enc) {
         case JWEEncryption.A128GCM:

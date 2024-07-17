@@ -31,11 +31,20 @@ export default abstract class Handler {
 
     /**
      * Handle a request.
+     *
+     * @param req The request to be handled.
+     *
+     * @returns The response to the request.
      */
     abstract handle(req: Request): Promise<Response>;
 
     /**
      * Converts a Handler class to a Handler function.
+     *
+     * @param handler The Handler class to be converted.
+     * @param app The application instance.
+     *
+     * @returns The Handler function.
      */
     static asFunction(handler: HandlerConstructor | HandlerFunction, app: Application): HandlerFunction {
         if (handler.prototype instanceof Handler) {

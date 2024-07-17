@@ -42,7 +42,7 @@ export class ReadonlyContainer<K, V> {
 
 /**
  * Container is a class that is used to store and retrieve anything.
- * It is designed to be used on the request object.
+ * It is designed to be used on the Request object.
  */
 export default class Container<K, V> {
     #data: Map<K, V>;

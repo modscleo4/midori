@@ -15,6 +15,7 @@
  */
 
 import { randomBytes, createHash, timingSafeEqual } from "node:crypto";
+import { Readable } from "node:stream";
 
 import Hash from "./Hash.js";
 
@@ -45,5 +46,19 @@ export default class SHA512 extends Hash {
         const computedHash = this.hash(data, { salt: Buffer.from(salt, 'base64') });
 
         return timingSafeEqual(Buffer.from(hash), Buffer.from(computedHash));
+    }
+
+    static async hashStream(data: Readable, options?: { salt?: Buffer; }): Promise<string> {
+        const salt = options?.salt ?? randomBytes(16);
+        const hashData = await new Promise<string>((resolve, reject) => {
+            const hash = createHash('sha256');
+            hash.update(salt);
+
+            data.on('data', (chunk) => hash.update(chunk));
+            data.on('end', () => resolve(hash.digest('base64')));
+            data.on('error', reject);
+        });
+
+        return ['', SHA512.version, salt.toString('base64'), hashData].join('$');
     }
 }
