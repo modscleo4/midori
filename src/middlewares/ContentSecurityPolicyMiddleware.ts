@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
+import type { Application } from "../app/Server.js";
 import Middleware from "../http/Middleware.js";
-import Request from "../http/Request.js";
-import Response from "../http/Response.js";
-import { ContentSecurityPolicyConfig, ContentSecurityPolicyValue, ContentSecurityPolicyConfigProvider } from "../providers/ContentSecurityPolicyConfigProvider.js";
+import type Request from "../http/Request.js";
+import type Response from "../http/Response.js";
+import { type ContentSecurityPolicyConfig, ContentSecurityPolicyValue, ContentSecurityPolicyConfigProvider } from "../providers/ContentSecurityPolicyConfigProvider.js";
 
 export class ContentSecurityPolicyMiddleware extends Middleware {
     #options: ContentSecurityPolicyConfig | undefined;

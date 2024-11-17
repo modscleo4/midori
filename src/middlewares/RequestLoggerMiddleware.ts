@@ -1,10 +1,10 @@
 import { performance } from "node:perf_hooks";
 
-import { Application } from "../app/Server.js";
+import type { Application } from "../app/Server.js";
 import Middleware from "../http/Middleware.js";
-import Request from "../http/Request.js";
-import Response from "../http/Response.js";
-import Logger from "../log/Logger.js";
+import type Request from "../http/Request.js";
+import type Response from "../http/Response.js";
+import type Logger from "../log/Logger.js";
 import { LoggerServiceProvider } from "../providers/LoggerServiceProvider.js";
 import { Color } from "../util/ansi.js";
 

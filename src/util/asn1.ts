@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { KeyObject } from "node:crypto";
+import type { KeyObject } from "node:crypto";
 
 type DERInteger = {
     type: 'INTEGER';
@@ -83,7 +83,7 @@ function parseDER(buffer: Buffer): DERValue {
     let length = buffer.readUInt8(1);
     let dataStart = 2;
     if (length & 0x80) {
-        let ll = length & 0x7F;
+        const ll = length & 0x7F;
         dataStart += ll;
         length = buffer.readUIntBE(2, ll);
     }

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
+import type { Application } from "../app/Server.js";
 import Middleware from "../http/Middleware.js";
-import Request from "../http/Request.js";
-import Response from "../http/Response.js";
-import { CORSConfig, CORSConfigProvider } from "../providers/CORSConfigProvider.js";
+import type Request from "../http/Request.js";
+import type Response from "../http/Response.js";
+import { type CORSConfig, CORSConfigProvider } from "../providers/CORSConfigProvider.js";
 
 export class CORSMiddleware extends Middleware {
     #options: CORSConfig | undefined;

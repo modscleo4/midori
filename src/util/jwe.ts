@@ -16,7 +16,7 @@
 
 import { constants, createPrivateKey, createPublicKey, privateDecrypt, publicEncrypt, randomBytes, pbkdf2Sync } from "node:crypto";
 
-import { BaseKey, ECPublicKey, RSAPublicKey, SymmetricKey, JWK, ECPrivateKey } from "./jwk.js";
+import type { ECPublicKey, RSAPublicKey, SymmetricKey, JWK, ECPrivateKey } from "./jwk.js";
 import { encodeBufferWithLength, encodeUInt32BE } from "./buffer.js";
 import JWTError from "../errors/JWTError.js";
 import AESGCM from "./crypt/aesgcm.js";
@@ -293,12 +293,12 @@ function generateCEK(alg: JWEAlgorithm, enc: JWEEncryption, header: Header, key:
 
         if (alg === JWEAlgorithm["ECDH-ES"]) {
             return [derivedKey, null];
-        } else {
-            return [randomBytes(cekLength(enc) / 8), <SymmetricKey> {
-                kty: 'oct',
-                k: derivedKey.toString('base64url'),
-            }];
         }
+
+        return [randomBytes(cekLength(enc) / 8), <SymmetricKey> {
+            kty: 'oct',
+            k: derivedKey.toString('base64url'),
+        }];
     }
 
     return [randomBytes(cekLength(enc) / 8), null];

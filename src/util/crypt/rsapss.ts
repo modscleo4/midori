@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createSign, createVerify, KeyObject, constants } from "node:crypto";
+import { createSign, createVerify, type KeyObject, constants } from "node:crypto";
 
 /**
  * Rivest–Shamir–Adleman + Probabilistic Signature Scheme, as used by JWS.

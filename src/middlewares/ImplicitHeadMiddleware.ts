@@ -15,9 +15,9 @@
  */
 
 import Middleware from "../http/Middleware.js";
-import Request from "../http/Request.js";
-import Response from "../http/Response.js";
-import Route from "../router/Route.js";
+import type Request from "../http/Request.js";
+import type Response from "../http/Response.js";
+import type Route from "../router/Route.js";
 import RouterMiddleware from "./RouterMiddleware.js";
 
 /**

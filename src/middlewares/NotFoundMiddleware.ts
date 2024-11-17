@@ -16,7 +16,7 @@
 
 import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
-import Request from "../http/Request.js";
+import type Request from "../http/Request.js";
 import Response from "../http/Response.js";
 
 /**

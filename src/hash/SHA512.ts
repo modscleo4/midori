@@ -15,7 +15,7 @@
  */
 
 import { randomBytes, createHash, timingSafeEqual } from "node:crypto";
-import { Readable } from "node:stream";
+import type { Readable } from "node:stream";
 
 import Hash from "./Hash.js";
 

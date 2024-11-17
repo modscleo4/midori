@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { UUID, randomBytes, randomUUID } from "node:crypto";
+import { type UUID, randomBytes, randomUUID } from "node:crypto";
 
 /**
  * Generate an UUID using the `crypto` module.
@@ -26,9 +26,13 @@ import { UUID, randomBytes, randomUUID } from "node:crypto";
 export function generateUUID(version: number | null = 4): UUID {
     if (version === null) {
         return '00000000-0000-0000-0000-000000000000'; // Nil UUID
-    }if (version === 4) {
+    }
+
+    if (version === 4) {
         return randomUUID();
-    } else if (version === 7) {
+    }
+
+    if (version === 7) {
         /*
          *  0              |    1          |        2      |            3
          *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -58,7 +62,9 @@ export function generateUUID(version: number | null = 4): UUID {
         buffer.writeBigUInt64BE((BigInt(variant) << 62n) | BigInt(randB.readBigUInt64BE(0) & 0x3FFFFFFFFFFFFFFFn), 8);
 
         return `${buffer.toString('hex', 0, 4)}-${buffer.toString('hex', 4, 6)}-${buffer.toString('hex', 6, 8)}-${buffer.toString('hex', 8, 10)}-${buffer.toString('hex', 10, 16)}`;
-    } else if (version === Infinity) {
+    }
+
+    if (version === Infinity) {
         return 'ffffffff-ffff-ffff-ffff-ffffffffffff'; // Max UUID
     }
 

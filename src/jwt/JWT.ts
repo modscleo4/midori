@@ -17,12 +17,12 @@
 import { readFileSync } from "node:fs";
 import { createPrivateKey, createPublicKey } from "node:crypto";
 
-import { SymmetricKey, JWK, RSAPrivateKey, ECPrivateKey, BaseKey } from "../util/jwk.js";
-import { Payload as JWTPayload } from "../util/jwt.js";
+import type { SymmetricKey, JWK, RSAPrivateKey, ECPrivateKey, BaseKey } from "../util/jwk.js";
+import type { Payload as JWTPayload } from "../util/jwt.js";
 import { signJWT, verifyJWS, JWSAlgorithm } from "../util/jws.js";
 import { cekLength, decryptJWE, encryptJWT, JWEAlgorithm, JWEEncryption } from "../util/jwe.js";
 import { generateUUID } from "../util/uuid.js";
-import { JWTConfig } from "../providers/JWTConfigProvider.js";
+import type { JWTConfig } from "../providers/JWTConfigProvider.js";
 
 /**
  * JWT (JSON Web Token) Service.

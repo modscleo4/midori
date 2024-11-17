@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
+import type { Application } from "../app/Server.js";
 import ServiceProvider from "../app/ServiceProvider.js";
-import UserService from "../auth/UserService.js";
-import { Constructor } from "../util/types.js";
+import type UserService from "../auth/UserService.js";
+import type { Constructor } from "../util/types.js";
 
 export abstract class UserServiceProvider extends ServiceProvider<UserService> {
     static override service: symbol = Symbol('midori::Auth.User');

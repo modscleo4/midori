@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { OutgoingHttpHeaders } from "http";
+import type { OutgoingHttpHeaders } from "node:http";
 
 /**
  * Basic HTTP Error with a status code and message.

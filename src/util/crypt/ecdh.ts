@@ -17,7 +17,7 @@
 import { createECDH, createPrivateKey, createPublicKey, generateKeyPairSync } from "node:crypto";
 
 import { privateKeyToRaw, publicKeyToRaw } from "../asn1.js";
-import { ECPublicKey, ECPrivateKey } from "../jwk.js";
+import type { ECPublicKey, ECPrivateKey } from "../jwk.js";
 
 /**
  * Elliptic Curve Diffie-Hellman, as used by JWE.

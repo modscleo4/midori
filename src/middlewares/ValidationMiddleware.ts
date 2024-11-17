@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
+import type { Application } from "../app/Server.js";
 import HTTPError from "../errors/HTTPError.js";
 import ValidationError from "../errors/ValidationError.js";
 import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
-import Request from "../http/Request.js";
+import type Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import { fakeAssert } from "../util/types.js";
-import { ValidatonRules, CustomValidation } from "../util/validation.js";
+import type { ValidatonRules, CustomValidation } from "../util/validation.js";
 
 type Errors = Record<string, string[]>;
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Application } from "./Server.js";
+import type { Application } from "./Server.js";
 
 /**
  * ServiceProvider is a class that is used to provide services to the application.

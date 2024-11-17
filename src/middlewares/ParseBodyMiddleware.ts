@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
+import type { Application } from "../app/Server.js";
 import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
-import Request from "../http/Request.js";
+import type Request from "../http/Request.js";
 import Response from "../http/Response.js";
-import { ParseBodyConfigProvider, ParseBodyOptions } from "../providers/ParseBodyConfigProvider.js";
+import { ParseBodyConfigProvider, type ParseBodyOptions } from "../providers/ParseBodyConfigProvider.js";
 
 /**
  * Middleware to parse the request body, returning a 415 if no recognized Content-Type is detected.

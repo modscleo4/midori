@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import { createReadStream, Dirent, existsSync, statSync } from "node:fs";
+import { createReadStream, type Dirent, existsSync, statSync } from "node:fs";
 import { readdir, stat } from "node:fs/promises";
 import { join, normalize } from "node:path";
 
 import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
-import Request from "../http/Request.js";
+import type Request from "../http/Request.js";
 import Response from "../http/Response.js";
-import { Constructor } from "../util/types.js";
-import { Application } from "../app/Server.js";
-import { PublicPathConfig, PublicPathConfigProvider } from "../providers/PublicPathConfigProvider.js";
+import type { Constructor } from "../util/types.js";
+import type { Application } from "../app/Server.js";
+import { type PublicPathConfig, PublicPathConfigProvider } from "../providers/PublicPathConfigProvider.js";
 import SHA256 from "../hash/SHA256.js";
 
 export class PublicPathMiddleware extends Middleware {

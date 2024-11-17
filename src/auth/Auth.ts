@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import Request from "../http/Request.js";
-import User from "./User.js";
-import UserService from "./UserService.js";
+import type Request from "../http/Request.js";
+import type User from "./User.js";
+import type UserService from "./UserService.js";
 
 export default class Auth {
     #userService: UserService;

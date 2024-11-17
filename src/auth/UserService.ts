@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import User from "./User.js";
+import type User from "./User.js";
 
 export default abstract class UserService {
     abstract getUserById(id: unknown): Promise<User | null>;

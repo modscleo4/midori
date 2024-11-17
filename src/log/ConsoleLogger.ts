@@ -15,7 +15,7 @@
  */
 
 import { format } from "../util/ansi.js";
-import Logger, { LogLevel, LogOptions } from "./Logger.js";
+import Logger, { LogLevel, type LogOptions } from "./Logger.js";
 
 /**
  * Provides a logger that prints to the console.

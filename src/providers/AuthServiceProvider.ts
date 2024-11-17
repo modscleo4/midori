@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
+import type { Application } from "../app/Server.js";
 import ServiceProvider from "../app/ServiceProvider.js";
 import Auth from "../auth/Auth.js";
 import { UserServiceProvider } from "./UserServiceProvider.js";

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { ANSIOptions, Color } from "../util/ansi.js";
+import { type ANSIOptions, Color } from "../util/ansi.js";
 
 /**
  * Log levels.

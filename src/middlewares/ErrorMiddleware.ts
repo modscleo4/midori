@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
+import type { Application } from "../app/Server.js";
 import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
-import Request from "../http/Request.js";
+import type Request from "../http/Request.js";
 import Response from "../http/Response.js";
-import { ErrorConfig, ErrorConfigProvider } from "../providers/ErrorConfigProvider.js";
+import { type ErrorConfig, ErrorConfigProvider } from "../providers/ErrorConfigProvider.js";
 import { Constructor } from "../util/types.js";
 
 export class ErrorMiddleware extends Middleware {

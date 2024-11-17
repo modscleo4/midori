@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
-import Handler, { HandlerConstructor, HandlerFunction } from "../http/Handler.js";
-import Middleware, { MiddlewareConstructor, MiddlewareFunction } from "../http/Middleware.js";
-import Request from "../http/Request.js";
-import Response from "../http/Response.js";
+import type { Application } from "../app/Server.js";
+import Handler, { type HandlerConstructor, type HandlerFunction } from "../http/Handler.js";
+import Middleware, { type MiddlewareConstructor, type MiddlewareFunction } from "../http/Middleware.js";
+import type Request from "../http/Request.js";
+import type Response from "../http/Response.js";
 
 /**
  * Route representation.
@@ -87,7 +87,7 @@ export default class Route {
         let index = 0;
 
         const next = async (req: Request): Promise<Response> => {
-            if (index == this.#middlewares.length) {
+            if (index === this.#middlewares.length) {
                 // No more middlewares to process
 
                 return await this.cacheHandler(app)(req, app);

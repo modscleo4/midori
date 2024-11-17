@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Transform } from "node:stream";
+import type { Transform } from "node:stream";
 import { promisify } from "node:util";
 import { createDeflateRaw, createInflateRaw, deflateRaw, deflateRawSync, inflateRaw, inflateRawSync } from "node:zlib";
 

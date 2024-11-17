@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Application } from "./Server.js";
+import type { Application } from "./Server.js";
 
 /**
  * ConfigProvider is a class that is used to provide configurations to the application.

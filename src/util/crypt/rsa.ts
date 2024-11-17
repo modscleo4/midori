@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createSign, createVerify, KeyObject } from "node:crypto";
+import { createSign, createVerify, type KeyObject } from "node:crypto";
 
 /**
  * Rivest–Shamir–Adleman, as used by JWS.

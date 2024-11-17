@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { CipherKey, createCipheriv, createDecipheriv } from 'crypto';
+import { type CipherKey, createCipheriv, createDecipheriv } from 'node:crypto';
 
 /**
  * Advanced Encryption Standard Key Wrap (AESKW) algorithm, as used in JWE.

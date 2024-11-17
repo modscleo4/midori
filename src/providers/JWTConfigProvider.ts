@@ -15,8 +15,8 @@
  */
 
 import ConfigProvider from "../app/ConfigProvider.js";
-import { Application } from "../app/Server.js";
-import { Constructor } from "../util/types.js";
+import type { Application } from "../app/Server.js";
+import type { Constructor } from "../util/types.js";
 
 export type JWTConfig = {
     /** Configuration for signing JWTs (JWS). */

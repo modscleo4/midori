@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
-import Request from "./Request.js";
-import Response from "./Response.js";
+import type { Application } from "../app/Server.js";
+import type Request from "./Request.js";
+import type Response from "./Response.js";
 
 export type HandlerFunction = (req: Request, app: Application) => Promise<Response>;
 export type HandlerConstructor = new (app: Application) => Handler;

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
+import type { Application } from "../app/Server.js";
 import ServiceProvider from "../app/ServiceProvider.js";
-import Logger from "../log/Logger.js";
-import { Constructor } from "../util/types.js";
+import type Logger from "../log/Logger.js";
+import type { Constructor } from "../util/types.js";
 
 export abstract class LoggerServiceProvider extends ServiceProvider<Logger> {
     static override service: symbol = Symbol('midori::Logger');

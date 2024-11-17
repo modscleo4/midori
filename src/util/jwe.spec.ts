@@ -19,8 +19,8 @@ import { ok, strictEqual } from 'node:assert';
 import { createHash, createPrivateKey, createPublicKey, generateKeyPairSync, randomBytes } from 'node:crypto';
 
 import { encryptJWT, decryptJWE, JWEAlgorithm, JWEEncryption, Header } from './jwe.js';
-import { Payload as JWTPayload } from './jwt.js';
-import { SymmetricKey, ECPublicKey, ECPrivateKey, RSAPublicKey, RSAPrivateKey } from './jwk.js';
+import type { Payload as JWTPayload } from './jwt.js';
+import type { SymmetricKey, ECPublicKey, ECPrivateKey, RSAPublicKey, RSAPrivateKey } from './jwk.js';
 
 await describe('JWE', async () => {
     await describe('Decrypt after encrypt', async () => {

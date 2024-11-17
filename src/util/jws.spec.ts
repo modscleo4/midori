@@ -19,8 +19,8 @@ import { strictEqual, ok } from 'node:assert';
 import { createPrivateKey, createPublicKey, generateKeyPairSync, randomBytes } from 'node:crypto';
 
 import { signJWT, verifyJWS, JWSAlgorithm, Header } from './jws.js';
-import { Payload as JWTPayload } from './jwt.js';
-import { ECPrivateKey, ECPublicKey, RSAPrivateKey, RSAPublicKey, SymmetricKey } from './jwk.js';
+import type { Payload as JWTPayload } from './jwt.js';
+import type { ECPrivateKey, ECPublicKey, RSAPrivateKey, RSAPublicKey, SymmetricKey } from './jwk.js';
 
 await describe('JWS', async () => {
     await describe('Verify after sign', async () => {

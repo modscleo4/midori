@@ -15,14 +15,14 @@
  */
 
 import Middleware from "../http/Middleware.js";
-import Request from "../http/Request.js";
-import Response from "../http/Response.js";
+import type Request from "../http/Request.js";
+import type Response from "../http/Response.js";
 
 import Brotli from "../util/compression/brotli.js";
 import Gzip from "../util/compression/gzip.js";
 import Deflate from "../util/compression/deflate.js";
-import { CompressionAlgorithm, ResponseConfig, ResponseConfigProvider } from "../providers/ResponseConfigProvider.js";
-import { Application } from "../app/Server.js";
+import { CompressionAlgorithm, type ResponseConfig, ResponseConfigProvider } from "../providers/ResponseConfigProvider.js";
+import type { Application } from "../app/Server.js";
 import { globMatch } from "../util/strings.js";
 
 type ResponseCompressionConfig = ResponseConfig['compression'];
@@ -42,9 +42,13 @@ function parseAcceptEncoding(acceptEncoding: string, order: CompressionAlgorithm
 
         if (aIndex === -1 && bIndex === -1) {
             return 0;
-        } else if (aIndex === -1) {
+        }
+
+        if (aIndex === -1) {
             return 1;
-        } else if (bIndex === -1) {
+        }
+
+        if (bIndex === -1) {
             return -1;
         }
 

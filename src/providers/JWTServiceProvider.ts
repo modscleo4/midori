@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
+import type { Application } from "../app/Server.js";
 import ServiceProvider from "../app/ServiceProvider.js";
 import JWT from "../jwt/JWT.js";
 import { JWTConfigProvider } from "./JWTConfigProvider.js";

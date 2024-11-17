@@ -15,7 +15,7 @@
  */
 
 import { appendFileSync } from "node:fs";
-import Logger, { LoggerOptions, LogLevel, LogOptions } from "./Logger.js";
+import Logger, { type LoggerOptions, LogLevel, type LogOptions } from "./Logger.js";
 
 /**
  * Provides a logger that prints to the console.
@@ -34,9 +34,9 @@ export default class ConsoleLogger extends Logger {
             return;
         }
 
-        let logDate = `[${new Date().toISOString()}]`;
-        let logLevel = `[${LogLevel[level]}]`;
-        let logMessage = `${message}`;
+        const logDate = `[${new Date().toISOString()}]`;
+        const logLevel = `[${LogLevel[level]}]`;
+        const logMessage = `${message}`;
 
         appendFileSync(this.#file, `${logDate} ${logLevel} ${logMessage}` + (options?.context !== undefined ? '\n\tContext: ' + JSON.stringify(options.context) : ''));
     }

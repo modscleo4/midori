@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
-import Auth from "../auth/Auth.js";
+import type { Application } from "../app/Server.js";
+import type Auth from "../auth/Auth.js";
 import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
-import Request from "../http/Request.js";
+import type Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import AuthServiceProvider from "../providers/AuthServiceProvider.js";
 
@@ -79,11 +79,11 @@ export default class AuthBasicMiddleware extends Middleware {
      * @returns An object with the scheme and credentials or null if the header is not present.
      */
     getAuthInfo(req: Request): { scheme: string, credentials: string; } | null {
-        if (!req.headers['authorization']) {
+        if (!req.headers.authorization) {
             return null;
         }
 
-        const [scheme, credentials] = req.headers['authorization'].split(' ', 2);
+        const [scheme, credentials] = req.headers.authorization.split(' ', 2);
 
         return { scheme, credentials };
     }

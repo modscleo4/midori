@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
+import type { Application } from "../app/Server.js";
 import Middleware from "../http/Middleware.js";
-import Request from "../http/Request.js";
-import Response from "../http/Response.js";
+import type Request from "../http/Request.js";
+import type Response from "../http/Response.js";
 import { RouterServiceProvider } from "../providers/RouterServiceProvider.js";
-import Router from "../router/Router.js";
+import type Router from "../router/Router.js";
 
 /**
  * Middleware to route the request to the correct handler using the Router Service.

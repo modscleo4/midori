@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { split } from "./strings.js";
+
 /**
  * Represents a cron expression.
  */
@@ -32,16 +34,27 @@ export type CronExpression = {
     daysOfWeek: number[];
 };
 
+const DAYS_OF_WEEK_MAP = {
+    SUN: 0,
+    MON: 1,
+    TUE: 2,
+    WED: 3,
+    THU: 4,
+    FRI: 5,
+    SAT: 6,
+};
+
 /**
  * Validates a part of a cron string. The part can be a number, a range, a list, a step or the wildcard.
  *
  * @param part The part to be validated.
  * @param min The minimum value.
  * @param max The maximum value.
+ * @param strMap A map of string values to numbers.
  *
  * @returns Whether the part is valid.
  */
-function validateCronPart(part: string, min: number, max: number): boolean {
+function validateCronPart(part: string, min: number, max: number, strMap?: Record<string, number>): boolean {
     if (!part) {
         return false;
     }
@@ -51,23 +64,26 @@ function validateCronPart(part: string, min: number, max: number): boolean {
         return true;
     }
 
-    // List
-    if (part.includes(',')) {
-        return part.split(',').every(p => validateCronPart(p, min, max));
+    // String map
+    if (strMap && part.toUpperCase() in strMap) {
+        return true;
     }
 
-    // Range
-    if (part.includes('-')) {
-        const [start, end] = part.split('-', 2).map(parseInt);
-        return start >= min
-            && end <= max;
+    // List
+    if (part.includes(',')) {
+        return part.split(',').every(p => validateCronPart(p, min, max, strMap));
     }
 
     // Step
     if (part.includes('/')) {
-        const [start, step] = part.split('/', 2);
-        return (start === '*' || parseInt(start) >= min)
-            && parseInt(step) >= min;
+        const [start, step] = split(part, '/', 2);
+        return validateCronPart(start, min, max, strMap) && parseInt(step) >= min;
+    }
+
+    // Range
+    if (part.includes('-')) {
+        const [start, end] = split(part, '-', 2).map(Number);
+        return start >= min && end <= max;
     }
 
     const n = parseInt(part, 10);
@@ -82,7 +98,12 @@ function validateCronPart(part: string, min: number, max: number): boolean {
  * @returns Whether the cron string is valid.
  */
 export function validateCronString(cronString: string): boolean {
-    const [second, minute, hour, dayOfMonth, month, dayOfWeek] = cronString.split(" ", 6);
+    const parts = cronString.split(' ').length;
+    if (parts !== 5 && parts !== 6) {
+        return false;
+    }
+
+    const [second, minute, hour, dayOfMonth, month, dayOfWeek] = split(parts === 5 ? '* ' + cronString : cronString, ' ', 6);
 
     return validateCronPart(second, 0, 59)
         && validateCronPart(minute, 0, 59)
@@ -98,33 +119,39 @@ export function validateCronString(cronString: string): boolean {
  * @param part The part to be parsed.
  * @param min The minimum value.
  * @param max The maximum value.
+ * @param strMap A map of string values to numbers.
  *
  * @returns The parsed part as an array of numbers.
  */
-function parseCronPart(part: string, min: number, max: number): number[] {
+function parseCronPart(part: string, min: number, max: number, strMap?: Record<string, number>): number[] {
     // Any
     if (part === '*') {
         return Array.from({ length: max - min + 1 }, (_, i) => i + min);
     }
 
-    // List
-    if (part.includes(',')) {
-        return part.split(',').flatMap(p => parseCronPart(p, min, max));
+    // String map
+    if (strMap && part.toUpperCase() in strMap) {
+        return [strMap[part.toUpperCase()]];
     }
 
-    // Range
-    if (part.includes('-')) {
-        const [start, end] = part.split('-', 2).map(parseInt);
-        return Array.from({ length: end - start + 1 }, (_, i) => i + start);
+    // List
+    if (part.includes(',')) {
+        return part.split(',').flatMap(p => parseCronPart(p, min, max, strMap));
     }
 
     // Step
     if (part.includes('/')) {
-        const [start, step] = part.split('/', 2);
-        const s = start === '*' ? min : parseInt(start);
+        const [start, step] = split(part, '/', 2);
+        const s = parseCronPart(start, min, max, strMap);
         const st = parseInt(step);
 
-        return Array.from({ length: Math.floor((max - s) / st) + 1 }, (_, i) => i * st + s);
+        return s.filter((_, i) => i % st === 0);
+    }
+
+    // Range
+    if (part.includes('-')) {
+        const [start, end] = split(part, '-', 2).map(Number);
+        return Array.from({ length: end - start + 1 }, (_, i) => i + start);
     }
 
     return [Number(part)];
@@ -138,7 +165,12 @@ function parseCronPart(part: string, min: number, max: number): number[] {
  * @returns The parsed cron expression.
  */
 export function parseCronString(cronString: string): CronExpression {
-    const [second, minute, hour, dayOfMonth, month, dayOfWeek] = cronString.split(" ", 6);
+    const parts = cronString.split(' ').length;
+    if (parts !== 5 && parts !== 6) {
+        throw new Error('Invalid cron string.');
+    }
+
+    const [second, minute, hour, dayOfMonth, month, dayOfWeek] = split(parts === 5 ? '* ' + cronString : cronString, ' ', 6);
 
     return {
         seconds: parseCronPart(second, 0, 59),
@@ -146,7 +178,7 @@ export function parseCronString(cronString: string): CronExpression {
         hours: parseCronPart(hour, 0, 23),
         daysOfMonth: parseCronPart(dayOfMonth, 1, 31),
         months: parseCronPart(month, 1, 12),
-        daysOfWeek: parseCronPart(dayOfWeek, 0, 6),
+        daysOfWeek: parseCronPart(dayOfWeek, 0, 6, DAYS_OF_WEEK_MAP),
     };
 }
 

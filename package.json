@@ -15,10 +15,13 @@
   "license": "Apache-2.0",
   "scripts": {
     "clean": "tsc -b --clean",
+    "format": "biome format --write ./src",
+    "lint": "biome lint ./src",
+    "lint:fix": "biome lint --write ./src",
     "build": "tsc && npm run postbuild",
     "postbuild": "node bin/postbuild.js",
     "prepare": "npm run build",
-    "test": "tsc -p tsconfig.test.json && node --security-revert=CVE-2023-46809 test/main.spec.js"
+    "test": "tsc -p tsconfig.test.json && node test/main.spec.js"
   },
   "files": [
     "bin/",
@@ -100,9 +103,10 @@
     }
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
     "@types/mime-types": "^2.1.4",
-    "@types/node": "^20.14.9",
-    "typescript": "^5.5.3"
+    "@types/node": "^22.9.0",
+    "typescript": "^5.6.3"
   },
   "dependencies": {
     "mime-types": "^2.1.35"

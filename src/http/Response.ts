@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-import { ReadStream, createReadStream, statSync } from "node:fs";
-import { OutgoingHttpHeader, OutgoingHttpHeaders } from "node:http";
-import { Readable, Transform } from "node:stream";
+import { type ReadStream, createReadStream, statSync } from "node:fs";
+import type { OutgoingHttpHeader, OutgoingHttpHeaders } from "node:http";
+import { Readable, type Transform } from "node:stream";
 import { lookup } from "mime-types";
 
 import { EStatusCode } from "./EStatusCode.js";
-import Request from "./Request.js";
+import type Request from "./Request.js";
 import HTTPError from "../errors/HTTPError.js";
+import { type Channel, rss } from "../util/rss.js";
+import { serializeXML, type XMLNode } from "../util/xml.js";
 
 /**
  * Problem Details for HTTP APIs.
@@ -464,6 +466,28 @@ export default class Response<T = any> {
     }
 
     /**
+     * Send a XML response. The Content-Type header will be set to application/xml.
+     *
+     * @param data The XML data to be sent.
+     * @returns The response object.
+     */
+    xml(data: XMLNode): Response<T> {
+        return this.withHeader('Content-Type', 'application/xml')
+            .send(serializeXML(data));
+    }
+
+    /**
+     * Send a RSS feed. The Content-Type header will be set to application/rss+xml.
+     *
+     * @param channel The RSS channel.
+     * @returns The response object.
+     */
+    rss(channel: Channel): Response<T> {
+        return this.xml(rss(channel))
+            .withHeader('Content-Type', 'application/rss+xml');
+    }
+
+    /**
      * Send a File. The Content-Type header will be set based on the filename. The file will be streamed.
      *
      * @param filename The path to the file to be sent.
@@ -475,10 +499,14 @@ export default class Response<T = any> {
             if (/^\d+-\d+$/.test(range)) {
                 const [start, end] = range.split('-').map(Number);
                 return [start, end];
-            } else if (/^\d+-$/.test(range)) {
+            }
+
+            if (/^\d+-$/.test(range)) {
                 const start = Number(range.substring(0, range.length - 1));
                 return [start, Infinity];
-            } else if (/^-\d+$/.test(range)) {
+            }
+
+            if (/^-\d+$/.test(range)) {
                 const end = Number(range.substring(1));
                 return [Infinity, end];
             }
@@ -501,12 +529,12 @@ export default class Response<T = any> {
         }
 
         const filesize = statSync(filename).size;
-        if (req && req.headers['range']) {
-            if (!req.headers['range'].startsWith('bytes=')) {
+        if (req?.headers.range) {
+            if (!req.headers.range.startsWith('bytes=')) {
                 throw new HTTPError('Invalid range header.', EStatusCode.BAD_REQUEST);
             }
 
-            const ranges = req.headers['range'].substring('bytes='.length).split(',').map(range => fixRange(parseRange(range.trim()), filesize));
+            const ranges = req.headers.range.substring('bytes='.length).split(',').map(range => fixRange(parseRange(range.trim()), filesize));
             const streams: { start: number; end: number; stream: ReadStream; }[] = [];
 
             for (const [start, end] of ranges) {
@@ -540,7 +568,9 @@ export default class Response<T = any> {
                             stream
                         ];
                     })));
-            } else if (streams.length === 1) { // Check for 1 to ensure that the array is not empty.
+            }
+
+            if (streams.length === 1) { // Check for 1 to ensure that the array is not empty.
                 const [{ start, end, stream }] = streams;
 
                 return this.withHeader('Content-Type', lookup(filename) || 'application/octet-stream')
@@ -641,7 +671,7 @@ export default class Response<T = any> {
      * Get the early hints of the response.
      */
     get earlyHints(): Record<string, string | string[]> | null {
-        if (this.#earlyHints.size == 0) {
+        if (this.#earlyHints.size === 0) {
             return null;
         }
 

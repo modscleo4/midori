@@ -17,8 +17,8 @@
 import { IncomingMessage } from "node:http";
 
 import Container from "../app/Container.js";
-import { Application } from "../app/Server.js";
-import { RequestConfig, RequestConfigProvider } from "../providers/RequestConfigProvider.js";
+import type { Application } from "../app/Server.js";
+import { type RequestConfig, RequestConfigProvider } from "../providers/RequestConfigProvider.js";
 import HTTPError from "../errors/HTTPError.js";
 import { EStatusCode } from "./EStatusCode.js";
 
@@ -86,10 +86,11 @@ export default class Request<T = unknown> extends IncomingMessage {
             return;
         }
 
-        this.headers.cookie.split(';').forEach(cookie => {
+        const cookies = this.headers.cookie.split(';');
+        for (const cookie of cookies) {
             const [key, value] = cookie.split('=', 2);
             this.#cookies.set(key.trim(), value.trim());
-        });
+        }
     }
 
     #parseAcceptPriority() {

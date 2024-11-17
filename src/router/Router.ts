@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { HandlerConstructor, HandlerFunction } from "../http/Handler.js";
-import { MiddlewareConstructor, MiddlewareFunction } from "../http/Middleware.js";
+import type { HandlerConstructor, HandlerFunction } from "../http/Handler.js";
+import type { MiddlewareConstructor, MiddlewareFunction } from "../http/Middleware.js";
 import { split } from "../util/strings.js";
 import { validateUUID } from "../util/uuid.js";
 import Route from "./Route.js";
@@ -243,7 +243,7 @@ export default class Router {
                                 break;
 
                             case 'number':
-                                if (isNaN(Number(val))) {
+                                if (Number.isNaN(Number(val))) {
                                     return false;
                                 }
 

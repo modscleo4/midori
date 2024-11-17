@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { KeyPairSyncResult, generateKeyPairSync } from "node:crypto";
+import { type KeyPairSyncResult, generateKeyPairSync } from "node:crypto";
 
 /**
  * Generate a keypair using the `crypto` module.

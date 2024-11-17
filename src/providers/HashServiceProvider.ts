@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
+import type { Application } from "../app/Server.js";
 import ServiceProvider from "../app/ServiceProvider.js";
-import Hash from "../hash/Hash.js";
-import { Constructor } from "../util/types.js";
+import type Hash from "../hash/Hash.js";
+import type { Constructor } from "../util/types.js";
 
 export abstract class HashServiceProvider extends ServiceProvider<Hash> {
     static override service: symbol = Symbol('midori::Hash');

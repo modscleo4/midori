@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Application } from "../app/Server.js";
+import type { Application } from "../app/Server.js";
 
 export type TaskConstructor = new (app: Application) => Task;
 export type TaskFunction = (app: Application) => Promise<void>;

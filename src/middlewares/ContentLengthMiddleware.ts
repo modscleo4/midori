@@ -15,8 +15,8 @@
  */
 
 import Middleware from "../http/Middleware.js";
-import Request from "../http/Request.js";
-import Response from "../http/Response.js";
+import type Request from "../http/Request.js";
+import type Response from "../http/Response.js";
 
 /**
  * Middleware to set the Content-Length header of the response.
@@ -33,7 +33,7 @@ export default class ContentLengthMiddleware extends Middleware {
                 const bodyLength = await new Promise<number>((resolve, reject) => {
                     let len = 0;
 
-                    res.body.on('data', chunk => len += chunk.length);
+                    res.body.on('data', chunk => { len += chunk.length });
                     res.body.on('close', () => {
                         resolve(len);
                     });

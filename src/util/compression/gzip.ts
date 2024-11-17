@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Transform } from "node:stream";
+import type { Transform } from "node:stream";
 import { promisify } from "node:util";
 import { createGzip, createGunzip, gzip, gunzip, gzipSync, gunzipSync } from "node:zlib";
 

@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-import { Server as HTTPServer, ServerResponse } from "node:http";
+import { Server as HTTPServer, type ServerResponse } from "node:http";
 
 import UnknownServiceError from "../errors/UnknownServiceError.js";
-import Middleware, { MiddlewareConstructor, MiddlewareFunction } from "../http/Middleware.js";
+import Middleware, { type MiddlewareConstructor, type MiddlewareFunction } from "../http/Middleware.js";
 import Request from "../http/Request.js";
-import Response from "../http/Response.js";
+import type Response from "../http/Response.js";
 import ContentLengthMiddleware from "../middlewares/ContentLengthMiddleware.js";
-import { Constructor } from "../util/types.js";
-import ConfigProvider from "./ConfigProvider.js";
+import type { Constructor } from "../util/types.js";
+import type ConfigProvider from "./ConfigProvider.js";
 import Container from "./Container.js";
-import ServiceProvider from "./ServiceProvider.js";
-import Task, { TaskConstructor, TaskFunction } from "../scheduler/Task.js";
-import { CronExpression, canRunTask, parseCronString, validateCronString } from "../util/cron.js";
+import type ServiceProvider from "./ServiceProvider.js";
+import Task, { type TaskConstructor, type TaskFunction } from "../scheduler/Task.js";
+import { type CronExpression, canRunTask, parseCronString, validateCronString } from "../util/cron.js";
 
 class ServiceContainer extends Container<symbol, unknown> {
     override get(key: symbol): unknown {
@@ -161,7 +161,7 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
         let index = 0;
 
         const next = async (req: Request): Promise<Response> => {
-            if (index == this.#pipeline.length) {
+            if (index === this.#pipeline.length) {
                 // No more middlewares to process
                 throw new Error('No more middlewares to process the request.');
             }

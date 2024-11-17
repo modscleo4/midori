@@ -16,8 +16,8 @@
 
 import { createPrivateKey, createPublicKey } from "node:crypto";
 
-import { ECPublicKey, RSAPublicKey, ECPrivateKey, RSAPrivateKey, SymmetricKey, JWK } from "./jwk.js";
-import { Payload } from "./jwt.js";
+import type { ECPublicKey, RSAPublicKey, ECPrivateKey, RSAPrivateKey, SymmetricKey, JWK } from "./jwk.js";
+import type { Payload } from "./jwt.js";
 import JWTError from "../errors/JWTError.js";
 import ECDSA from "./crypt/ecdsa.js";
 import HMAC from "./crypt/hmac.js";
