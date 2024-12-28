@@ -15,8 +15,8 @@
  */
 
 import { describe, it } from 'node:test';
-import { ok, strictEqual } from 'node:assert';
-import { serializeXML, type XMLNode } from './xml.js';
+import { equal, ok, strictEqual } from 'node:assert';
+import { serializeXML, serializeXMLGenerator, type XMLNode } from './xml.js';
 
 await describe('XML', () => {
     it('should serialize a simple XML', () => {
@@ -78,8 +78,38 @@ await describe('XML', () => {
             ]
         };
 
-        const xml = serializeXML(node, true);
+        const xml = serializeXML(node, 2);
 
         strictEqual(xml, '<?xml version="1.0" encoding="UTF-8"?>\n<root>\n  <child id="1">\n    <grandchild>Hello, World!</grandchild>\n  </child>\n</root>\n');
+    });
+
+    it('should serialize with a generator', () => {
+        const node: XMLNode = {
+            name: 'root',
+            children: [
+                {
+                    name: 'child',
+                    attributes: {
+                        id: '1'
+                    },
+                    children: [
+                        {
+                            name: 'grandchild',
+                            text: 'Hello, World!'
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const generator = serializeXMLGenerator(node);
+        equal(generator.next().value, '<?xml version="1.0" encoding="UTF-8"?>');
+        equal(generator.next().value, '<root>');
+        equal(generator.next().value, '<child id="1">');
+        equal(generator.next().value, '<grandchild>');
+        equal(generator.next().value, 'Hello, World!');
+        equal(generator.next().value, '</grandchild>');
+        equal(generator.next().value, '</child>');
+        equal(generator.next().value, '</root>');
     });
 });

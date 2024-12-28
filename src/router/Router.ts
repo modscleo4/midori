@@ -51,6 +51,20 @@ export default class Router {
     }
 
     /**
+     * Handle a Query (List) request.
+     *
+     * @param path The relative path to be handled. It can contain parameters.
+     * @param handler The handler for the request.
+     * @param middlewares The middlewares to be applied to the request.
+     * @param name The name of the route.
+     *
+     * @returns The Route instance.
+     */
+    query(path: string, handler: HandlerConstructor | HandlerFunction, middlewares: (MiddlewareConstructor | MiddlewareFunction)[] = [], name?: string): Route {
+        return this.route('QUERY', path, handler, middlewares, name);
+    }
+
+    /**
      * Handle a GET (List) request.
      *
      * @param path The relative path to be handled. It can contain parameters.
@@ -267,12 +281,10 @@ export default class Router {
         return routes;
     }
 
-    /** @internal */
     find(path: string, method: string): Route {
         return this.filter(path, method)[0];
     }
 
-    /** @internal */
     findByName(name: string): Route | null {
         return this.#routes.find(r => r.name === name) ?? null;
     }

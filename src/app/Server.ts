@@ -177,8 +177,8 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
      *
      * `ContentLengthMiddleware` is applied by default before any other Middleware.
      */
-    pipe(middleware: MiddlewareConstructor | MiddlewareFunction): Server {
-        this.#pipeline.push(middleware);
+    pipe(...middlewares: (MiddlewareConstructor | MiddlewareFunction)[]): Server {
+        this.#pipeline.push(...middlewares);
 
         return this;
     }

@@ -76,9 +76,7 @@ export default class DeflateRaw {
      * @returns The stream
      */
     static compressStream(level: number = 5): Transform {
-        const stream = createDeflateRaw({ level });
-
-        return stream;
+        return createDeflateRaw({ level });
     }
 
     /**
@@ -87,8 +85,6 @@ export default class DeflateRaw {
      * @returns The stream
      */
     static decompressStream(): Transform {
-        const stream = createInflateRaw();
-
-        return stream;
+        return createInflateRaw();
     }
 }

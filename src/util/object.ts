@@ -1,5 +1,5 @@
 /**
- * Copyright 2022 Dhiego Cassiano Fogaça Barbosa
+ * Copyright 2024 Dhiego Cassiano Fogaça Barbosa
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-import { describe, it } from 'node:test';
-
-await describe('Util', async () => {
-    await import('./util/asn1.spec.js');
-    await import('./util/cron.spec.js');
-    await import('./util/datetime.spec.js');
-    await import('./util/headers.spec.js');
-    await import('./util/jws.spec.js');
-    await import('./util/jwe.spec.js');
-    await import('./util/uuid.spec.js');
-    await import('./util/xml.spec.js');
-});
+/**
+ * Filters out all undefined values from an object.
+ *
+ * @param obj The object to be filtered.
+ * @returns The object without undefined values.
+ */
+export function filterUndefined<T extends Record<string, any>>(obj: T): Pick<T, Exclude<keyof T, undefined>> {
+    return <T> Object.fromEntries(Object.entries(obj).filter(([_, value]) => value !== undefined));
+}

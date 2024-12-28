@@ -16,7 +16,7 @@
 
 import { createECDH, createPrivateKey, createPublicKey, generateKeyPairSync } from "node:crypto";
 
-import { privateKeyToRaw, publicKeyToRaw } from "../asn1.js";
+import { ecPrivateKeyToRaw, ecPublicKeyToRaw } from "../asn1.js";
 import type { ECPublicKey, ECPrivateKey } from "../jwk.js";
 
 /**
@@ -59,9 +59,9 @@ export default class ECDH {
         const pubKey  = createPublicKey({ format: 'jwk', key: publicKey });
 
         const ecdh = createECDH(ECDH.getCurveName(privateKey.crv));
-        ecdh.setPrivateKey(privateKeyToRaw(privKey));
+        ecdh.setPrivateKey(ecPrivateKeyToRaw(privKey));
 
-        return ecdh.computeSecret(publicKeyToRaw(pubKey));
+        return ecdh.computeSecret(ecPublicKeyToRaw(pubKey));
     }
 
     /**

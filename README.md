@@ -31,6 +31,7 @@ Midori is an opinionated Web API Framework designed for Node.js, using Node.js's
     - [x] Form
     - [x] Multipart
     - [x] Streams
+    - [x] XML
 - [x] Hashing using native Node.js `node:crypto` module
     - [x] PBKDF2
     - [x] Scrypt
@@ -46,7 +47,10 @@ Midori is an opinionated Web API Framework designed for Node.js, using Node.js's
 - [ ] Tests
     - [x] JWE
     - [x] JWS
-- [ ] Documentation
+    - [x] ASN.1
+    - [x] Cron
+    - [x] XML
+- [x] Documentation
 - [ ] Rate Limiting
 
 ## Installation

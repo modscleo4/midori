@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { constants, createPrivateKey, createPublicKey, privateDecrypt, publicEncrypt, randomBytes, pbkdf2Sync } from "node:crypto";
+import { constants, createPrivateKey, createPublicKey, privateDecrypt, publicEncrypt, randomBytes, pbkdf2Sync, generateKeyPairSync } from "node:crypto";
 
-import type { ECPublicKey, RSAPublicKey, SymmetricKey, JWK, ECPrivateKey } from "./jwk.js";
+import type { ECPublicKey, RSAPublicKey, RSAPrivateKey, SymmetricKey, JWK, ECPrivateKey } from "./jwk.js";
 import { encodeBufferWithLength, encodeUInt32BE } from "./buffer.js";
 import JWTError from "../errors/JWTError.js";
 import AESGCM from "./crypt/aesgcm.js";
@@ -666,4 +666,36 @@ function decrypt(cipherText: Buffer, cek: Buffer, iv: Buffer, aad: Buffer, authe
     }
 
     throw new JWTError(`Unsupported encryption: ${enc}`);
+}
+
+let _canUseRSA1_5: boolean | null = null;
+export function canUseRSA15(): boolean {
+    if (_canUseRSA1_5 !== null) {
+        return _canUseRSA1_5;
+    }
+
+    try {
+        const { publicKey: RSAPublicKeyPEM, privateKey: RSAPrivateKeyPEM } = generateKeyPairSync('rsa', { modulusLength: 2048, publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'pkcs8', format: 'pem' } });
+        const RSAPublicKey = createPublicKey(RSAPublicKeyPEM).export({ format: 'jwk' }) as RSAPublicKey;
+        const RSAPrivateKey = createPrivateKey(RSAPrivateKeyPEM).export({ format: 'jwk' }) as RSAPrivateKey;
+
+        const alg = JWEAlgorithm.RSA1_5;
+        const enc = JWEEncryption.A128GCM;
+        const header: Header = {
+            alg,
+            enc,
+            typ: 'JWT',
+            cty: 'application/json'
+        };
+
+        const [cek] = generateCEK(alg, enc, header, RSAPublicKey, null);
+        const encryptedKey = encryptCEK(cek, alg, RSAPublicKey, header);
+
+        decryptCEK(encryptedKey, alg, enc, RSAPrivateKey, header);
+        _canUseRSA1_5 = true;
+    } catch (e) {
+        _canUseRSA1_5 = false;
+    }
+
+    return _canUseRSA1_5;
 }

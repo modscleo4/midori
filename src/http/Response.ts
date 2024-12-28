@@ -17,13 +17,14 @@
 import { type ReadStream, createReadStream, statSync } from "node:fs";
 import type { OutgoingHttpHeader, OutgoingHttpHeaders } from "node:http";
 import { Readable, type Transform } from "node:stream";
-import { lookup } from "mime-types";
+import { contentType } from "mime-types";
 
 import { EStatusCode } from "./EStatusCode.js";
 import type Request from "./Request.js";
 import HTTPError from "../errors/HTTPError.js";
 import { type Channel, rss } from "../util/rss.js";
-import { serializeXML, type XMLNode } from "../util/xml.js";
+import { serializeXML, serializeXMLGenerator, type XMLNode } from "../util/xml.js";
+import { generateRandomString } from "../util/strings.js";
 
 /**
  * Problem Details for HTTP APIs.
@@ -84,7 +85,7 @@ type CacheControlRevalidation = {
     /** The must-revalidate response directive indicates that the response can be stored in caches and can be reused while fresh. If the response becomes stale, it must be validated with the origin server before reuse. */
     mustRevalidate?: boolean;
     /** The proxy-revalidate response directive is the equivalent of must-revalidate, but specifically for shared caches only. */
-    proxyRevalidate?: boolean
+    proxyRevalidate?: boolean;
     /** The immutable response directive indicates that the response will not be updated while it's fresh. */
     immutable?: boolean;
 };
@@ -127,6 +128,14 @@ export default class Response<T = any> {
 
         Response.installStreamTransformer('application/json-bigint', (data: unknown): Streamable => {
             return Readable.from(JSON.stringify(data, (_, v) => typeof v === 'bigint' ? v.toString() + 'n' : v));
+        });
+
+        Response.installTransformer('application/xml', (data: unknown, options: unknown): Bufferable => {
+            return serializeXML(data as XMLNode, options as number);
+        });
+
+        Response.installStreamTransformer('application/xml', (data: unknown, options: unknown): Streamable => {
+            return Readable.from(serializeXMLGenerator(data as XMLNode, options as number));
         });
     }
 
@@ -469,11 +478,19 @@ export default class Response<T = any> {
      * Send a XML response. The Content-Type header will be set to application/xml.
      *
      * @param data The XML data to be sent.
+     * @param stream If the data should be streamed.
+     * @param spaces The number of spaces to use for indentation.
      * @returns The response object.
      */
-    xml(data: XMLNode): Response<T> {
-        return this.withHeader('Content-Type', 'application/xml')
-            .send(serializeXML(data));
+    xml(data: XMLNode, stream: boolean = false, spaces?: number): Response<T> {
+        this.withHeader('Content-Type', 'application/xml');
+        if (stream) {
+            this.stream(Response.#streamTransformers.get('application/xml')!(data, spaces));
+        } else {
+            this.send(Response.#transformers.get('application/xml')!(data, spaces));
+        }
+
+        return this;
     }
 
     /**
@@ -556,13 +573,15 @@ export default class Response<T = any> {
             }
 
             if (streams.length > 1) {
-                return this.withHeader('Content-Type', 'multipart/byteranges')
+                const boundary = 'boundary' + generateRandomString(16);
+
+                return this.withHeader('Content-Type', 'multipart/byteranges; boundary=' + boundary)
                     .withStatus(EStatusCode.PARTIAL_CONTENT)
                     .withHeader('Accept-Ranges', 'bytes')
                     .stream(Readable.from(streams.flatMap(({ start, end, stream }) => {
                         return [
-                            `--${streams.length > 1 ? 'boundary' : ''}`,
-                            `Content-Type: ${lookup(filename) || 'application/octet-stream'}`,
+                            `--${streams.length > 1 ? boundary : ''}`,
+                            `Content-Type: ${contentType(filename) || 'application/octet-stream'}`,
                             `Content-Range: bytes ${start}-${end}/${filesize}`,
                             '',
                             stream
@@ -573,7 +592,7 @@ export default class Response<T = any> {
             if (streams.length === 1) { // Check for 1 to ensure that the array is not empty.
                 const [{ start, end, stream }] = streams;
 
-                return this.withHeader('Content-Type', lookup(filename) || 'application/octet-stream')
+                return this.withHeader('Content-Type', contentType(filename) || 'application/octet-stream')
                     .withStatus(EStatusCode.PARTIAL_CONTENT)
                     .withHeader('Content-Range', `bytes ${start}-${end}/${filesize}`)
                     .withHeader('Accept-Ranges', 'bytes')
@@ -581,7 +600,7 @@ export default class Response<T = any> {
             }
         }
 
-        const res = this.withHeader('Content-Type', lookup(filename) || 'text/plain')
+        const res = this.withHeader('Content-Type', contentType(filename) || 'text/plain')
             .stream(createReadStream(filename));
 
         if (req) {
@@ -638,9 +657,7 @@ export default class Response<T = any> {
      * Get the body of the response as a Readable stream.
      */
     get body(): Readable {
-        const sourceStream = this.#stream ?? Readable.from(this.#body);
-
-        let stream = sourceStream;
+        let stream = this.#stream ?? Readable.from(this.#body);
 
         for (const transform of this.#pipeStreams) {
             stream = stream.pipe(transform);

@@ -26,7 +26,7 @@ export enum Color {
     MAGENTA,
     CYAN,
     WHITE,
-};
+}
 
 export type ANSIOptions = {
     /** ANSI colors to be used. */

@@ -16,7 +16,15 @@
 
 import type { Transform } from "node:stream";
 import { promisify } from "node:util";
-import { brotliCompress, brotliDecompress, brotliCompressSync, brotliDecompressSync, createBrotliCompress, createBrotliDecompress, constants } from "node:zlib";
+import {
+    brotliCompress,
+    brotliCompressSync,
+    brotliDecompress,
+    brotliDecompressSync,
+    constants,
+    createBrotliCompress,
+    createBrotliDecompress
+} from "node:zlib";
 
 /**
  * Brotli compression and decompression.
@@ -71,14 +79,12 @@ export default class Brotli {
     /**
      * Creates a stream to compress data.
      *
-     * @param level The compression level (0-11)
+     * @param quality The compression level (0-11)
      *
      * @returns The stream
      */
     static compressStream(quality: number = 5): Transform {
-        const stream = createBrotliCompress({ params: { [constants.BROTLI_PARAM_QUALITY]: quality } });
-
-        return stream;
+        return createBrotliCompress({ params: { [constants.BROTLI_PARAM_QUALITY]: quality } });
     }
 
     /**
@@ -87,8 +93,6 @@ export default class Brotli {
      * @returns The stream
      */
     static decompressStream(): Transform {
-        const stream = createBrotliDecompress();
-
-        return stream;
+        return createBrotliDecompress();
     }
 }

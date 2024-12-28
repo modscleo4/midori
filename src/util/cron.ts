@@ -110,7 +110,7 @@ export function validateCronString(cronString: string): boolean {
         && validateCronPart(hour, 0, 23)
         && validateCronPart(dayOfMonth, 1, 31)
         && validateCronPart(month, 1, 12)
-        && validateCronPart(dayOfWeek, 0, 6);
+        && validateCronPart(dayOfWeek, 0, 6, DAYS_OF_WEEK_MAP);
 }
 
 /**

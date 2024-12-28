@@ -76,9 +76,7 @@ export default class Gzip {
      * @returns The stream
      */
     static compressStream(level: number = 5): Transform {
-        const stream = createGzip({ level });
-
-        return stream;
+        return createGzip({ level });
     }
 
     /**
@@ -87,8 +85,6 @@ export default class Gzip {
      * @returns The stream
      */
     static decompressStream(): Transform {
-        const stream = createGunzip();
-
-        return stream;
+        return createGunzip();
     }
 }
