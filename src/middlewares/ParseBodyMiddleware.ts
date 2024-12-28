@@ -19,7 +19,7 @@ import { EStatusCode } from "../http/EStatusCode.js";
 import Middleware from "../http/Middleware.js";
 import type Request from "../http/Request.js";
 import Response from "../http/Response.js";
-import { ParseBodyConfigProvider, type ParseBodyOptions } from "../providers/ParseBodyConfigProvider.js";
+import { ParseBodyConfigProvider, type ParseBodyConfig } from "../providers/ParseBodyConfigProvider.js";
 
 /**
  * Middleware to parse the request body, returning a 415 if no recognized Content-Type is detected.
@@ -35,7 +35,7 @@ import { ParseBodyConfigProvider, type ParseBodyOptions } from "../providers/Par
  * Install a parser with the method `installParser()`.
  */
 export default class ParseBodyMiddleware extends Middleware {
-    #options: ParseBodyOptions | undefined;
+    #options: ParseBodyConfig | undefined;
     #parsers: Map<string, (req: Request, encoding: BufferEncoding) => Promise<unknown>> = new Map();
 
     constructor(app: Application) {
@@ -90,7 +90,7 @@ export default class ParseBodyMiddleware extends Middleware {
         });
     }
 
-    get options(): ParseBodyOptions | undefined {
+    get options(): ParseBodyConfig | undefined {
         return this.#options;
     }
 

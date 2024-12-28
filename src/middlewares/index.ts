@@ -13,7 +13,7 @@ export { default as ImplicitOptionsMiddleware } from './ImplicitOptionsMiddlewar
 export { default as MethodNotAllowedMiddleware } from './MethodNotAllowedMiddleware.js';
 export { default as NotFoundMiddleware } from './NotFoundMiddleware.js';
 export { default as ParseBodyMiddleware } from './ParseBodyMiddleware.js';
-export { default as PublicPathMiddlewareFactory } from './PublicPathMiddleware.js';
+export { default as PublicPathMiddlewareFactory, PublicPathMiddleware } from './PublicPathMiddleware.js';
 export { default as RequestLoggerMiddleware } from './RequestLoggerMiddleware.js';
 export { default as ResponseCompressionMiddlewareFactory, ResponseCompressionMiddleware } from './ResponseCompressionMiddleware.js';
 export { default as RouterMiddleware } from './RouterMiddleware.js';

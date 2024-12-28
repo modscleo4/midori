@@ -24,6 +24,8 @@ import type JWT from "../jwt/JWT.js";
 import AuthServiceProvider from "../providers/AuthServiceProvider.js";
 import JWTServiceProvider from "../providers/JWTServiceProvider.js";
 import type { Payload } from "../util/jwt.js";
+import { split } from "../util/strings.js";
+import AuthMiddleware from "./AuthMiddleware.js";
 
 /**
  * Provides a middleware for authentication using JWT.
@@ -45,6 +47,7 @@ export default class AuthBearerMiddleware extends Middleware {
     override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         const authInfo = this.getAuthInfo(req);
         if (!authInfo) {
+            req.container.set(AuthMiddleware.MethodKey, 'Bearer');
             return await next(req);
         }
 
@@ -85,7 +88,7 @@ export default class AuthBearerMiddleware extends Middleware {
             return null;
         }
 
-        const [scheme, credentials] = req.headers.authorization.split(' ', 2);
+        const [scheme, credentials] = split(req.headers.authorization, ' ', 2);
 
         return { scheme, credentials };
     }

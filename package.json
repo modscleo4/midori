@@ -1,6 +1,6 @@
 {
   "name": "@modscleo4/midori",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Midori is a Node.js web API framework with minimal dependencies and based on PSR ideas.",
   "type": "module",
   "keywords": [
@@ -91,6 +91,12 @@
       "import": {
         "types": "./dist/router/index.d.ts",
         "default": "./dist/router/index.js"
+      }
+    },
+    "./scheduler": {
+      "import": {
+        "types": "./dist/scheduler/index.d.ts",
+        "default": "./dist/scheduler/index.js"
       }
     },
     "./util/*": "./dist/util/*"

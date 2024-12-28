@@ -18,20 +18,20 @@ import ConfigProvider from "../app/ConfigProvider.js";
 import type { Application } from "../app/Server.js";
 import type { Constructor } from "../util/types.js";
 
-export type ParseBodyOptions = {
+export type ParseBodyConfig = {
     /**
      * If true, a 415 Unsupported Media Type will be returned if the Content-Type is not recognized.
      */
     errorOnUnknownContentType?: boolean;
 };
 
-export abstract class ParseBodyConfigProvider extends ConfigProvider<ParseBodyOptions> {
+export abstract class ParseBodyConfigProvider extends ConfigProvider<ParseBodyConfig> {
     static override config: symbol = Symbol('midori::ParseBody');
 }
 
-export default function ParseBodyConfigProviderFactory(options: ParseBodyOptions): Constructor<ParseBodyConfigProvider> & { [K in keyof typeof ParseBodyConfigProvider]: typeof ParseBodyConfigProvider[K] } {
+export default function ParseBodyConfigProviderFactory(options: ParseBodyConfig): Constructor<ParseBodyConfigProvider> & { [K in keyof typeof ParseBodyConfigProvider]: typeof ParseBodyConfigProvider[K] } {
     return class extends ParseBodyConfigProvider {
-        override register(app: Application): ParseBodyOptions {
+        override register(app: Application): ParseBodyConfig {
             return options;
         }
     };

@@ -21,6 +21,8 @@ import Middleware from "../http/Middleware.js";
 import type Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import AuthServiceProvider from "../providers/AuthServiceProvider.js";
+import { split } from "../util/strings.js";
+import AuthMiddleware from "./AuthMiddleware.js";
 
 /**
  * Provides a middleware for authentication using Basic Authentication.
@@ -37,6 +39,7 @@ export default class AuthBasicMiddleware extends Middleware {
     override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         const authInfo = this.getAuthInfo(req);
         if (!authInfo) {
+            req.container.set(AuthMiddleware.MethodKey, 'Basic');
             return await next(req);
         }
 
@@ -83,7 +86,7 @@ export default class AuthBasicMiddleware extends Middleware {
             return null;
         }
 
-        const [scheme, credentials] = req.headers.authorization.split(' ', 2);
+        const [scheme, credentials] = split(req.headers.authorization, ' ', 2);
 
         return { scheme, credentials };
     }

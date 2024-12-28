@@ -24,9 +24,17 @@ import Response from "../http/Response.js";
  * Provides a middleware to check if the user is authenticated.
  */
 export default class AuthMiddleware extends Middleware {
+    static MethodKey: symbol = Symbol('::Auth:Method');
+
     override async process(req: Request, next: (req: Request) => Promise<Response>): Promise<Response> {
         if (!req.container.has(Auth.UserKey)) {
-            return await this.failedResponse(req);
+            const res = await this.failedResponse(req);
+            const method = req.container.get(AuthMiddleware.MethodKey) as string;
+            if (method) {
+                return res.withHeader('WWW-Authenticate', method);
+            }
+
+            return res;
         }
 
         return await next(req);

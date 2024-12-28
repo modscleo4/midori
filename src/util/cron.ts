@@ -103,7 +103,7 @@ export function validateCronString(cronString: string): boolean {
         return false;
     }
 
-    const [second, minute, hour, dayOfMonth, month, dayOfWeek] = split(parts === 5 ? '* ' + cronString : cronString, ' ', 6);
+    const [second, minute, hour, dayOfMonth, month, dayOfWeek] = split(parts === 5 ? '0 ' + cronString : cronString, ' ', 6);
 
     return validateCronPart(second, 0, 59)
         && validateCronPart(minute, 0, 59)
@@ -170,7 +170,7 @@ export function parseCronString(cronString: string): CronExpression {
         throw new Error('Invalid cron string.');
     }
 
-    const [second, minute, hour, dayOfMonth, month, dayOfWeek] = split(parts === 5 ? '* ' + cronString : cronString, ' ', 6);
+    const [second, minute, hour, dayOfMonth, month, dayOfWeek] = split(parts === 5 ? '0 ' + cronString : cronString, ' ', 6);
 
     return {
         seconds: parseCronPart(second, 0, 59),
