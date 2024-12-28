@@ -23,6 +23,8 @@ await describe('Util', async () => {
     await import('./util/headers.spec.js');
     await import('./util/jws.spec.js');
     await import('./util/jwe.spec.js');
+    await import('./util/rss.spec.js');
+    await import('./util/strings.spec.js');
     await import('./util/uuid.spec.js');
     await import('./util/xml.spec.js');
 });

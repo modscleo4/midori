@@ -187,7 +187,7 @@ export function rss(channel: Channel): XMLNode {
                             { name: 'link', text: channel.image.link },
                             channel.image.width !== undefined ? { name: 'width', text: channel.image.width.toString() } : null,
                             channel.image.height !== undefined ? { name: 'height', text: channel.image.height.toString() } : null
-                        ]
+                        ].filter(Boolean) as XMLNode[]
                     } : null,
                     channel.rating ? { name: 'rating', text: channel.rating } : null,
                     channel.textInput ? {

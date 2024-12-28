@@ -50,7 +50,7 @@ await describe('Cron', () => {
     it('should parse a cron string with wildcard', () => {
         const cron = parseCronString(cronString[0]);
 
-        deepStrictEqual(cron.seconds, Array.from({ length: 60 }, (_, i) => i));
+        deepStrictEqual(cron.seconds, [0]);
         deepStrictEqual(cron.minutes, [0]);
         deepStrictEqual(cron.hours, [0]);
         deepStrictEqual(cron.daysOfMonth, [1]);
@@ -69,7 +69,7 @@ await describe('Cron', () => {
         deepStrictEqual(cron.daysOfWeek, Array.from({ length: 7 }, (_, i) => i));
     });
 
-    it('should parse a cron string with rannge', () => {
+    it('should parse a cron string with range', () => {
         const cron = parseCronString(cronString[2]);
 
         deepStrictEqual(cron.seconds, [0]);
@@ -83,7 +83,7 @@ await describe('Cron', () => {
     it('should parse a cron string with ranges', () => {
         const cron = parseCronString(cronString[3]);
 
-        deepStrictEqual(cron.seconds, Array.from({ length: 60 }, (_, i) => i));
+        deepStrictEqual(cron.seconds, [0]);
         deepStrictEqual(cron.minutes, [0]);
         deepStrictEqual(cron.hours, [1, 2, 3]);
         deepStrictEqual(cron.daysOfMonth, [1, 2, 3]);
@@ -105,7 +105,7 @@ await describe('Cron', () => {
     it('should parse a cron string with step', () => {
         const cron = parseCronString(cronString[5]);
 
-        deepStrictEqual(cron.seconds, Array.from({ length: 60 }, (_, i) => i));
+        deepStrictEqual(cron.seconds, [0]);
         deepStrictEqual(cron.minutes, [23]);
         deepStrictEqual(cron.hours, Array.from({ length: 12 }, (_, i) => i * 2));
         deepStrictEqual(cron.daysOfMonth, Array.from({ length: 31 }, (_, i) => i + 1));
@@ -116,7 +116,7 @@ await describe('Cron', () => {
     it('should parse a cron string with step and range', () => {
         const cron = parseCronString(cronString[6]);
 
-        deepStrictEqual(cron.seconds, Array.from({ length: 60 }, (_, i) => i));
+        deepStrictEqual(cron.seconds, [0]);
         deepStrictEqual(cron.minutes, [23]);
         deepStrictEqual(cron.hours, [1, 3, 5, 7, 9, 11, 13, 15, 17, 19]);
         deepStrictEqual(cron.daysOfMonth, Array.from({ length: 31 }, (_, i) => i + 1));
