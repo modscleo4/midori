@@ -20,7 +20,6 @@ import type Request from "../http/Request.js";
 import type Response from "../http/Response.js";
 import type Logger from "../log/Logger.js";
 import { LoggerServiceProvider } from "../providers/LoggerServiceProvider.js";
-import { Color } from "../util/ansi.js";
 
 /**
  * Log every unhandled error to the Logger Service.
@@ -38,10 +37,7 @@ export default class ErrorLoggerMiddleware extends Middleware {
         try {
             return await next(req);
         } catch (e) {
-            this.#logger.error('An uncaught error occurred while handling a request.', { context: e, format: { color: { fg: Color.RED } } });
-            if (e instanceof Error) {
-                this.#logger.debug('Stack trace:', { context: e.stack, format: { color: { fg: Color.RED } } });
-            }
+            this.#logger.error('An uncaught error occurred while handling a request.', <Error> e);
 
             throw e;
         }

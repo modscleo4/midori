@@ -1,5 +1,5 @@
 # Midori
-A Node.js Web API Framework WITHOUT Express
+A Node.js Web API Framework WITHOUT Express.
 
 Midori is an opinionated Web API Framework designed for Node.js, using Node.js's native HTTP module as basis, built with TypeScript and being inspired from PSR standards.
 
@@ -13,7 +13,9 @@ Midori is an opinionated Web API Framework designed for Node.js, using Node.js's
 - [x] Logger
     - [x] Console
     - [x] File
+    - [x] GELF
 - [x] Task Scheduler
+    - [x] Cron
 - [x] JWT
     - [x] JWS
     - [x] JWE
@@ -21,16 +23,17 @@ Midori is an opinionated Web API Framework designed for Node.js, using Node.js's
 - [x] CORS
 - [x] Content Security Policy
 - [x] Static Files
+- [x] Implicit HEAD and OPTIONS
 - [x] Response Compression using `node:zlib` module
     - [x] Gzip
     - [x] Deflate
     - [x] Brotli
 - [x] Extensible Body Parser and Response Serializer
     - [x] JSON+BigInt
-    - [x] CSV
     - [x] Form
     - [x] Multipart
     - [x] Streams
+    - [x] RSS
     - [x] XML
 - [x] Hashing using native Node.js `node:crypto` module
     - [x] PBKDF2
@@ -49,6 +52,7 @@ Midori is an opinionated Web API Framework designed for Node.js, using Node.js's
     - [x] JWS
     - [x] ASN.1
     - [x] Cron
+    - [x] RSS
     - [x] XML
 - [x] Documentation
 - [ ] Rate Limiting

@@ -46,3 +46,5 @@ npm run start
 ```
 
 This will start the project in production mode.
+
+See the [Quick Start](quick-start.md) guide for more information on getting started with Midori.

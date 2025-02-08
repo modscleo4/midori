@@ -20,7 +20,7 @@ import Middleware from "../http/Middleware.js";
 import type Request from "../http/Request.js";
 import Response from "../http/Response.js";
 import { type ErrorConfig, ErrorConfigProvider } from "../providers/ErrorConfigProvider.js";
-import { Constructor } from "../util/types.js";
+import { parseStack } from "../util/error.js";
 
 export class ErrorMiddleware extends Middleware {
     #options: ErrorConfig | undefined;
@@ -48,28 +48,12 @@ export class ErrorMiddleware extends Middleware {
                     EStatusCode.INTERNAL_SERVER_ERROR,
                     null,
                     req.path,
-                    { method: req.method, stack: this.parseStack(e.stack ?? '') }
+                    { method: req.method, stack: parseStack(e) }
                 );
             }
 
             return response;
         }
-    }
-
-    parseStack(stack: string): { method: string, file: string, line: number, column: number; }[] {
-        return stack.split('\n')
-            .map(l => l.trim())
-            .filter(l => l.startsWith('at '))
-            .map(l => {
-                const { method, file, line, column } = /at ?(?<method>(async )?[^ ]*) \(?(?<file>.*):(?<line>\d+):(?<column>\d+)\)?/g.exec(l)?.groups ?? {};
-
-                return {
-                    method,
-                    file,
-                    line: parseInt(line),
-                    column: parseInt(column),
-                };
-            });
     }
 }
 

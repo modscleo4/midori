@@ -411,8 +411,7 @@ export default class Response<T = any> {
             type: type ?? 'about:blank',
             instance,
             ...extensions
-        })
-            .withHeader('Content-Type', 'application/problem+json');
+        }).withHeader('Content-Type', 'application/problem+json');
 
         if (status) {
             this.withStatus(status);
@@ -784,6 +783,30 @@ export default class Response<T = any> {
     static html(data: string): Response {
         return new Response()
             .html(data);
+    }
+
+    /**
+     * Send a XML response. The Content-Type header will be set to application/xml.
+     *
+     * @param data The XML data to be sent.
+     * @param stream If the data should be streamed.
+     * @param spaces The number of spaces to use for indentation.
+     * @returns The response object.
+     */
+    static xml(data: XMLNode, stream: boolean = false, spaces?: number): Response {
+        return new Response()
+            .xml(data, stream, spaces);
+    }
+
+    /**
+     * Send a RSS feed. The Content-Type header will be set to application/rss+xml.
+     *
+     * @param channel The RSS channel.
+     * @returns The response object.
+     */
+    static rss(channel: Channel): Response {
+        return new Response()
+            .rss(channel);
     }
 
     /**

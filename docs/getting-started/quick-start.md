@@ -33,3 +33,5 @@ node server.js
 ```
 
 Visit `http://localhost:8080` in your browser, and you should see a JSON response!
+
+See the [Examples](examples.md) for more advanced usage of Midori.

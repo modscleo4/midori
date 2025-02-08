@@ -31,6 +31,7 @@ export default class RequestLoggerMiddleware extends Middleware {
     }
 
     logRequest(req: Request, res: Response, time: number): void {
-        this.#logger.info(`<${req.ip ?? 'unknown IP'}> ${req.method} ${req.path} ${res.status} (${time.toFixed(2)}ms)`, { format: { color: { fg: res.status < 400 ? Color.GREEN : res.status < 500 ? Color.YELLOW : Color.RED } } });
+        const messageFormatting = { color: { fg: res.status < 400 ? Color.GREEN : res.status < 500 ? Color.YELLOW : Color.RED } };
+        this.#logger.info(`<${req.ip ?? 'unknown IP'}> ${req.method} ${req.path} ${res.status} (${time.toFixed(2)}ms)`, undefined, messageFormatting);
     }
 }

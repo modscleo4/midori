@@ -14,160 +14,123 @@
  * limitations under the License.
  */
 
-import { type ANSIOptions, Color } from "../util/ansi.js";
+import { ANSIOptions } from "../util/ansi.js";
+import { parseStack } from "../util/error.js";
+import LogAdapter from "./LogAdapter.js";
 
 /**
  * Log levels.
  */
 export enum LogLevel {
-    DEBUG,
-    INFO,
-    NOTICE,
-    WARNING,
-    ERROR,
-    CRITICAL,
+    EMERGENCY,
     ALERT,
-    EMERGENCY
+    CRITICAL,
+    ERROR,
+    WARNING,
+    NOTICE,
+    INFO,
+    DEBUG,
 };
 
-/**
- * Logger options.
- */
-export type LogOptions = {
-    /** Context to be appended to the log message. */
-    context?: unknown;
-    /** Separator to be used between the log message and the context. */
-    separator?: string;
-    /** ANSI options to be used in the message part of the log. */
-    format?: ANSIOptions;
+export type LogMessage = {
+    /** Log level */
+    level: LogLevel;
+    /** Log message */
+    message: string;
+    /** Log timestamp */
+    timestamp: Date;
+    /** Process ID */
+    pid: number;
+    /** Source data */
+    source: {
+        /** Function name */
+        method: string;
+        /** File path */
+        file: string;
+        /** Line number */
+        line: number;
+        /** Column number */
+        column: number;
+    };
+    /** Exception information */
+    exception?: Error;
+    /** Formatting options */
+    formatting?: ANSIOptions;
+    /** Context */
+    [key: string]: unknown;
 };
 
 export type LoggerOptions = {
-    /** Whether to enable ANSI formatting. */
-    formattingEnabled?: boolean;
-    /** Minimum log level to be logged. */
-    minLevel?: LogLevel;
+    /* Log adapters to be used. */
+    adapters?: LogAdapter[];
+    /* Extra options to be used in the logger. */
+    extra?: Record<string, unknown>;
 };
 
 /**
- * Basic Logger Service Provider.
+ * Basic Logger Service.
  */
-export default abstract class Logger {
-    #formattingEnabled: boolean;
-    #minLevel: LogLevel;
+export default class Logger {
+    #extra: Record<string, unknown>;
+    #adapters: LogAdapter[];
 
     constructor(options?: LoggerOptions) {
-        this.#formattingEnabled = options?.formattingEnabled ?? false;
-        this.#minLevel = options?.minLevel ?? LogLevel.INFO;
+        this.#adapters = options?.adapters ?? [];
+        this.#extra = options?.extra ?? {};
     }
 
-    emergency(message: string, options?: LogOptions): void {
-        this.log(LogLevel.EMERGENCY, message, options);
+    emergency(message: string, exception?: Error, formatting?: ANSIOptions): void {
+        this.log(LogLevel.EMERGENCY, message, exception);
     }
 
-    alert(message: string, options?: LogOptions): void {
-        this.log(LogLevel.ALERT, message, options);
+    alert(message: string, exception?: Error, formatting?: ANSIOptions): void {
+        this.log(LogLevel.ALERT, message, exception);
     }
 
-    critical(message: string, options?: LogOptions): void {
-        this.log(LogLevel.CRITICAL, message, options);
+    critical(message: string, exception?: Error, formatting?: ANSIOptions): void {
+        this.log(LogLevel.CRITICAL, message, exception);
     }
 
-    error(message: string, options?: LogOptions): void {
-        this.log(LogLevel.ERROR, message, options);
+    error(message: string, exception?: Error, formatting?: ANSIOptions): void {
+        this.log(LogLevel.ERROR, message, exception);
     }
 
-    warning(message: string, options?: LogOptions): void {
-        this.log(LogLevel.WARNING, message, options);
+    warning(message: string, exception?: Error, formatting?: ANSIOptions): void {
+        this.log(LogLevel.WARNING, message, exception);
     }
 
-    notice(message: string, options?: LogOptions): void {
-        this.log(LogLevel.NOTICE, message, options);
+    notice(message: string, exception?: Error, formatting?: ANSIOptions): void {
+        this.log(LogLevel.NOTICE, message, exception);
     }
 
-    info(message: string, options?: LogOptions): void {
-        this.log(LogLevel.INFO, message, options);
+    info(message: string, exception?: Error, formatting?: ANSIOptions): void {
+        this.log(LogLevel.INFO, message, exception);
     }
 
-    debug(message: string, options?: LogOptions): void {
-        this.log(LogLevel.DEBUG, message, options);
+    debug(message: string, exception?: Error, formatting?: ANSIOptions): void {
+        this.log(LogLevel.DEBUG, message, exception);
     }
 
     /**
      * Base log method. All other log methods call this method.
      */
-    abstract log(level: LogLevel, message: string, options?: LogOptions): void;
+    log(level: LogLevel, message: string, exception?: Error, formatting?: ANSIOptions): void {
+        for (const adapter of this.#adapters) {
+            if (level < adapter.minLevel) {
+                continue;
+            }
 
-    get minLevel(): LogLevel {
-        return this.#minLevel;
-    }
+            const source = parseStack(new Error())[0];
 
-    get formattingEnabled(): boolean {
-        return this.#formattingEnabled;
-    }
-
-    static dateFormat: ANSIOptions = {
-        color: {
-            fg: Color.BLACK,
-        },
-        bold: true,
-    };
-
-    static levelToFormat(level: LogLevel): ANSIOptions {
-        switch (level) {
-            case LogLevel.DEBUG:
-                return {
-                    color: {
-                        fg: Color.BLACK,
-                    },
-                    bold: true,
-                };
-            case LogLevel.INFO:
-                return {
-                    color: {
-                        fg: Color.GREEN,
-                    },
-                    bold: true,
-                };
-            case LogLevel.NOTICE:
-                return {
-                    color: {
-                        fg: Color.BLUE,
-                    },
-                    bold: true,
-                };
-            case LogLevel.WARNING:
-                return {
-                    color: {
-                        fg: Color.YELLOW,
-                    },
-                };
-            case LogLevel.ERROR:
-                return {
-                    color: {
-                        fg: Color.RED,
-                    },
-                };
-            case LogLevel.CRITICAL:
-                return {
-                    color: {
-                        fg: Color.MAGENTA,
-                    },
-                };
-            case LogLevel.ALERT:
-                return {
-                    color: {
-                        fg: Color.YELLOW,
-                    },
-                    bold: true,
-                };
-            case LogLevel.EMERGENCY:
-                return {
-                    color: {
-                        fg: Color.RED,
-                    },
-                    bold: true,
-                };
+            adapter.log({
+                level,
+                message,
+                timestamp: new Date(),
+                pid: process.pid,
+                source,
+                exception,
+                ...this.#extra,
+            });
         }
     }
 }
