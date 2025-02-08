@@ -238,7 +238,7 @@ export default class Server extends HTTPServer<typeof Request> implements Applic
     /**
      * Schedules a task to be executed periodically.
      *
-     * @param cronString A cron string that defines when the task will be executed. Be aware that the seconds field is supported and required.
+     * @param cronString A cron string that defines when the task will be executed. The seconds field is not required.
      * @param task The task to be executed.
      * @throws {Error}
      */

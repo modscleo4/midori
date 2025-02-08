@@ -20,7 +20,7 @@ import type { Readable } from "node:stream";
 import Hash from "./Hash.js";
 
 /**
- * SHA256 Hash implementation.
+ * SHA-256 Hash implementation.
  *
  * Format: `$5$<salt>$<hash>`
  *
@@ -60,5 +60,19 @@ export default class SHA256 extends Hash {
         });
 
         return ['', SHA256.version, salt.toString('base64'), hashData].join('$');
+    }
+
+    static hexHash(data: string | Buffer): string {
+        return createHash('sha256').update(data).digest('hex');
+    }
+
+    static async hexHashStream(data: Readable): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            const hash = createHash('sha256');
+
+            data.on('data', (chunk) => hash.update(chunk));
+            data.on('end', () => resolve(hash.digest('hex')));
+            data.on('error', reject);
+        });
     }
 }

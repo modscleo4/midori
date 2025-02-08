@@ -80,35 +80,35 @@ export default class Logger {
     }
 
     emergency(message: string, exception?: Error, formatting?: ANSIOptions): void {
-        this.log(LogLevel.EMERGENCY, message, exception);
+        this.log(LogLevel.EMERGENCY, message, exception, formatting);
     }
 
     alert(message: string, exception?: Error, formatting?: ANSIOptions): void {
-        this.log(LogLevel.ALERT, message, exception);
+        this.log(LogLevel.ALERT, message, exception, formatting);
     }
 
     critical(message: string, exception?: Error, formatting?: ANSIOptions): void {
-        this.log(LogLevel.CRITICAL, message, exception);
+        this.log(LogLevel.CRITICAL, message, exception, formatting);
     }
 
     error(message: string, exception?: Error, formatting?: ANSIOptions): void {
-        this.log(LogLevel.ERROR, message, exception);
+        this.log(LogLevel.ERROR, message, exception, formatting);
     }
 
     warning(message: string, exception?: Error, formatting?: ANSIOptions): void {
-        this.log(LogLevel.WARNING, message, exception);
+        this.log(LogLevel.WARNING, message, exception, formatting);
     }
 
     notice(message: string, exception?: Error, formatting?: ANSIOptions): void {
-        this.log(LogLevel.NOTICE, message, exception);
+        this.log(LogLevel.NOTICE, message, exception, formatting);
     }
 
     info(message: string, exception?: Error, formatting?: ANSIOptions): void {
-        this.log(LogLevel.INFO, message, exception);
+        this.log(LogLevel.INFO, message, exception, formatting);
     }
 
     debug(message: string, exception?: Error, formatting?: ANSIOptions): void {
-        this.log(LogLevel.DEBUG, message, exception);
+        this.log(LogLevel.DEBUG, message, exception, formatting);
     }
 
     /**
@@ -116,7 +116,7 @@ export default class Logger {
      */
     log(level: LogLevel, message: string, exception?: Error, formatting?: ANSIOptions): void {
         for (const adapter of this.#adapters) {
-            if (level < adapter.minLevel) {
+            if (level > adapter.minLevel) {
                 continue;
             }
 
@@ -129,6 +129,7 @@ export default class Logger {
                 pid: process.pid,
                 source,
                 exception,
+                formatting,
                 ...this.#extra,
             });
         }

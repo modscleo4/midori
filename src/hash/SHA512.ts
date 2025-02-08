@@ -20,7 +20,7 @@ import type { Readable } from "node:stream";
 import Hash from "./Hash.js";
 
 /**
- * SHA512 Hash implementation.
+ * SHA-512 Hash implementation.
  *
  * Format: `$6$<salt>$<hash>`
  *
@@ -51,7 +51,7 @@ export default class SHA512 extends Hash {
     static async hashStream(data: Readable, options?: { salt?: Buffer; }): Promise<string> {
         const salt = options?.salt ?? randomBytes(16);
         const hashData = await new Promise<string>((resolve, reject) => {
-            const hash = createHash('sha256');
+            const hash = createHash('sha512');
             hash.update(salt);
 
             data.on('data', (chunk) => hash.update(chunk));
@@ -60,5 +60,19 @@ export default class SHA512 extends Hash {
         });
 
         return ['', SHA512.version, salt.toString('base64'), hashData].join('$');
+    }
+
+    static hexHash(data: string | Buffer): string {
+        return createHash('sha512').update(data).digest('hex');
+    }
+
+    static async hexHashStream(data: Readable): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            const hash = createHash('sha512');
+
+            data.on('data', (chunk) => hash.update(chunk));
+            data.on('end', () => resolve(hash.digest('hex')));
+            data.on('error', reject);
+        });
     }
 }
